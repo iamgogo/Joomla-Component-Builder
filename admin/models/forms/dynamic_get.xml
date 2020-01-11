@@ -143,6 +143,85 @@
 			<option value="4">
 				COM_COMPONENTBUILDER_DYNAMIC_GET_GETCUSTOMS</option>
 		</field>
+		<!-- Php_router_parse Field. Type: Textarea. (joomla) -->
+		<field
+			type="textarea"
+			name="php_router_parse"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_ROUTER_PARSE_LABEL"
+			rows="30"
+			cols="15"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_ROUTER_PARSE_DESCRIPTION"
+			class="text_area span12"
+			filter="raw"
+			hint="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_ROUTER_PARSE_HINT"
+			required="true"
+		/>
+		<!-- Note_calculation_item Field. Type: Note. A None Database Field. (joomla) -->
+		<field type="note" name="note_calculation_item" description="COM_COMPONENTBUILDER_DYNAMIC_GET_NOTE_CALCULATION_ITEM_DESCRIPTION" class="note_calculation_item" />
+		<!-- Php_before_getitems Field. Type: Editor. (joomla) -->
+		<field
+			type="editor"
+			name="php_before_getitems"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_BEFORE_GETITEMS_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_BEFORE_GETITEMS_DESCRIPTION"
+			width="100%"
+			height="450px"
+			cols="15"
+			rows="30"
+			buttons="no"
+			syntax="php"
+			editor="codemirror|none"
+			filter="raw"
+			validate="code"
+		/>
+		<!-- Php_after_getitems Field. Type: Editor. (joomla) -->
+		<field
+			type="editor"
+			name="php_after_getitems"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEMS_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEMS_DESCRIPTION"
+			width="100%"
+			height="450px"
+			cols="15"
+			rows="30"
+			buttons="no"
+			syntax="php"
+			editor="codemirror|none"
+			filter="raw"
+			validate="code"
+		/>
+		<!-- Php_after_getitem Field. Type: Editor. (joomla) -->
+		<field
+			type="editor"
+			name="php_after_getitem"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEM_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEM_DESCRIPTION"
+			width="100%"
+			height="450px"
+			cols="15"
+			rows="30"
+			buttons="no"
+			syntax="php"
+			editor="codemirror|none"
+			filter="raw"
+			validate="code"
+		/>
+		<!-- Php_getlistquery Field. Type: Editor. (joomla) -->
+		<field
+			type="editor"
+			name="php_getlistquery"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_GETLISTQUERY_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_GETLISTQUERY_DESCRIPTION"
+			width="100%"
+			height="450px"
+			cols="15"
+			rows="30"
+			buttons="no"
+			syntax="php"
+			editor="codemirror|none"
+			filter="raw"
+			validate="code"
+		/>
 		<!-- Join_db_table Field. Type: Subform. (joomla) -->
 		<field
 			type="subform"
@@ -161,7 +240,7 @@
 					description="COM_COMPONENTBUILDER_DYNAMIC_GET_DB_TABLE_DESCRIPTION"
 					class="list_class"
 					multiple="false"
-					required="false"
+					required="true"
 					button="false"
 				/>
 				<!-- Row_type Field. Type: List. (joomla) -->
@@ -173,7 +252,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="1">
 					<!-- Option Set. -->
 					<option value="1">
@@ -189,7 +268,7 @@
 					class="list_class fieldSmall"
 					multiple="false"
 					filter="WORD"
-					required="false"
+					required="true"
 					default="b">
 					<!-- Option Set. -->
 					<option value="b">
@@ -303,7 +382,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="1">
 					<!-- Option Set. -->
 					<option value="1">
@@ -328,7 +407,7 @@
 					class="text_area fieldMedium"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_ON_FIELD_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_ON_FIELD_HINT"
@@ -342,7 +421,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="0">
 					<!-- Option Set. -->
 					<option value="1">
@@ -379,7 +458,7 @@
 					class="text_area fieldMedium"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_JOIN_FIELD_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_JOIN_FIELD_HINT"
@@ -395,107 +474,9 @@
 					class="text_area span12"
 					filter="HTML"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_SELECTION_HINT"
-					required="false"
+					required="true"
 				/>
 			</form>
-		</field>
-		<!-- Note_calculation_items Field. Type: Note. A None Database Field. (joomla) -->
-		<field type="note" name="note_calculation_items" description="COM_COMPONENTBUILDER_DYNAMIC_GET_NOTE_CALCULATION_ITEMS_DESCRIPTION" class="note_calculation_items" />
-		<!-- View_table_main Field. Type: Adminviews. (custom) -->
-		<field
-			type="adminviews"
-			name="view_table_main"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_VIEW_TABLE_MAIN_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_VIEW_TABLE_MAIN_DESCRIPTION"
-			multiple="false"
-			default=""
-			required="true"
-		/>
-		<!-- Add_php_router_parse Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="add_php_router_parse"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_ROUTER_PARSE_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_ROUTER_PARSE_DESCRIPTION"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
-		</field>
-		<!-- Addcalculation Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="addcalculation"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADDCALCULATION_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_ADDCALCULATION_DESCRIPTION"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
-		</field>
-		<!-- Add_php_before_getitems Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="add_php_before_getitems"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_BEFORE_GETITEMS_LABEL"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
-		</field>
-		<!-- Add_php_after_getitems Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="add_php_after_getitems"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_AFTER_GETITEMS_LABEL"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
-		</field>
-		<!-- Add_php_after_getitem Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="add_php_after_getitem"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_AFTER_GETITEM_LABEL"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
-		</field>
-		<!-- Add_php_getlistquery Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="add_php_getlistquery"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_GETLISTQUERY_LABEL"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
 		</field>
 		<!-- View_selection Field. Type: Textarea. (joomla) -->
 		<field
@@ -510,22 +491,19 @@
 			hint="COM_COMPONENTBUILDER_DYNAMIC_GET_VIEW_SELECTION_HINT"
 			required="true"
 		/>
-		<!-- Add_php_before_getitem Field. Type: Radio. (joomla) -->
-		<field
-			type="radio"
-			name="add_php_before_getitem"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_BEFORE_GETITEM_LABEL"
-			class="btn-group btn-group-yesno"
-			default="0"
-			required="true">
-			<!-- Option Set. -->
-			<option value="1">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
-			<option value="0">
-				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
-		</field>
 		<!-- Note_linked_to_notice Field. Type: Note. A None Database Field. (joomla) -->
 		<field type="note" name="note_linked_to_notice" label="COM_COMPONENTBUILDER_DYNAMIC_GET_NOTE_LINKED_TO_NOTICE_LABEL" description="COM_COMPONENTBUILDER_DYNAMIC_GET_NOTE_LINKED_TO_NOTICE_DESCRIPTION" heading="h4" class="note_linked_to_notice" />
+		<!-- Db_table_main Field. Type: Dbtables. (custom) -->
+		<field
+			type="dbtables"
+			name="db_table_main"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_DB_TABLE_MAIN_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_DB_TABLE_MAIN_DESCRIPTION"
+			class="list_class"
+			multiple="false"
+			required="true"
+			button="false"
+		/>
 		<!-- Php_custom_get Field. Type: Editor. (joomla) -->
 		<field
 			type="editor"
@@ -540,7 +518,6 @@
 			syntax="php"
 			editor="codemirror|none"
 			filter="raw"
-			required="true"
 			validate="code"
 		/>
 		<!-- Plugin_events Field. Type: List. (joomla) -->
@@ -572,16 +549,21 @@
 			hint="COM_COMPONENTBUILDER_DYNAMIC_GET_DB_SELECTION_HINT"
 			required="true"
 		/>
-		<!-- Db_table_main Field. Type: Dbtables. (custom) -->
+		<!-- Php_calculation Field. Type: Editor. (joomla) -->
 		<field
-			type="dbtables"
-			name="db_table_main"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_DB_TABLE_MAIN_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_DB_TABLE_MAIN_DESCRIPTION"
-			class="list_class"
-			multiple="false"
-			required="true"
-			button="false"
+			type="editor"
+			name="php_calculation"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_CALCULATION_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_CALCULATION_DESCRIPTION"
+			width="100%"
+			height="450px"
+			cols="15"
+			rows="30"
+			buttons="no"
+			syntax="php"
+			editor="codemirror|none"
+			filter="raw"
+			validate="code"
 		/>
 		<!-- Php_before_getitem Field. Type: Editor. (joomla) -->
 		<field
@@ -597,9 +579,46 @@
 			syntax="php"
 			editor="codemirror|none"
 			filter="raw"
-			required="true"
 			validate="code"
 		/>
+		<!-- View_table_main Field. Type: Adminviews. (custom) -->
+		<field
+			type="adminviews"
+			name="view_table_main"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_VIEW_TABLE_MAIN_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_VIEW_TABLE_MAIN_DESCRIPTION"
+			multiple="false"
+			default=""
+			required="true"
+		/>
+		<!-- Select_all Field. Type: Radio. (joomla) -->
+		<field
+			type="radio"
+			name="select_all"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_SELECT_ALL_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_SELECT_ALL_DESCRIPTION"
+			class="btn-group btn-group-yesno"
+			default="0">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
+		<!-- Add_php_before_getitem Field. Type: Radio. (joomla) -->
+		<field
+			type="radio"
+			name="add_php_before_getitem"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_BEFORE_GETITEM_LABEL"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
 		<!-- Getcustom Field. Type: Text. (joomla) -->
 		<field
 			type="text"
@@ -616,23 +635,20 @@
 			message="COM_COMPONENTBUILDER_DYNAMIC_GET_GETCUSTOM_MESSAGE"
 			hint="COM_COMPONENTBUILDER_DYNAMIC_GET_GETCUSTOM_HINT"
 		/>
-		<!-- Php_after_getitem Field. Type: Editor. (joomla) -->
+		<!-- Add_php_after_getitem Field. Type: Radio. (joomla) -->
 		<field
-			type="editor"
-			name="php_after_getitem"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEM_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEM_DESCRIPTION"
-			width="100%"
-			height="450px"
-			cols="15"
-			rows="30"
-			buttons="no"
-			syntax="php"
-			editor="codemirror|none"
-			filter="raw"
-			required="true"
-			validate="code"
-		/>
+			type="radio"
+			name="add_php_after_getitem"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_AFTER_GETITEM_LABEL"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
 		<!-- Pagination Field. Type: Radio. (joomla) -->
 		<field
 			type="radio"
@@ -648,46 +664,40 @@
 			<option value="0">
 				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
 		</field>
-		<!-- Php_getlistquery Field. Type: Editor. (joomla) -->
+		<!-- Add_php_getlistquery Field. Type: Radio. (joomla) -->
 		<field
-			type="editor"
-			name="php_getlistquery"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_GETLISTQUERY_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_GETLISTQUERY_DESCRIPTION"
-			width="100%"
-			height="450px"
-			cols="15"
-			rows="30"
-			buttons="no"
-			syntax="php"
-			editor="codemirror|none"
-			filter="raw"
-			required="true"
-			validate="code"
-		/>
+			type="radio"
+			name="add_php_getlistquery"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_GETLISTQUERY_LABEL"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
 		<!-- Not_required Field. Type: Hidden. (joomla) -->
 		<field
 			type="hidden"
 			name="not_required"
 			default="[]"
 		/>
-		<!-- Php_before_getitems Field. Type: Editor. (joomla) -->
+		<!-- Add_php_before_getitems Field. Type: Radio. (joomla) -->
 		<field
-			type="editor"
-			name="php_before_getitems"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_BEFORE_GETITEMS_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_BEFORE_GETITEMS_DESCRIPTION"
-			width="100%"
-			height="450px"
-			cols="15"
-			rows="30"
-			buttons="no"
-			syntax="php"
-			editor="codemirror|none"
-			filter="raw"
-			required="true"
-			validate="code"
-		/>
+			type="radio"
+			name="add_php_before_getitems"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_BEFORE_GETITEMS_LABEL"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
 		<!-- Filter Field. Type: Subform. (joomla) -->
 		<field
 			type="subform"
@@ -707,7 +717,7 @@
 					class="list_class"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="1">
 					<!-- Option Set. -->
 					<option value="1">
@@ -744,7 +754,7 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="STRING"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_STATE_KEY_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_STATE_KEY_HINT"
@@ -758,7 +768,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="0">
 					<!-- Option Set. -->
 					<option value="1">
@@ -795,30 +805,27 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_HINT"
 				/>
 			</form>
 		</field>
-		<!-- Php_after_getitems Field. Type: Editor. (joomla) -->
+		<!-- Add_php_after_getitems Field. Type: Radio. (joomla) -->
 		<field
-			type="editor"
-			name="php_after_getitems"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEMS_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_AFTER_GETITEMS_DESCRIPTION"
-			width="100%"
-			height="450px"
-			cols="15"
-			rows="30"
-			buttons="no"
-			syntax="php"
-			editor="codemirror|none"
-			filter="raw"
-			required="true"
-			validate="code"
-		/>
+			type="radio"
+			name="add_php_after_getitems"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_AFTER_GETITEMS_LABEL"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
 		<!-- Where Field. Type: Subform. (joomla) -->
 		<field
 			type="subform"
@@ -840,7 +847,7 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_HINT"
@@ -854,7 +861,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="0">
 					<!-- Option Set. -->
 					<option value="1">
@@ -891,26 +898,28 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
-					filter="CMD"
+					required="true"
+					filter="STRING"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_VALUE_KEY_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_VALUE_KEY_HINT"
 				/>
 			</form>
 		</field>
-		<!-- Php_router_parse Field. Type: Textarea. (joomla) -->
+		<!-- Add_php_router_parse Field. Type: Radio. (joomla) -->
 		<field
-			type="textarea"
-			name="php_router_parse"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_ROUTER_PARSE_LABEL"
-			rows="30"
-			cols="15"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_ROUTER_PARSE_DESCRIPTION"
-			class="text_area span12"
-			filter="raw"
-			hint="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_ROUTER_PARSE_HINT"
-			required="true"
-		/>
+			type="radio"
+			name="add_php_router_parse"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_ROUTER_PARSE_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_ADD_PHP_ROUTER_PARSE_DESCRIPTION"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
 		<!-- Order Field. Type: Subform. (joomla) -->
 		<field
 			type="subform"
@@ -932,7 +941,7 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_HINT"
@@ -945,7 +954,7 @@
 					class="list_class"
 					multiple="false"
 					filter="WORD"
-					required="false"
+					required="true"
 					default="">
 					<!-- Option Set. -->
 					<option value="ASC">
@@ -957,8 +966,51 @@
 				</field>
 			</form>
 		</field>
-		<!-- Note_calculation_item Field. Type: Note. A None Database Field. (joomla) -->
-		<field type="note" name="note_calculation_item" description="COM_COMPONENTBUILDER_DYNAMIC_GET_NOTE_CALCULATION_ITEM_DESCRIPTION" class="note_calculation_item" />
+		<!-- Addcalculation Field. Type: Radio. (joomla) -->
+		<field
+			type="radio"
+			name="addcalculation"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_ADDCALCULATION_LABEL"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_ADDCALCULATION_DESCRIPTION"
+			class="btn-group btn-group-yesno"
+			default="0"
+			required="true">
+			<!-- Option Set. -->
+			<option value="1">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_YES</option>
+			<option value="0">
+				COM_COMPONENTBUILDER_DYNAMIC_GET_NO</option>
+		</field>
+		<!-- Group Field. Type: Subform. (joomla) -->
+		<field
+			type="subform"
+			name="group"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_GROUP_LABEL"
+			layout="joomla.form.field.subform.repeatable-table"
+			multiple="true"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_GROUP_DESCRIPTION"
+			icon="list">
+			<form hidden="true" name="list_group_modal" repeat="true">
+				<!-- Table_key Field. Type: Text. (joomla) -->
+				<field
+					type="text"
+					name="table_key"
+					label="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_LABEL"
+					size="40"
+					maxlength="150"
+					description="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_DESCRIPTION"
+					class="text_area"
+					readonly="false"
+					disabled="false"
+					required="true"
+					filter="CMD"
+					message="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_MESSAGE"
+					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_TABLE_KEY_HINT"
+				/>
+			</form>
+		</field>
+		<!-- Note_calculation_items Field. Type: Note. A None Database Field. (joomla) -->
+		<field type="note" name="note_calculation_items" description="COM_COMPONENTBUILDER_DYNAMIC_GET_NOTE_CALCULATION_ITEMS_DESCRIPTION" class="note_calculation_items" />
 		<!-- Global Field. Type: Subform. (joomla) -->
 		<field
 			type="subform"
@@ -980,7 +1032,7 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_NAME_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_NAME_HINT"
@@ -996,7 +1048,7 @@
 					class="text_area"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="STRING"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_KEY_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_KEY_HINT"
@@ -1009,7 +1061,7 @@
 					class="list_class fieldSmall"
 					multiple="false"
 					filter="WORD"
-					required="false"
+					required="true"
 					default="a">
 					<!-- Option Set. -->
 					<option value="a">
@@ -1123,7 +1175,7 @@
 					name="type"
 					label="COM_COMPONENTBUILDER_DYNAMIC_GET_TYPE_LABEL"
 					default="2"
-					required="false">
+					required="true">
 					<!-- Option Set. -->
 					<option value="1">
 						COM_COMPONENTBUILDER_DYNAMIC_GET_STATE</option>
@@ -1132,22 +1184,19 @@
 				</field>
 			</form>
 		</field>
-		<!-- Php_calculation Field. Type: Editor. (joomla) -->
+		<!-- Guid Field. Type: Text. (joomla) -->
 		<field
-			type="editor"
-			name="php_calculation"
-			label="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_CALCULATION_LABEL"
-			description="COM_COMPONENTBUILDER_DYNAMIC_GET_PHP_CALCULATION_DESCRIPTION"
-			width="100%"
-			height="450px"
-			cols="15"
-			rows="30"
-			buttons="no"
-			syntax="php"
-			editor="codemirror|none"
-			filter="raw"
-			required="true"
-			validate="code"
+			type="text"
+			name="guid"
+			label="COM_COMPONENTBUILDER_DYNAMIC_GET_GUID_LABEL"
+			size="40"
+			maxlength="40"
+			description="COM_COMPONENTBUILDER_DYNAMIC_GET_GUID_DESCRIPTION"
+			class="text_area"
+			readonly="true"
+			filter="CMD"
+			validate="guid"
+			hint="COM_COMPONENTBUILDER_DYNAMIC_GET_GUID_HINT"
 		/>
 		<!-- Join_view_table Field. Type: Subform. (joomla) -->
 		<field
@@ -1167,7 +1216,7 @@
 					description="COM_COMPONENTBUILDER_DYNAMIC_GET_VIEW_TABLE_DESCRIPTION"
 					multiple="false"
 					default=""
-					required="false"
+					required="true"
 					button="false"
 				/>
 				<!-- Row_type Field. Type: List. (joomla) -->
@@ -1179,7 +1228,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="1">
 					<!-- Option Set. -->
 					<option value="1">
@@ -1195,7 +1244,7 @@
 					class="list_class fieldSmall"
 					multiple="false"
 					filter="WORD"
-					required="false"
+					required="true"
 					default="b">
 					<!-- Option Set. -->
 					<option value="b">
@@ -1309,7 +1358,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="1">
 					<!-- Option Set. -->
 					<option value="1">
@@ -1334,7 +1383,7 @@
 					class="text_area fieldMedium"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_ON_FIELD_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_ON_FIELD_HINT"
@@ -1348,7 +1397,7 @@
 					class="list_class fieldMedium"
 					multiple="false"
 					filter="INT"
-					required="false"
+					required="true"
 					default="0">
 					<!-- Option Set. -->
 					<option value="1">
@@ -1385,7 +1434,7 @@
 					class="text_area fieldMedium"
 					readonly="false"
 					disabled="false"
-					required="false"
+					required="true"
 					filter="CMD"
 					message="COM_COMPONENTBUILDER_DYNAMIC_GET_JOIN_FIELD_MESSAGE"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_JOIN_FIELD_HINT"
@@ -1401,7 +1450,7 @@
 					class="text_area span12"
 					filter="HTML"
 					hint="COM_COMPONENTBUILDER_DYNAMIC_GET_SELECTION_HINT"
-					required="false"
+					required="true"
 				/>
 			</form>
 		</field>

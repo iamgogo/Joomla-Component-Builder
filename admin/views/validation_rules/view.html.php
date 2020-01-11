@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -37,6 +37,8 @@ class ComponentbuilderViewValidation_rules extends JViewLegacy
 		$this->listOrder = $this->escape($this->state->get('list.ordering'));
 		$this->listDirn = $this->escape($this->state->get('list.direction'));
 		$this->saveOrder = $this->listOrder == 'ordering';
+		// set the return here value
+		$this->return_here = urlencode(base64_encode((string) JUri::getInstance()));
 		// get global action permissions
 		$this->canDo = ComponentbuilderHelper::getActions('validation_rule');
 		$this->canEdit = $this->canDo->get('validation_rule.edit');
@@ -131,6 +133,11 @@ class ComponentbuilderViewValidation_rules extends JViewLegacy
 			{
 				JToolBarHelper::custom('validation_rules.exportData', 'download', '', 'COM_COMPONENTBUILDER_EXPORT_DATA', true);
 			}
+		}
+		if ($this->user->authorise('validation_rule.run_expansion', 'com_componentbuilder'))
+		{
+			// add Run Expansion button.
+			JToolBarHelper::custom('validation_rules.runExpansion', 'expand-2', '', 'COM_COMPONENTBUILDER_RUN_EXPANSION', false);
 		}
 
 		if ($this->canDo->get('core.import') && $this->canDo->get('validation_rule.import'))

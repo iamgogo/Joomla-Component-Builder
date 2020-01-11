@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,48 @@ use Joomla\Registry\Registry;
  * Componentbuilder Custom_code Model
  */
 class ComponentbuilderModelCustom_code extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'details' => array(
+			'left' => array(
+				'comment_type',
+				'component',
+				'type',
+				'hashtarget'
+			),
+			'right' => array(
+				'from_line',
+				'to_line',
+				'hashendtarget'
+			),
+			'fullwidth' => array(
+				'path',
+				'note_jcb_placeholder',
+				'code',
+				'note_placeholders_explained'
+			),
+			'above' => array(
+				'target',
+				'system_name',
+				'function_name'
+			),
+			'under' => array(
+				'not_required'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -51,6 +86,55 @@ class ComponentbuilderModelCustom_code extends JModelAdmin
 		// get instance of the table
 		return JTable::getInstance($type, $prefix, $config);
 	}
+
+
+	/**
+	 * get VDM internal session key
+	 *
+	 * @return  string  the session key
+	 *
+	 */
+	public function getVDM()
+	{
+		if (!isset($this->vastDevMod))
+		{
+			$_id = 0; // new item probably (since it was not set in the getItem method)
+
+			if (empty($_id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $_id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('custom_code__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'custom_code__'.$id);
+				ComponentbuilderHelper::set('custom_code__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
+		}
+		return $this->vastDevMod;
+	}
+
     
 	/**
 	 * Method to get a single record.
@@ -86,6 +170,39 @@ class ComponentbuilderModelCustom_code extends JModelAdmin
 				// base64 Decode code.
 				$item->code = base64_decode($item->code);
 			}
+
+
+			if (empty($item->id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $item->id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('custom_code__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'custom_code__'.$id);
+				ComponentbuilderHelper::set('custom_code__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
 			
 			if (!empty($item->id))
 			{
@@ -112,8 +229,23 @@ class ComponentbuilderModelCustom_code extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.custom_code', 'custom_code', $options);
+		$form = $this->loadForm('com_componentbuilder.custom_code', 'custom_code', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -362,6 +494,8 @@ class ComponentbuilderModelCustom_code extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.custom_code', $data);
 		}
 
 		return $data;
@@ -826,29 +960,31 @@ class ComponentbuilderModelCustom_code extends JModelAdmin
 		}
 
 		// few checks with the new option of using custom code in custom code
-		if (isset($data['code']) && ($placholders = ComponentbuilderHelper::getAllBetween($data['code'], '[CUSTOM' . 'CODE=', ']'))
-			&& ComponentbuilderHelper::checkArray($placholders))
+		if (isset($data['code']) && ($placeholders = ComponentbuilderHelper::getAllBetween($data['code'], '[CUSTOM' . 'CODE=', ']'))
+			&& ComponentbuilderHelper::checkArray($placeholders))
 		{
 			// make sure custom code as Hash (automation)  target does not have other custom code placeholders
 			if (isset($data['target']) && 1 == $data['target'])
 			{
-				foreach ($placholders as $placholder)
+				foreach ($placeholders as $placeholder)
 				{
-					$data['code'] = str_replace('[CUSTOM' . 'CODE=' . $placholder . ']', '', $data['code']);
+					$data['code'] = str_replace('[CUSTOM' . 'CODE=' . $placeholder . ']', '', $data['code']);
 				}
 				// set title
-				$title = (count($placholders) == 1) ? JText::_('COM_COMPONENTBUILDER_PLACEHOLDER_REMOVED') : JText::_('COM_COMPONENTBUILDER_PLACEHOLDERS_REMOVED');
+				$title = (count($placeholders) == 1) ? JText::_('COM_COMPONENTBUILDER_PLACEHOLDER_REMOVED') : JText::_('COM_COMPONENTBUILDER_PLACEHOLDERS_REMOVED');
 				// show message that we have had to remove the custom placeholders
 				JFactory::getApplication()->enqueueMessage(JText::sprintf('COM_COMPONENTBUILDER_HTHREESHTHREEPCUSTOM_CODE_CAN_ONLY_BE_USED_IN_OTHER_CUSTOM_CODE_IF_SET_AS_BJCB_MANUALB_YOU_CAN_NOT_ADD_THEM_TO_EMHASH_AUTOMATIONEM_CODE_AT_THIS_POINTP', $title), 'Warning');
 			}
 			// make sure that the same custom code is not added to itself
 			else
 			{
-				foreach ($placholders as $placholder)
+				foreach ($placeholders as $placeholder)
 				{
-					if (strpos($placholder, $data['function_name']) !== false)
+					// strip the placeholder down to just the function name
+					$_placeholder = (array) explode('+', $placeholder);
+					if ($_placeholder[0] === $data['function_name'])
 					{
-						$data['code'] = str_replace('[CUSTOM' . 'CODE=' . $placholder . ']', '', $data['code']);
+						$data['code'] = str_replace('[CUSTOM' . 'CODE=' . $placeholder . ']', '', $data['code']);
 						// show message that we have had to remove the custom placeholders
 						JFactory::getApplication()->enqueueMessage(JText::_('COM_COMPONENTBUILDER_HTHREEPLACEHOLDER_REMOVEDHTHREEPBTHISB_CUSTOM_CODE_CAN_ONLY_BE_USED_IN_BOTHERB_CUSTOM_CODE_NOT_IN_IT_SELF_SINCE_THAT_WILL_CAUSE_A_INFINITE_LOOP_IN_THE_COMPILERP'), 'Warning');
 						// stop the loop :)

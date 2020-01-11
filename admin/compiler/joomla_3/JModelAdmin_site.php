@@ -23,13 +23,20 @@ use Joomla\Registry\Registry;
  * ###Component### ###View### Model
  */
 class ###Component###Model###View### extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = ###TABLAYOUTFIELDSARRAY###;
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_###COMPONENT###';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -235,6 +242,8 @@ class ###Component###Model###View### extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_###component###.###view###', $data);
 		}
 
 		return $data;

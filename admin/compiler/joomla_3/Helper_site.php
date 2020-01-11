@@ -17,12 +17,22 @@ defined('_JEXEC') or die('Restricted access');
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 
+use Joomla\CMS\Language\Language;
+use Joomla\String\StringHelper;
+use Joomla\Utilities\ArrayHelper;
+
 /**
  * ###Component### component helper
  */
 abstract class ###Component###Helper
-{###SITE_GLOBAL_EVENT_HELPER######SITE_CUSTOM_HELPER_SCRIPT######BOTH_CUSTOM_HELPER_SCRIPT###
-	
+{
+	/**
+	 * The Main Active Language
+	 * 
+	 * @var      string
+	 */
+	public static $langTag;###SITE_GLOBAL_EVENT_HELPER######SITE_CUSTOM_HELPER_SCRIPT######BOTH_CUSTOM_HELPER_SCRIPT###
+
 	public static function jsonToString($value, $sperator = ", ", $table = null, $id = 'id', $name = 'name')
 	{
 		// do some table foot work
@@ -72,7 +82,7 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Load the Component xml manifest.
+	* Load the Component xml manifest.
 	**/
 	public static function manifest()
 	{
@@ -81,12 +91,12 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Joomla version object
+	* Joomla version object
 	**/	
 	protected static $JVersion;
 
 	/**
-	*	set/get Joomla version
+	* set/get Joomla version
 	**/
 	public static function jVersion()
 	{
@@ -99,7 +109,7 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Load the Contributors details.
+	* Load the Contributors details.
 	**/
 	public static function getContributors()
 	{
@@ -137,40 +147,44 @@ abstract class ###Component###Helper
 	}###HELP_SITE###
 
 	/**
-	*	Get any component's model
+	* Get any component's model
 	**/
-	public static function getModel($name, $path = JPATH_COMPONENT_SITE, $component = '###Component###', $config = array())
+	public static function getModel($name, $path = JPATH_COMPONENT_SITE, $Component = '###Component###', $config = array())
 	{
 		// fix the name
 		$name = self::safeString($name);
-		// full path
-		$fullPath = $path . '/models';
-		// set prefix
-		$prefix = $component.'Model';
+		// full path to models
+		$fullPathModels = $path . '/models';
 		// load the model file
-		JModelLegacy::addIncludePath($fullPath, $prefix);
+		JModelLegacy::addIncludePath($fullPathModels, $Component . 'Model');
+		// make sure the table path is loaded
+		if (!isset($config['table_path']) || !self::checkString($config['table_path']))
+		{
+			// This is the JCB default path to tables in Joomla 3.x
+			$config['table_path'] = JPATH_ADMINISTRATOR . '/components/com_' . strtolower($Component) . '/tables';
+		}
 		// get instance
-		$model = JModelLegacy::getInstance($name, $prefix, $config);
+		$model = JModelLegacy::getInstance($name, $Component . 'Model', $config);
 		// if model not found (strange)
 		if ($model == false)
 		{
 			jimport('joomla.filesystem.file');
 			// get file path
-			$filePath = $path.'/'.$name.'.php';
-			$fullPath = $fullPath.'/'.$name.'.php';
+			$filePath = $path . '/' . $name . '.php';
+			$fullPathModel = $fullPathModels . '/' . $name . '.php';
 			// check if it exists
 			if (JFile::exists($filePath))
 			{
 				// get the file
 				require_once $filePath;
 			}
-			elseif (JFile::exists($fullPath))
+			elseif (JFile::exists($fullPathModel))
 			{
 				// get the file
-				require_once $fullPath;
+				require_once $fullPathModel;
 			}
 			// build class names
-			$modelClass = $prefix.$name;
+			$modelClass = $Component . 'Model' . $name;
 			if (class_exists($modelClass))
 			{
 				// initialize the model
@@ -181,9 +195,9 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Add to asset Table
+	* Add to asset Table
 	*/
-	public static function setAsset($id,$table)
+	public static function setAsset($id, $table, $inherit = true)
 	{
 		$parent = JTable::getInstance('Asset');
 		$parent->loadByName('com_###component###');
@@ -200,8 +214,6 @@ abstract class ###Component###Helper
 
 		if ($error)
 		{
-			$this->setError($error);
-
 			return false;
 		}
 		else
@@ -217,7 +229,7 @@ abstract class ###Component###Helper
 			$asset->name      = $name;
 			$asset->title     = $title;
 			// get the default asset rules
-			$rules = self::getDefaultAssetRules('com_###component###',$table);
+			$rules = self::getDefaultAssetRules('com_###component###', $table, $inherit);
 			if ($rules instanceof JAccessRules)
 			{
 				$asset->rules = (string) $rules;
@@ -245,55 +257,62 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	 *	Gets the default asset Rules for a component/view.
+	 * Gets the default asset Rules for a component/view.
 	 */
-	protected static function getDefaultAssetRules($component,$view)
+	protected static function getDefaultAssetRules($component, $view, $inherit = true)
 	{
-		// Need to find the asset id by the name of the component.
-		$db = JFactory::getDbo();
-		$query = $db->getQuery(true)
-			->select($db->quoteName('id'))
-			->from($db->quoteName('#__assets'))
-			->where($db->quoteName('name') . ' = ' . $db->quote($component));
-		$db->setQuery($query);
-		$db->execute();
-		if ($db->loadRowList())
+		// if new or inherited
+		$assetId = 0;
+		// Only get the actual item rules if not inheriting
+		if (!$inherit)
 		{
-			// asset alread set so use saved rules
-			$assetId = (int) $db->loadResult();
-			$result =  JAccess::getAssetRules($assetId);
-			if ($result instanceof JAccessRules)
+			// Need to find the asset id by the name of the component.
+			$db = JFactory::getDbo();
+			$query = $db->getQuery(true)
+				->select($db->quoteName('id'))
+				->from($db->quoteName('#__assets'))
+				->where($db->quoteName('name') . ' = ' . $db->quote($component));
+			$db->setQuery($query);
+			$db->execute();
+			// check that there is a value
+			if ($db->getNumRows())
 			{
-				$_result = (string) $result;
-				$_result = json_decode($_result);
-				foreach ($_result as $name => &$rule)
-				{
-					$v = explode('.', $name);
-					if ($view !== $v[0])
-					{
-						// remove since it is not part of this view
-						unset($_result->$name);
-					}
-					else
-					{
-						// clear the value since we inherit
-						$rule = array();
-					}
-				}
-				// check if there are any view values remaining
-				if (count((array)$_result))
-				{
-					$_result = json_encode($_result);
-					$_result = array($_result);
-					// Instantiate and return the JAccessRules object for the asset rules.
-					$rules = new JAccessRules($_result);
-
-					return $rules;
-				}
-				return $result;
+				// asset already set so use saved rules
+				$assetId = (int) $db->loadResult();
 			}
 		}
-		return JAccess::getAssetRules(0);
+		// get asset rules
+		$result =  JAccess::getAssetRules($assetId);
+		if ($result instanceof JAccessRules)
+		{
+			$_result = (string) $result;
+			$_result = json_decode($_result);
+			foreach ($_result as $name => &$rule)
+			{
+				$v = explode('.', $name);
+				if ($view !== $v[0])
+				{
+					// remove since it is not part of this view
+					unset($_result->$name);
+				}
+				elseif ($inherit)
+				{
+					// clear the value since we inherit
+					$rule = array();
+				}
+			}
+			// check if there are any view values remaining
+			if (count((array) $_result))
+			{
+				$_result = json_encode($_result);
+				$_result = array($_result);
+				// Instantiate and return the JAccessRules object for the asset rules.
+				$rules = new JAccessRules($_result);
+				// return filtered rules
+				return $rules;
+			}
+		}
+		return $result;
 	}
 
 	/**
@@ -397,7 +416,7 @@ abstract class ###Component###Helper
 	 * @return  object
 	 *
 	 */
-	public static function getFieldObject($attributes, $default = '', $options = null)
+	public static function getFieldObject(&$attributes, $default = '', $options = null)
 	{
 		// make sure we have attributes and a type value
 		if (self::checkArray($attributes) && isset($attributes['type']))
@@ -408,7 +427,31 @@ abstract class ###Component###Helper
 				jimport('joomla.form.form');
 			}
 			// get field type
-			$field = JFormHelper::loadFieldType($attributes['type'],true);
+			$field = JFormHelper::loadFieldType($attributes['type'], true);
+			// get field xml
+			$XML = self::getFieldXML($attributes, $options);
+			// setup the field
+			$field->setup($XML, $default);
+			// return the field object
+			return $field;
+		}
+		return false;
+	}
+
+	/**
+	 * get the field xml
+	 *
+	 * @param   array      $attributes   The array of attributes
+	 * @param   array      $options      The options to apply to the XML element
+	 *
+	 * @return  object
+	 *
+	 */
+	public static function getFieldXML(&$attributes, $options = null)
+	{
+		// make sure we have attributes and a type value
+		if (self::checkArray($attributes))
+		{
 			// start field xml
 			$XML = new SimpleXMLElement('<field/>');
 			// load the attributes
@@ -419,10 +462,8 @@ abstract class ###Component###Helper
 				// load the options
 				self::xmlAddOptions($XML, $options);
 			}
-			// setup the field
-			$field->setup($XML, $default);
-			// return the field object
-			return $field;
+			// return the field xml
+			return $XML;
 		}
 		return false;
 	}
@@ -561,7 +602,15 @@ abstract class ###Component###Helper
 			{
 				$query->from($db->quoteName('#_'.$main.'_'.$table));
 			}
-			$query->where($db->quoteName($whereString) . ' '.$operator.' (' . implode(',',$where) . ')');
+			// add strings to array search
+			if ('IN_STRINGS' === $operator || 'NOT IN_STRINGS' === $operator)
+			{
+				$query->where($db->quoteName($whereString) . ' ' . str_replace('_STRINGS', '', $operator) . ' ("' . implode('","',$where) . '")');
+			}
+			else
+			{
+				$query->where($db->quoteName($whereString) . ' ' . $operator . ' (' . implode(',',$where) . ')');
+			}
 			$db->setQuery($query);
 			$db->execute();
 			if ($db->getNumRows())
@@ -623,14 +672,19 @@ abstract class ###Component###Helper
 	* @param  string   $views       The related list view name
 	* @param  mixed    $target      Only get this permission (like edit, create, delete)
 	* @param  string   $component   The target component
+	* @param  object   $user        The user whose permissions we are loading
 	*
 	* @return  object   The JObject of permission/authorised actions
 	* 
 	**/
-	public static function getActions($view, &$record = null, $views = null, $target = null, $component = '###component###')
+	public static function getActions($view, &$record = null, $views = null, $target = null, $component = '###component###', $user = 'null')
 	{
-		// get the user object
-		$user = JFactory::getUser();
+		// load the user if not given
+		if (!self::checkObject($user))
+		{
+			// get the user object
+			$user = JFactory::getUser();
+		}
 		// load the JObject
 		$result = new JObject;
 		// make view name safe (just incase)
@@ -809,11 +863,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Check if have an json string
+	* Check if have an json string
 	*
-	*	@input	string   The json string to check
+	* @input	string   The json string to check
 	*
-	*	@returns bool true on success
+	* @returns bool true on success
 	**/
 	public static function checkJson($string)
 	{
@@ -826,11 +880,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Check if have an object with a length
+	* Check if have an object with a length
 	*
-	*	@input	object   The object to check
+	* @input	object   The object to check
 	*
-	*	@returns bool true on success
+	* @returns bool true on success
 	**/
 	public static function checkObject($object)
 	{
@@ -842,11 +896,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Check if have an array with a length
+	* Check if have an array with a length
 	*
-	*	@input	array   The array to check
+	* @input	array   The array to check
 	*
-	*	@returns bool/int  number of items in array on success
+	* @returns bool/int  number of items in array on success
 	**/
 	public static function checkArray($array, $removeEmptyString = false)
 	{
@@ -870,11 +924,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Check if have a string with a length
+	* Check if have a string with a length
 	*
-	*	@input	string   The string to check
+	* @input	string   The string to check
 	*
-	*	@returns bool true on success
+	* @returns bool true on success
 	**/
 	public static function checkString($string)
 	{
@@ -886,10 +940,10 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Check if we are connected
-	*	Thanks https://stackoverflow.com/a/4860432/1429677
+	* Check if we are connected
+	* Thanks https://stackoverflow.com/a/4860432/1429677
 	*
-	*	@returns bool true on success
+	* @returns bool true on success
 	**/
 	public static function isConnected()
 	{
@@ -911,11 +965,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Merge an array of array's
+	* Merge an array of array's
 	*
-	*	@input	array   The arrays you would like to merge
+	* @input	array   The arrays you would like to merge
 	*
-	*	@returns array on success
+	* @returns array on success
 	**/
 	public static function mergeArrays($arrays)
 	{
@@ -941,11 +995,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Shorten a string
+	* Shorten a string
 	*
-	*	@input	string   The you would like to shorten
+	* @input	string   The you would like to shorten
 	*
-	*	@returns string on success
+	* @returns string on success
 	**/
 	public static function shorten($string, $length = 40, $addTip = true)
 	{
@@ -982,11 +1036,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Making strings safe (various ways)
+	* Making strings safe (various ways)
 	*
-	*	@input	string   The you would like to make safe
+	* @input	string   The you would like to make safe
 	*
-	*	@returns string on success
+	* @returns string on success
 	**/
 	public static function safeString($string, $type = 'L', $spacer = '_', $replaceNumbers = true, $keepOnlyCharacters = true)
 	{
@@ -1017,6 +1071,8 @@ abstract class ###Component###Helper
 			$string = trim($string);
 			$string = preg_replace('/'.$spacer.'+/', ' ', $string);
 			$string = preg_replace('/\s+/', ' ', $string);
+			// Transliterate string
+			$string = self::transliterate($string);
 			// remove all and keep only characters
 			if ($keepOnlyCharacters)
 			{
@@ -1085,6 +1141,19 @@ abstract class ###Component###Helper
 		return '';
 	}
 
+	public static function transliterate($string)
+	{
+		// set tag only once
+		if (!self::checkString(self::$langTag))
+		{
+			// get global value
+			self::$langTag = JComponentHelper::getParams('com_###component###')->get('language', 'en-GB');
+		}
+		// Transliterate on the language requested
+		$lang = Language::getInstance(self::$langTag);
+		return $lang->transliterate($string);
+	}
+
 	public static function htmlEscape($var, $charset = 'UTF-8', $shorten = false, $length = 40)
 	{
 		if (self::checkString($var))
@@ -1126,11 +1195,11 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Convert an integer into an English word string
-	*	Thanks to Tom Nicholson <http://php.net/manual/en/function.strval.php#41988>
+	* Convert an integer into an English word string
+	* Thanks to Tom Nicholson <http://php.net/manual/en/function.strval.php#41988>
 	*
-	*	@input	an int
-	*	@returns a string
+	* @input	an int
+	* @returns a string
 	**/
 	public static function numberToString($x)
 	{
@@ -1217,9 +1286,9 @@ abstract class ###Component###Helper
 	}
 
 	/**
-	*	Random Key
+	* Random Key
 	*
-	*	@returns a string
+	* @returns a string
 	**/
 	public static function randomkey($size)
 	{

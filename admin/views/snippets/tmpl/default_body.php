@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -84,7 +84,7 @@ $edit = "index.php?option=com_componentbuilder&view=snippets&task=snippet.edit";
 		<td class="nowrap">
 			<div class="name">
 				<?php if ($this->user->authorise('library.edit', 'com_componentbuilder.library.' . (int)$item->library)): ?>
-					<a href="index.php?option=com_componentbuilder&view=libraries&task=library.edit&id=<?php echo $item->library; ?>&ref=snippets"><?php echo $this->escape($item->library_name); ?></a>
+					<a href="index.php?option=com_componentbuilder&view=libraries&task=library.edit&id=<?php echo $item->library; ?>&return=<?php echo $this->return_here; ?>"><?php echo $this->escape($item->library_name); ?></a>
 				<?php else: ?>
 					<?php echo $this->escape($item->library_name); ?>
 				<?php endif; ?>

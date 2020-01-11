@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -48,7 +48,7 @@ defined('_JEXEC') or die('Restricted access');
 			<?php echo JHtml::_('grid.sort', 'COM_COMPONENTBUILDER_FIELD_STORE_LABEL', 'store', $this->listDirn, $this->listOrder); ?>
 	</th>
 	<th class="nowrap" >
-			<?php echo JHtml::_('grid.sort', 'COM_COMPONENTBUILDER_FIELD_FIELD_CATEGORY', 'catid', $this->listDirn, $this->listOrder); ?>
+			<?php echo JHtml::_('grid.sort', 'COM_COMPONENTBUILDER_FIELD_FIELDS_CATEGORIES', 'catid', $this->listDirn, $this->listOrder); ?>
 	</th>
 	<?php if ($this->canState): ?>
 		<th width="10" class="nowrap center" >

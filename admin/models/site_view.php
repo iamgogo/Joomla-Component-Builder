@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,98 @@ use Joomla\Registry\Registry;
  * Componentbuilder Site_view Model
  */
 class ComponentbuilderModelSite_view extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'details' => array(
+			'left' => array(
+				'name',
+				'codename',
+				'description',
+				'note_libraries_selection',
+				'libraries',
+				'note_add_language_string'
+			),
+			'right' => array(
+				'snippet',
+				'note_uikit_snippet',
+				'note_snippet_usage'
+			),
+			'fullwidth' => array(
+				'default'
+			),
+			'above' => array(
+				'system_name',
+				'context'
+			),
+			'under' => array(
+				'not_required'
+			),
+			'rightside' => array(
+				'custom_get',
+				'main_get',
+				'dynamic_get',
+				'dynamic_values'
+			)
+		),
+		'php' => array(
+			'fullwidth' => array(
+				'add_php_ajax',
+				'php_ajaxmethod',
+				'ajax_input',
+				'add_php_document',
+				'php_document',
+				'add_php_view',
+				'php_view',
+				'add_php_jview_display',
+				'php_jview_display',
+				'add_php_jview',
+				'php_jview'
+			)
+		),
+		'javascript_css' => array(
+			'fullwidth' => array(
+				'add_javascript_file',
+				'javascript_file',
+				'add_js_document',
+				'js_document',
+				'add_css_document',
+				'css_document',
+				'add_css',
+				'css'
+			)
+		),
+		'linked_components' => array(
+			'fullwidth' => array(
+				'note_linked_to_notice'
+			)
+		),
+		'custom_buttons' => array(
+			'left' => array(
+				'add_custom_button'
+			),
+			'right' => array(
+				'button_position'
+			),
+			'fullwidth' => array(
+				'note_custom_toolbar_placeholder',
+				'custom_button',
+				'php_controller',
+				'php_model'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -52,10 +137,54 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 		return JTable::getInstance($type, $prefix, $config);
 	}
 
+
+	/**
+	 * get VDM internal session key
+	 *
+	 * @return  string  the session key
+	 *
+	 */
 	public function getVDM()
 	{
+		if (!isset($this->vastDevMod))
+		{
+			$_id = 0; // new item probably (since it was not set in the getItem method)
+
+			if (empty($_id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $_id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('site_view__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'site_view__'.$id);
+				ComponentbuilderHelper::set('site_view__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
+		}
 		return $this->vastDevMod;
 	}
+
     
 	/**
 	 * Method to get a single record.
@@ -86,40 +215,10 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 				$item->metadata = $registry->toArray();
 			}
 
-			if (!empty($item->php_document))
+			if (!empty($item->js_document))
 			{
-				// base64 Decode php_document.
-				$item->php_document = base64_decode($item->php_document);
-			}
-
-			if (!empty($item->php_view))
-			{
-				// base64 Decode php_view.
-				$item->php_view = base64_decode($item->php_view);
-			}
-
-			if (!empty($item->default))
-			{
-				// base64 Decode default.
-				$item->default = base64_decode($item->default);
-			}
-
-			if (!empty($item->php_jview_display))
-			{
-				// base64 Decode php_jview_display.
-				$item->php_jview_display = base64_decode($item->php_jview_display);
-			}
-
-			if (!empty($item->php_jview))
-			{
-				// base64 Decode php_jview.
-				$item->php_jview = base64_decode($item->php_jview);
-			}
-
-			if (!empty($item->php_model))
-			{
-				// base64 Decode php_model.
-				$item->php_model = base64_decode($item->php_model);
+				// base64 Decode js_document.
+				$item->js_document = base64_decode($item->js_document);
 			}
 
 			if (!empty($item->javascript_file))
@@ -128,10 +227,10 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 				$item->javascript_file = base64_decode($item->javascript_file);
 			}
 
-			if (!empty($item->js_document))
+			if (!empty($item->default))
 			{
-				// base64 Decode js_document.
-				$item->js_document = base64_decode($item->js_document);
+				// base64 Decode default.
+				$item->default = base64_decode($item->default);
 			}
 
 			if (!empty($item->css_document))
@@ -152,10 +251,40 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 				$item->php_ajaxmethod = base64_decode($item->php_ajaxmethod);
 			}
 
+			if (!empty($item->php_document))
+			{
+				// base64 Decode php_document.
+				$item->php_document = base64_decode($item->php_document);
+			}
+
+			if (!empty($item->php_view))
+			{
+				// base64 Decode php_view.
+				$item->php_view = base64_decode($item->php_view);
+			}
+
+			if (!empty($item->php_jview_display))
+			{
+				// base64 Decode php_jview_display.
+				$item->php_jview_display = base64_decode($item->php_jview_display);
+			}
+
+			if (!empty($item->php_jview))
+			{
+				// base64 Decode php_jview.
+				$item->php_jview = base64_decode($item->php_jview);
+			}
+
 			if (!empty($item->php_controller))
 			{
 				// base64 Decode php_controller.
 				$item->php_controller = base64_decode($item->php_controller);
+			}
+
+			if (!empty($item->php_model))
+			{
+				// base64 Decode php_model.
+				$item->php_model = base64_decode($item->php_model);
 			}
 
 			if (!empty($item->custom_get))
@@ -166,20 +295,20 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 				$item->custom_get = $custom_get->toArray();
 			}
 
-			if (!empty($item->ajax_input))
-			{
-				// Convert the ajax_input field to an array.
-				$ajax_input = new Registry;
-				$ajax_input->loadString($item->ajax_input);
-				$item->ajax_input = $ajax_input->toArray();
-			}
-
 			if (!empty($item->libraries))
 			{
 				// Convert the libraries field to an array.
 				$libraries = new Registry;
 				$libraries->loadString($item->libraries);
 				$item->libraries = $libraries->toArray();
+			}
+
+			if (!empty($item->ajax_input))
+			{
+				// Convert the ajax_input field to an array.
+				$ajax_input = new Registry;
+				$ajax_input->loadString($item->ajax_input);
+				$item->ajax_input = $ajax_input->toArray();
 			}
 
 			if (!empty($item->custom_button))
@@ -198,7 +327,7 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 			else
 			{
 				$id = $item->id;
-			}			
+			}
 			// set the id and view name to session
 			if ($vdm = ComponentbuilderHelper::get('site_view__'.$id))
 			{
@@ -214,6 +343,13 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 				$jinput = JFactory::getApplication()->input;
 				$return = $jinput->get('return', null, 'base64');
 				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
 			}
 
 			// update the fields
@@ -280,8 +416,23 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.site_view', 'site_view', $options);
+		$form = $this->loadForm('com_componentbuilder.site_view', 'site_view', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -371,6 +522,13 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 				// set the field editor value (with none as fallback)
 				$form->setFieldAttribute($name, 'editor', $global_editor . '|none');
 			}
+		}
+
+
+		// Only load the GUID if new item
+		if (0 == $id)
+		{
+			$form->setValue('guid', null, ComponentbuilderHelper::GUID());
 		}
 
 		return $form;
@@ -528,45 +686,11 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.site_view', $data);
 		}
 
 		return $data;
-	}
-
-	/**
-	 * Method to validate the form data.
-	 *
-	 * @param   JForm   $form   The form to validate against.
-	 * @param   array   $data   The data to validate.
-	 * @param   string  $group  The name of the field group to validate.
-	 *
-	 * @return  mixed  Array of filtered data if valid, false otherwise.
-	 *
-	 * @see     JFormRule
-	 * @see     JFilterInput
-	 * @since   12.2
-	 */
-	public function validate($form, $data, $group = null)
-	{
-		// check if the not_required field is set
-		if (ComponentbuilderHelper::checkString($data['not_required']))
-		{
-			$requiredFields = (array) explode(',',(string) $data['not_required']);
-			$requiredFields = array_unique($requiredFields);
-			// now change the required field attributes value
-			foreach ($requiredFields as $requiredField)
-			{
-				// make sure there is a string value
-				if (ComponentbuilderHelper::checkString($requiredField))
-				{
-					// change to false
-					$form->setFieldAttribute($requiredField, 'required', 'false');
-					// also clear the data set
-					$data[$requiredField] = '';
-				}
-			}
-		}
-		return parent::validate($form, $data, $group);
 	}
 
 	/**
@@ -1019,6 +1143,13 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 			$data['context'] = ComponentbuilderHelper::safeString($data['context']);
 		}
 
+		// Set the GUID if empty or not valid
+		if (isset($data['guid']) && !ComponentbuilderHelper::validGUID($data['guid']))
+		{
+			$data['guid'] = (string) ComponentbuilderHelper::GUID();
+		}
+
+
 		// Set the custom_get items to data.
 		if (isset($data['custom_get']) && is_array($data['custom_get']))
 		{
@@ -1030,19 +1161,6 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 		{
 			// Set the empty custom_get to data
 			$data['custom_get'] = '';
-		}
-
-		// Set the ajax_input items to data.
-		if (isset($data['ajax_input']) && is_array($data['ajax_input']))
-		{
-			$ajax_input = new JRegistry;
-			$ajax_input->loadArray($data['ajax_input']);
-			$data['ajax_input'] = (string) $ajax_input;
-		}
-		elseif (!isset($data['ajax_input']))
-		{
-			// Set the empty ajax_input to data
-			$data['ajax_input'] = '';
 		}
 
 		// Set the libraries items to data.
@@ -1058,6 +1176,19 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 			$data['libraries'] = '';
 		}
 
+		// Set the ajax_input items to data.
+		if (isset($data['ajax_input']) && is_array($data['ajax_input']))
+		{
+			$ajax_input = new JRegistry;
+			$ajax_input->loadArray($data['ajax_input']);
+			$data['ajax_input'] = (string) $ajax_input;
+		}
+		elseif (!isset($data['ajax_input']))
+		{
+			// Set the empty ajax_input to data
+			$data['ajax_input'] = '';
+		}
+
 		// Set the custom_button items to data.
 		if (isset($data['custom_button']) && is_array($data['custom_button']))
 		{
@@ -1071,40 +1202,10 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 			$data['custom_button'] = '';
 		}
 
-		// Set the php_document string to base64 string.
-		if (isset($data['php_document']))
+		// Set the js_document string to base64 string.
+		if (isset($data['js_document']))
 		{
-			$data['php_document'] = base64_encode($data['php_document']);
-		}
-
-		// Set the php_view string to base64 string.
-		if (isset($data['php_view']))
-		{
-			$data['php_view'] = base64_encode($data['php_view']);
-		}
-
-		// Set the default string to base64 string.
-		if (isset($data['default']))
-		{
-			$data['default'] = base64_encode($data['default']);
-		}
-
-		// Set the php_jview_display string to base64 string.
-		if (isset($data['php_jview_display']))
-		{
-			$data['php_jview_display'] = base64_encode($data['php_jview_display']);
-		}
-
-		// Set the php_jview string to base64 string.
-		if (isset($data['php_jview']))
-		{
-			$data['php_jview'] = base64_encode($data['php_jview']);
-		}
-
-		// Set the php_model string to base64 string.
-		if (isset($data['php_model']))
-		{
-			$data['php_model'] = base64_encode($data['php_model']);
+			$data['js_document'] = base64_encode($data['js_document']);
 		}
 
 		// Set the javascript_file string to base64 string.
@@ -1113,10 +1214,10 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 			$data['javascript_file'] = base64_encode($data['javascript_file']);
 		}
 
-		// Set the js_document string to base64 string.
-		if (isset($data['js_document']))
+		// Set the default string to base64 string.
+		if (isset($data['default']))
 		{
-			$data['js_document'] = base64_encode($data['js_document']);
+			$data['default'] = base64_encode($data['default']);
 		}
 
 		// Set the css_document string to base64 string.
@@ -1137,10 +1238,40 @@ class ComponentbuilderModelSite_view extends JModelAdmin
 			$data['php_ajaxmethod'] = base64_encode($data['php_ajaxmethod']);
 		}
 
+		// Set the php_document string to base64 string.
+		if (isset($data['php_document']))
+		{
+			$data['php_document'] = base64_encode($data['php_document']);
+		}
+
+		// Set the php_view string to base64 string.
+		if (isset($data['php_view']))
+		{
+			$data['php_view'] = base64_encode($data['php_view']);
+		}
+
+		// Set the php_jview_display string to base64 string.
+		if (isset($data['php_jview_display']))
+		{
+			$data['php_jview_display'] = base64_encode($data['php_jview_display']);
+		}
+
+		// Set the php_jview string to base64 string.
+		if (isset($data['php_jview']))
+		{
+			$data['php_jview'] = base64_encode($data['php_jview']);
+		}
+
 		// Set the php_controller string to base64 string.
 		if (isset($data['php_controller']))
 		{
 			$data['php_controller'] = base64_encode($data['php_controller']);
+		}
+
+		// Set the php_model string to base64 string.
+		if (isset($data['php_model']))
+		{
+			$data['php_model'] = base64_encode($data['php_model']);
 		}
         
 		// Set the Params Items to data

@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -102,12 +102,18 @@ class ComponentbuilderModelCustom_codes extends JModelList
 		// load parent items
 		$items = parent::getItems();
 
-		// set values to display correctly.
+		// Set values to display correctly.
 		if (ComponentbuilderHelper::checkArray($items))
 		{
+			// Get the user object if not set.
+			if (!isset($user) || !ComponentbuilderHelper::checkObject($user))
+			{
+				$user = JFactory::getUser();
+			}
 			foreach ($items as $nr => &$item)
 			{
-				$access = (JFactory::getUser()->authorise('custom_code.access', 'com_componentbuilder.custom_code.' . (int) $item->id) && JFactory::getUser()->authorise('custom_code.access', 'com_componentbuilder'));
+				// Remove items the user can't access.
+				$access = ($user->authorise('custom_code.access', 'com_componentbuilder.custom_code.' . (int) $item->id) && $user->authorise('custom_code.access', 'com_componentbuilder'));
 				if (!$access)
 				{
 					unset($items[$nr]);
@@ -300,17 +306,23 @@ class ComponentbuilderModelCustom_codes extends JModelList
 	/**
 	 * Method to get list export data.
 	 *
+	 * @param   array  $pks  The ids of the items to get
+	 * @param   JUser  $user  The user making the request
+	 *
 	 * @return mixed  An array of data items on success, false on failure.
 	 */
-	public function getExportData($pks)
+	public function getExportData($pks, $user = null)
 	{
 		// setup the query
 		if (ComponentbuilderHelper::checkArray($pks))
 		{
-			// Set a value to know this is exporting method.
+			// Set a value to know this is export method. (USE IN CUSTOM CODE TO ALTER OUTCOME)
 			$_export = true;
-			// Get the user object.
-			$user = JFactory::getUser();
+			// Get the user object if not set.
+			if (!isset($user) || !ComponentbuilderHelper::checkObject($user))
+			{
+				$user = JFactory::getUser();
+			}
 			// Create a new query object.
 			$db = JFactory::getDBO();
 			$query = $db->getQuery(true);
@@ -338,12 +350,13 @@ class ComponentbuilderModelCustom_codes extends JModelList
 			{
 				$items = $db->loadObjectList();
 
-				// set values to display correctly.
+				// Set values to display correctly.
 				if (ComponentbuilderHelper::checkArray($items))
 				{
 					foreach ($items as $nr => &$item)
 					{
-						$access = (JFactory::getUser()->authorise('custom_code.access', 'com_componentbuilder.custom_code.' . (int) $item->id) && JFactory::getUser()->authorise('custom_code.access', 'com_componentbuilder'));
+						// Remove items the user can't access.
+						$access = ($user->authorise('custom_code.access', 'com_componentbuilder.custom_code.' . (int) $item->id) && $user->authorise('custom_code.access', 'com_componentbuilder'));
 						if (!$access)
 						{
 							unset($items[$nr]);

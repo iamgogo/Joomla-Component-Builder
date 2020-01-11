@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -32,9 +32,9 @@ class ComponentbuilderModelAdmin_views extends JModelList
 				'a.short_description','short_description',
 				'a.add_fadein','add_fadein',
 				'a.type','type',
-				'a.add_custom_import','add_custom_import',
 				'a.add_custom_button','add_custom_button',
-				'a.add_php_ajax','add_php_ajax'
+				'a.add_php_ajax','add_php_ajax',
+				'a.add_custom_import','add_custom_import'
 			);
 		}
 
@@ -70,14 +70,14 @@ class ComponentbuilderModelAdmin_views extends JModelList
 		$type = $this->getUserStateFromRequest($this->context . '.filter.type', 'filter_type');
 		$this->setState('filter.type', $type);
 
-		$add_custom_import = $this->getUserStateFromRequest($this->context . '.filter.add_custom_import', 'filter_add_custom_import');
-		$this->setState('filter.add_custom_import', $add_custom_import);
-
 		$add_custom_button = $this->getUserStateFromRequest($this->context . '.filter.add_custom_button', 'filter_add_custom_button');
 		$this->setState('filter.add_custom_button', $add_custom_button);
 
 		$add_php_ajax = $this->getUserStateFromRequest($this->context . '.filter.add_php_ajax', 'filter_add_php_ajax');
 		$this->setState('filter.add_php_ajax', $add_php_ajax);
+
+		$add_custom_import = $this->getUserStateFromRequest($this->context . '.filter.add_custom_import', 'filter_add_custom_import');
+		$this->setState('filter.add_custom_import', $add_custom_import);
         
 		$sorting = $this->getUserStateFromRequest($this->context . '.filter.sorting', 'filter_sorting', 0, 'int');
 		$this->setState('filter.sorting', $sorting);
@@ -114,12 +114,18 @@ class ComponentbuilderModelAdmin_views extends JModelList
 		// load parent items
 		$items = parent::getItems();
 
-		// set values to display correctly.
+		// Set values to display correctly.
 		if (ComponentbuilderHelper::checkArray($items))
 		{
+			// Get the user object if not set.
+			if (!isset($user) || !ComponentbuilderHelper::checkObject($user))
+			{
+				$user = JFactory::getUser();
+			}
 			foreach ($items as $nr => &$item)
 			{
-				$access = (JFactory::getUser()->authorise('admin_view.access', 'com_componentbuilder.admin_view.' . (int) $item->id) && JFactory::getUser()->authorise('admin_view.access', 'com_componentbuilder'));
+				// Remove items the user can't access.
+				$access = ($user->authorise('admin_view.access', 'com_componentbuilder.admin_view.' . (int) $item->id) && $user->authorise('admin_view.access', 'com_componentbuilder'));
 				if (!$access)
 				{
 					unset($items[$nr]);
@@ -138,12 +144,12 @@ class ComponentbuilderModelAdmin_views extends JModelList
 				$item->add_fadein = $this->selectionTranslation($item->add_fadein, 'add_fadein');
 				// convert type
 				$item->type = $this->selectionTranslation($item->type, 'type');
-				// convert add_custom_import
-				$item->add_custom_import = $this->selectionTranslation($item->add_custom_import, 'add_custom_import');
 				// convert add_custom_button
 				$item->add_custom_button = $this->selectionTranslation($item->add_custom_button, 'add_custom_button');
 				// convert add_php_ajax
 				$item->add_php_ajax = $this->selectionTranslation($item->add_php_ajax, 'add_php_ajax');
+				// convert add_custom_import
+				$item->add_custom_import = $this->selectionTranslation($item->add_custom_import, 'add_custom_import');
 			}
 		}
 
@@ -185,19 +191,6 @@ class ComponentbuilderModelAdmin_views extends JModelList
 				return $typeArray[$value];
 			}
 		}
-		// Array of add_custom_import language strings
-		if ($name === 'add_custom_import')
-		{
-			$add_custom_importArray = array(
-				1 => 'COM_COMPONENTBUILDER_ADMIN_VIEW_YES',
-				0 => 'COM_COMPONENTBUILDER_ADMIN_VIEW_NO'
-			);
-			// Now check if value is found in this array
-			if (isset($add_custom_importArray[$value]) && ComponentbuilderHelper::checkString($add_custom_importArray[$value]))
-			{
-				return $add_custom_importArray[$value];
-			}
-		}
 		// Array of add_custom_button language strings
 		if ($name === 'add_custom_button')
 		{
@@ -222,6 +215,19 @@ class ComponentbuilderModelAdmin_views extends JModelList
 			if (isset($add_php_ajaxArray[$value]) && ComponentbuilderHelper::checkString($add_php_ajaxArray[$value]))
 			{
 				return $add_php_ajaxArray[$value];
+			}
+		}
+		// Array of add_custom_import language strings
+		if ($name === 'add_custom_import')
+		{
+			$add_custom_importArray = array(
+				1 => 'COM_COMPONENTBUILDER_ADMIN_VIEW_YES',
+				0 => 'COM_COMPONENTBUILDER_ADMIN_VIEW_NO'
+			);
+			// Now check if value is found in this array
+			if (isset($add_custom_importArray[$value]) && ComponentbuilderHelper::checkString($add_custom_importArray[$value]))
+			{
+				return $add_custom_importArray[$value];
 			}
 		}
 		return $value;
@@ -282,7 +288,7 @@ class ComponentbuilderModelAdmin_views extends JModelList
 			else
 			{
 				$search = $db->quote('%' . $db->escape($search) . '%');
-				$query->where('(a.system_name LIKE '.$search.' OR a.name_single LIKE '.$search.' OR a.short_description LIKE '.$search.' OR a.description LIKE '.$search.' OR a.type LIKE '.$search.' OR a.name_list LIKE '.$search.')');
+				$query->where('(a.system_name LIKE '.$search.' OR a.name_single LIKE '.$search.' OR a.short_description LIKE '.$search.' OR a.name_list LIKE '.$search.' OR a.description LIKE '.$search.' OR a.type LIKE '.$search.')');
 			}
 		}
 
@@ -296,11 +302,6 @@ class ComponentbuilderModelAdmin_views extends JModelList
 		{
 			$query->where('a.type = ' . $db->quote($db->escape($type)));
 		}
-		// Filter by Add_custom_import.
-		if ($add_custom_import = $this->getState('filter.add_custom_import'))
-		{
-			$query->where('a.add_custom_import = ' . $db->quote($db->escape($add_custom_import)));
-		}
 		// Filter by Add_custom_button.
 		if ($add_custom_button = $this->getState('filter.add_custom_button'))
 		{
@@ -310,6 +311,11 @@ class ComponentbuilderModelAdmin_views extends JModelList
 		if ($add_php_ajax = $this->getState('filter.add_php_ajax'))
 		{
 			$query->where('a.add_php_ajax = ' . $db->quote($db->escape($add_php_ajax)));
+		}
+		// Filter by Add_custom_import.
+		if ($add_custom_import = $this->getState('filter.add_custom_import'))
+		{
+			$query->where('a.add_custom_import = ' . $db->quote($db->escape($add_custom_import)));
 		}
 
 		// Add the list ordering clause.
@@ -326,17 +332,23 @@ class ComponentbuilderModelAdmin_views extends JModelList
 	/**
 	 * Method to get list export data.
 	 *
+	 * @param   array  $pks  The ids of the items to get
+	 * @param   JUser  $user  The user making the request
+	 *
 	 * @return mixed  An array of data items on success, false on failure.
 	 */
-	public function getExportData($pks)
+	public function getExportData($pks, $user = null)
 	{
 		// setup the query
 		if (ComponentbuilderHelper::checkArray($pks))
 		{
-			// Set a value to know this is exporting method.
+			// Set a value to know this is export method. (USE IN CUSTOM CODE TO ALTER OUTCOME)
 			$_export = true;
-			// Get the user object.
-			$user = JFactory::getUser();
+			// Get the user object if not set.
+			if (!isset($user) || !ComponentbuilderHelper::checkObject($user))
+			{
+				$user = JFactory::getUser();
+			}
 			// Create a new query object.
 			$db = JFactory::getDBO();
 			$query = $db->getQuery(true);
@@ -364,40 +376,41 @@ class ComponentbuilderModelAdmin_views extends JModelList
 			{
 				$items = $db->loadObjectList();
 
-				// set values to display correctly.
+				// Set values to display correctly.
 				if (ComponentbuilderHelper::checkArray($items))
 				{
 					foreach ($items as $nr => &$item)
 					{
-						$access = (JFactory::getUser()->authorise('admin_view.access', 'com_componentbuilder.admin_view.' . (int) $item->id) && JFactory::getUser()->authorise('admin_view.access', 'com_componentbuilder'));
+						// Remove items the user can't access.
+						$access = ($user->authorise('admin_view.access', 'com_componentbuilder.admin_view.' . (int) $item->id) && $user->authorise('admin_view.access', 'com_componentbuilder'));
 						if (!$access)
 						{
 							unset($items[$nr]);
 							continue;
 						}
 
-						// decode php_batchcopy
-						$item->php_batchcopy = base64_decode($item->php_batchcopy);
+						// decode php_before_cancel
+						$item->php_before_cancel = base64_decode($item->php_before_cancel);
 						// decode php_allowadd
 						$item->php_allowadd = base64_decode($item->php_allowadd);
 						// decode php_save
 						$item->php_save = base64_decode($item->php_save);
 						// decode php_getform
 						$item->php_getform = base64_decode($item->php_getform);
-						// decode php_getitems_after_all
-						$item->php_getitems_after_all = base64_decode($item->php_getitems_after_all);
-						// decode php_import_save
-						$item->php_import_save = base64_decode($item->php_import_save);
-						// decode php_document
-						$item->php_document = base64_decode($item->php_document);
-						// decode php_before_publish
-						$item->php_before_publish = base64_decode($item->php_before_publish);
+						// decode php_import_display
+						$item->php_import_display = base64_decode($item->php_import_display);
 						// decode php_before_delete
 						$item->php_before_delete = base64_decode($item->php_before_delete);
-						// decode html_import_view
-						$item->html_import_view = base64_decode($item->html_import_view);
-						// decode php_getitems
-						$item->php_getitems = base64_decode($item->php_getitems);
+						// decode php_batchcopy
+						$item->php_batchcopy = base64_decode($item->php_batchcopy);
+						// decode php_before_publish
+						$item->php_before_publish = base64_decode($item->php_before_publish);
+						// decode php_document
+						$item->php_document = base64_decode($item->php_document);
+						// decode sql
+						$item->sql = base64_decode($item->sql);
+						// decode php_import_setdata
+						$item->php_import_setdata = base64_decode($item->php_import_setdata);
 						// decode php_getlistquery
 						$item->php_getlistquery = base64_decode($item->php_getlistquery);
 						// decode php_before_save
@@ -406,14 +419,18 @@ class ComponentbuilderModelAdmin_views extends JModelList
 						$item->php_postsavehook = base64_decode($item->php_postsavehook);
 						// decode php_allowedit
 						$item->php_allowedit = base64_decode($item->php_allowedit);
+						// decode php_after_cancel
+						$item->php_after_cancel = base64_decode($item->php_after_cancel);
 						// decode php_batchmove
 						$item->php_batchmove = base64_decode($item->php_batchmove);
 						// decode php_after_publish
 						$item->php_after_publish = base64_decode($item->php_after_publish);
 						// decode php_after_delete
 						$item->php_after_delete = base64_decode($item->php_after_delete);
-						// decode php_import_headers
-						$item->php_import_headers = base64_decode($item->php_import_headers);
+						// decode php_import
+						$item->php_import = base64_decode($item->php_import);
+						// decode php_import_ext
+						$item->php_import_ext = base64_decode($item->php_import_ext);
 						// decode css_view
 						$item->css_view = base64_decode($item->css_view);
 						// decode css_views
@@ -434,20 +451,20 @@ class ComponentbuilderModelAdmin_views extends JModelList
 						$item->php_controller_list = base64_decode($item->php_controller_list);
 						// decode php_model_list
 						$item->php_model_list = base64_decode($item->php_model_list);
-						// decode sql
-						$item->sql = base64_decode($item->sql);
 						// decode php_ajaxmethod
 						$item->php_ajaxmethod = base64_decode($item->php_ajaxmethod);
-						// decode php_import_display
-						$item->php_import_display = base64_decode($item->php_import_display);
-						// decode php_import
-						$item->php_import = base64_decode($item->php_import);
-						// decode php_import_setdata
-						$item->php_import_setdata = base64_decode($item->php_import_setdata);
 						// decode php_getitem
 						$item->php_getitem = base64_decode($item->php_getitem);
-						// decode php_import_ext
-						$item->php_import_ext = base64_decode($item->php_import_ext);
+						// decode html_import_view
+						$item->html_import_view = base64_decode($item->html_import_view);
+						// decode php_import_headers
+						$item->php_import_headers = base64_decode($item->php_import_headers);
+						// decode php_getitems
+						$item->php_getitems = base64_decode($item->php_getitems);
+						// decode php_import_save
+						$item->php_import_save = base64_decode($item->php_import_save);
+						// decode php_getitems_after_all
+						$item->php_getitems_after_all = base64_decode($item->php_getitems_after_all);
 						// unset the values we don't want exported.
 						unset($item->asset_id);
 						unset($item->checked_out);
@@ -513,9 +530,9 @@ class ComponentbuilderModelAdmin_views extends JModelList
 		$id .= ':' . $this->getState('filter.short_description');
 		$id .= ':' . $this->getState('filter.add_fadein');
 		$id .= ':' . $this->getState('filter.type');
-		$id .= ':' . $this->getState('filter.add_custom_import');
 		$id .= ':' . $this->getState('filter.add_custom_button');
 		$id .= ':' . $this->getState('filter.add_php_ajax');
+		$id .= ':' . $this->getState('filter.add_custom_import');
 
 		return parent::getStoreId($id);
 	}

@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -68,6 +68,9 @@ class Infusion extends Interpretation
 	{
 		if (isset($this->componentData->admin_views) && ComponentbuilderHelper::checkArray($this->componentData->admin_views))
 		{
+			// Trigger Event: jcb_ce_onBeforeBuildFilesContent
+			$this->triggerEvent('jcb_ce_onBeforeBuildFilesContent', array(&$this->componentContext, &$this->componentData, &$this->fileContentStatic, &$this->fileContentDynamic, &$this->placeholders, &$this->hhh));
+
 			// COMPONENT
 			$this->fileContentStatic[$this->hhh . 'COMPONENT' . $this->hhh] = $this->placeholders[$this->hhh . 'COMPONENT' . $this->hhh];
 
@@ -213,6 +216,14 @@ class Infusion extends Interpretation
 			// add the helper emailer if set
 			$this->fileContentStatic[$this->hhh . 'HELPER_EMAIL' . $this->hhh] = $this->addEmailHelper();
 
+			// load the global placeholders
+			if (ComponentbuilderHelper::checkArray($this->globalPlaceholders))
+			{
+				foreach ($this->globalPlaceholders as $globalPlaceholder => $gloabalValue)
+				{
+					$this->fileContentStatic[$globalPlaceholder] = $gloabalValue;
+				}
+			}
 			// reset view array
 			$viewarray = array();
 			$site_edit_view_array = array();
@@ -222,6 +233,9 @@ class Infusion extends Interpretation
 				// set the target
 				$this->target = 'admin';
 				$this->lang = 'admin';
+				// reset
+				$viewName_single = '';
+				$viewName_list = '';
 
 				// set single view
 				if (isset($view['settings']->name_single))
@@ -239,7 +253,7 @@ class Infusion extends Interpretation
 				$this->setViewPlaceholders($view['settings']);
 
 				// set site edit view array
-				if (isset($view['edit_create_site_view']) && $view['edit_create_site_view'])
+				if (isset($view['edit_create_site_view']) && is_numeric($view['edit_create_site_view']) && $view['edit_create_site_view'] > 0)
 				{
 					$site_edit_view_array[] = $this->_t(4) . "'" . $viewName_single . "'";
 					$this->lang = 'both';
@@ -260,8 +274,11 @@ class Infusion extends Interpretation
 					$this->setLockLicensePer($viewName_single, $this->target);
 					$this->setLockLicensePer($viewName_list, $this->target);
 
+					// Trigger Event: jcb_ce_onBeforeBuildAdminEditViewContent
+					$this->triggerEvent('jcb_ce_onBeforeBuildAdminEditViewContent', array(&$this->componentContext, &$view, &$viewName_single, &$viewName_list, &$this->fileContentStatic, &$this->fileContentDynamic[$viewName_single], &$this->placeholders, &$this->hhh));
+
 					// FIELDSETS <<<DYNAMIC>>>
-					$this->fileContentDynamic[$viewName_single][$this->hhh . 'FIELDSETS' . $this->hhh] = $this->setFieldSet($view, $this->fileContentStatic[$this->hhh . 'component' . $this->hhh], $viewName_single, $viewName_list);
+					$this->fileContentDynamic[$viewName_single][$this->hhh . 'FIELDSETS' . $this->hhh] = $this->setFieldSet($view, $this->componentCodeName, $viewName_single, $viewName_list);
 
 					// ACCESSCONTROL <<<DYNAMIC>>>
 					$this->fileContentDynamic[$viewName_single][$this->hhh . 'ACCESSCONTROL' . $this->hhh] = $this->setFieldSetAccessControl($viewName_single);
@@ -276,10 +293,10 @@ class Infusion extends Interpretation
 					$this->buildTheViewScript($view);
 
 					// VIEW_SCRIPT
-					$this->fileContentDynamic[$viewName_single][$this->hhh . 'VIEW_SCRIPT' . $this->hhh] = $this->setViewScript($viewName_single);
+					$this->fileContentDynamic[$viewName_single][$this->hhh . 'VIEW_SCRIPT' . $this->hhh] = $this->setViewScript($viewName_single, 'fileScript');
 
 					// EDITBODYSCRIPT
-					$this->fileContentDynamic[$viewName_single][$this->hhh . 'EDITBODYSCRIPT' . $this->hhh] = $this->setEditBodyScript($viewName_single);
+					$this->fileContentDynamic[$viewName_single][$this->hhh . 'EDITBODYSCRIPT' . $this->hhh] = $this->setViewScript($viewName_single, 'footerScript');
 
 					// AJAXTOKE <<<DYNAMIC>>>
 					$this->fileContentDynamic[$viewName_single][$this->hhh . 'AJAXTOKE' . $this->hhh] = $this->setAjaxToke($viewName_single);
@@ -295,7 +312,6 @@ class Infusion extends Interpretation
 					{
 						$this->fileContentDynamic[$viewName_single][$this->hhh . 'DOCUMENT_CUSTOM_PHP' . $this->hhh] = '';
 					}
-
 					// LINKEDVIEWTABLESCRIPTS <<<DYNAMIC>>>
 					$this->fileContentDynamic[$viewName_single][$this->hhh . 'LINKEDVIEWTABLESCRIPTS' . $this->hhh] = '';
 
@@ -348,10 +364,22 @@ class Infusion extends Interpretation
 					$this->fileContentDynamic[$viewName_single][$this->hhh . 'VIEWCSS' . $this->hhh] = $this->getCustomScriptBuilder('css_view', $viewName_single, '', null, true);
 
 					// add css to front end
-					if (isset($view['edit_create_site_view']) && $view['edit_create_site_view'])
+					if (isset($view['edit_create_site_view']) && is_numeric($view['edit_create_site_view']) && $view['edit_create_site_view'] > 0)
 					{
 						$this->fileContentDynamic[$viewName_single][$this->hhh . 'SITE_VIEWCSS' . $this->hhh] = $this->fileContentDynamic[$viewName_single][$this->hhh . 'VIEWCSS' . $this->hhh];
+						// check if we should add a create menu
+						if ($view['edit_create_site_view'] == 2)
+						{
+							// SITE_MENU_XML <<<DYNAMIC>>>
+							$this->fileContentDynamic[$viewName_single][$this->hhh . 'SITE_MENU_XML' . $this->hhh] = $this->setAdminViewMenu($viewName_single, $view);
+						}
 					}
+
+					// TABLAYOUTFIELDSARRAY <<<DYNAMIC>>> add the tab layout fields array to the model
+					$this->fileContentDynamic[$viewName_single][$this->hhh . 'TABLAYOUTFIELDSARRAY' . $this->hhh] = $this->getTabLayoutFieldsArray($viewName_single);
+
+					// Trigger Event: jcb_ce_onAfterBuildAdminEditViewContent
+					$this->triggerEvent('jcb_ce_onAfterBuildAdminEditViewContent', array(&$this->componentContext, &$view, &$viewName_single, &$viewName_list, &$this->fileContentStatic, &$this->fileContentDynamic[$viewName_single], &$this->placeholders, &$this->hhh));
 				}
 				// set the views names
 				if (isset($view['settings']->name_list) && $view['settings']->name_list != 'null')
@@ -360,6 +388,9 @@ class Infusion extends Interpretation
 
 					// ICOMOON <<<DYNAMIC>>>
 					$this->fileContentDynamic[$viewName_list][$this->hhh . 'ICOMOON' . $this->hhh] = $view['icomoon'];
+
+					// Trigger Event: jcb_ce_onBeforeBuildAdminListViewContent
+					$this->triggerEvent('jcb_ce_onBeforeBuildAdminListViewContent', array(&$this->componentContext, &$view, &$viewName_single, &$viewName_list, &$this->fileContentStatic, &$this->fileContentDynamic[$viewName_list], &$this->placeholders, &$this->hhh));
 
 					// set the export/import option
 					if (isset($view['port']) && $view['port'] || 1 == $view['settings']->add_custom_import)
@@ -381,7 +412,7 @@ class Infusion extends Interpretation
 					if (isset($view['checkin']) && $view['checkin'] == 1)
 					{
 						// AUTOCHECKIN <<<DYNAMIC>>>
-						$this->fileContentDynamic[$viewName_list][$this->hhh . 'AUTOCHECKIN' . $this->hhh] = $this->setAutoCheckin($viewName_single, $this->fileContentStatic[$this->hhh . 'component' . $this->hhh]);
+						$this->fileContentDynamic[$viewName_list][$this->hhh . 'AUTOCHECKIN' . $this->hhh] = $this->setAutoCheckin($viewName_single, $this->componentCodeName);
 						// CHECKINCALL <<<DYNAMIC>>>
 						$this->fileContentDynamic[$viewName_list][$this->hhh . 'CHECKINCALL' . $this->hhh] = $this->setCheckinCall();
 					}
@@ -392,6 +423,8 @@ class Infusion extends Interpretation
 						// CHECKINCALL <<<DYNAMIC>>>
 						$this->fileContentDynamic[$viewName_list][$this->hhh . 'CHECKINCALL' . $this->hhh] = '';
 					}
+					// admin list file contnet
+					$this->fileContentDynamic[$viewName_list][$this->hhh . 'ADMIN_JAVASCRIPT_FILE' . $this->hhh] = $this->setViewScript($viewName_list, 'list_fileScript');
 					// ADMIN_CUSTOM_BUTTONS_LIST
 					$this->fileContentDynamic[$viewName_list][$this->hhh . 'ADMIN_CUSTOM_BUTTONS_LIST' . $this->hhh] = $this->setCustomButtons($view, 3, $this->_t(1));
 					$this->fileContentDynamic[$viewName_list][$this->hhh . 'ADMIN_CUSTOM_FUNCTION_ONLY_BUTTONS_LIST' . $this->hhh] = $this->setFunctionOnlyButtons($viewName_list);
@@ -440,7 +473,7 @@ class Infusion extends Interpretation
 					$this->fileContentDynamic[$viewName_list][$this->hhh . 'LISTQUERY' . $this->hhh] = $this->setListQuery($viewName_single, $viewName_list);
 
 					// MODELEXPORTMETHOD <<<DYNAMIC>>>
-					$this->fileContentDynamic[$viewName_list][$this->hhh . 'MODELEXPORTMETHOD' . $this->hhh] = $this->setModelExportMethod($viewName_single, $viewName_list);
+					$this->fileContentDynamic[$viewName_list][$this->hhh . 'MODELEXPORTMETHOD' . $this->hhh] = $this->setGetItemsModelMethod($viewName_single, $viewName_list);
 
 					// MODELEXIMPORTMETHOD <<<DYNAMIC>>>
 					$this->fileContentDynamic[$viewName_list][$this->hhh . 'CONTROLLEREXIMPORTMETHOD' . $this->hhh] = $this->setControllerEximportMethod($viewName_single, $viewName_list);
@@ -488,6 +521,9 @@ class Infusion extends Interpretation
 					{
 						$this->fileContentDynamic[$viewName_list][$this->hhh . 'VIEWS_FOOTER_SCRIPT' . $this->hhh] = '';
 					}
+
+					// Trigger Event: jcb_ce_onAfterBuildAdminListViewContent
+					$this->triggerEvent('jcb_ce_onAfterBuildAdminListViewContent', array(&$this->componentContext, &$view, &$viewName_single, &$viewName_list, &$this->fileContentStatic, &$this->fileContentDynamic[$viewName_list], &$this->placeholders, &$this->hhh));
 				}
 
 				// set u fields used in batch
@@ -510,8 +546,15 @@ class Infusion extends Interpretation
 
 				// BATCH_ONCLICK_CANCEL_SCRIPT <<<DYNAMIC>>>
 				$this->fileContentDynamic[$viewName_list][$this->hhh . 'BATCH_ONCLICK_CANCEL_SCRIPT' . $this->hhh] = ''; // TODO <-- must still be build
+
 				// JCONTROLLERFORM_ALLOWADD <<<DYNAMIC>>>
 				$this->fileContentDynamic[$viewName_single][$this->hhh . 'JCONTROLLERFORM_ALLOWADD' . $this->hhh] = $this->setJcontrollerAllowAdd($viewName_single, $viewName_list);
+
+				// JCONTROLLERFORM_BEFORECANCEL <<<DYNAMIC>>>
+				$this->fileContentDynamic[$viewName_single][$this->hhh . 'JCONTROLLERFORM_BEFORECANCEL' . $this->hhh] = $this->getCustomScriptBuilder('php_before_cancel', $viewName_single, PHP_EOL, null, null, '');
+
+				// JCONTROLLERFORM_AFTERCANCEL <<<DYNAMIC>>>
+				$this->fileContentDynamic[$viewName_single][$this->hhh . 'JCONTROLLERFORM_AFTERCANCEL' . $this->hhh] = $this->getCustomScriptBuilder('php_after_cancel', $viewName_single, PHP_EOL, null, null, '');
 
 				// JCONTROLLERFORM_ALLOWEDIT <<<DYNAMIC>>>
 				$this->fileContentDynamic[$viewName_single][$this->hhh . 'JCONTROLLERFORM_ALLOWEDIT' . $this->hhh] = $this->setJcontrollerAllowEdit($viewName_single, $viewName_list);
@@ -541,7 +584,7 @@ class Infusion extends Interpretation
 				}
 				$this->fileContentStatic[$this->hhh . 'ROUTEHELPER' . $this->hhh] .= $this->setRouterHelp($viewName_single, $viewName_list);
 
-				if (isset($view['edit_create_site_view']) && $view['edit_create_site_view'])
+				if (isset($view['edit_create_site_view']) && is_numeric($view['edit_create_site_view']) && $view['edit_create_site_view'] > 0)
 				{
 					// add needed router stuff for front edit views
 					$this->fileContentStatic[$this->hhh . 'ROUTER_PARSE_SWITCH' . $this->hhh] .= $this->routerParseSwitch($viewName_single, null, false);
@@ -561,6 +604,8 @@ class Infusion extends Interpretation
 				}
 				// HELPER_EXEL
 				$this->fileContentStatic[$this->hhh . 'HELPER_EXEL' . $this->hhh] = $this->setExelHelperMethods();
+				// Trigger Event: jcb_ce_onAfterBuildAdminViewContent
+				$this->triggerEvent('jcb_ce_onAfterBuildAdminViewContent', array(&$this->componentContext, &$view, &$viewName_single, &$viewName_list, &$this->fileContentStatic, &$this->fileContentDynamic, &$this->placeholders, &$this->hhh));
 			}
 
 			// setup custom_admin_views and all needed stuff for the site
@@ -568,7 +613,6 @@ class Infusion extends Interpretation
 			{
 				$this->target = 'custom_admin';
 				$this->lang = 'admin';
-				// var_dump($this->componentData->custom_admin_views);exit;
 				// start dynamic build
 				foreach ($this->componentData->custom_admin_views as $view)
 				{
@@ -581,14 +625,8 @@ class Infusion extends Interpretation
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'sviews' . $this->hhh] = $view['settings']->code;
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'SVIEWS' . $this->hhh] = $view['settings']->CODE;
 					// add to lang array
-					if (!isset($this->langContent[$this->lang][$this->langPrefix . '_' . $view['settings']->CODE]))
-					{
-						$this->langContent[$this->lang][$this->langPrefix . '_' . $view['settings']->CODE] = $view['settings']->name;
-					}
-					if (!isset($this->langContent[$this->lang][$this->langPrefix . '_' . $view['settings']->CODE . '_DESC']))
-					{
-						$this->langContent[$this->lang][$this->langPrefix . '_' . $view['settings']->CODE . '_DESC'] = $view['settings']->description;
-					}
+					$this->setLangContent($this->lang, $this->langPrefix . '_' . $view['settings']->CODE, $view['settings']->name);
+					$this->setLangContent($this->lang, $this->langPrefix . '_' . $view['settings']->CODE . '_DESC', $view['settings']->description);
 					// ICOMOON <<<DYNAMIC>>>
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'ICOMOON' . $this->hhh] = $view['icomoon'];
 
@@ -605,6 +643,9 @@ class Infusion extends Interpretation
 					$this->placeholders[$this->bbb . 'SViews' . $this->ddd] = $view['settings']->Code;
 					$this->placeholders[$this->bbb . 'sviews' . $this->ddd] = $view['settings']->code;
 					$this->placeholders[$this->bbb . 'SVIEWS' . $this->ddd] = $view['settings']->CODE;
+
+					// Trigger Event: jcb_ce_onBeforeBuildCustomAdminViewContent
+					$this->triggerEvent('jcb_ce_onBeforeBuildCustomAdminViewContent', array(&$this->componentContext, &$view, &$view['settings']->code, &$this->fileContentStatic, &$this->fileContentDynamic[$view['settings']->code], &$this->placeholders, &$this->hhh));
 
 					// set license per view if needed
 					$this->setLockLicensePer($view['settings']->code, $this->target);
@@ -656,6 +697,9 @@ class Infusion extends Interpretation
 
 					// setup the templates
 					$this->setCustomViewTemplateBody($view);
+
+					// Trigger Event: jcb_ce_onAfterBuildCustomAdminViewContent
+					$this->triggerEvent('jcb_ce_onAfterBuildCustomAdminViewContent', array(&$this->componentContext, &$view, &$view['settings']->code, &$this->fileContentStatic, &$this->fileContentDynamic[$view['settings']->code], &$this->placeholders, &$this->hhh));
 				}
 
 				// setup the layouts
@@ -696,22 +740,22 @@ class Infusion extends Interpretation
 			if (!ComponentbuilderHelper::checkString($this->dynamicDashboard))
 			{
 				// DASHBOARDVIEW
-				$this->fileContentStatic[$this->hhh . 'DASHBOARDVIEW' . $this->hhh] = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+				$this->fileContentStatic[$this->hhh . 'DASHBOARDVIEW' . $this->hhh] = $this->componentCodeName;
 
 				// DASHBOARDICONS
-				$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh]][$this->hhh . 'DASHBOARDICONS' . $this->hhh] = $this->setDashboardIcons();
+				$this->fileContentDynamic[$this->componentCodeName][$this->hhh . 'DASHBOARDICONS' . $this->hhh] = $this->setDashboardIcons();
 
 				// DASHBOARDICONACCESS
-				$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh]][$this->hhh . 'DASHBOARDICONACCESS' . $this->hhh] = $this->setDashboardIconAccess();
+				$this->fileContentDynamic[$this->componentCodeName][$this->hhh . 'DASHBOARDICONACCESS' . $this->hhh] = $this->setDashboardIconAccess();
 
 				// DASH_MODEL_METHODS
-				$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh]][$this->hhh . 'DASH_MODEL_METHODS' . $this->hhh] = $this->setDashboardModelMethods();
+				$this->fileContentDynamic[$this->componentCodeName][$this->hhh . 'DASH_MODEL_METHODS' . $this->hhh] = $this->setDashboardModelMethods();
 
 				// DASH_GET_CUSTOM_DATA
-				$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh]][$this->hhh . 'DASH_GET_CUSTOM_DATA' . $this->hhh] = $this->setDashboardGetCustomData();
+				$this->fileContentDynamic[$this->componentCodeName][$this->hhh . 'DASH_GET_CUSTOM_DATA' . $this->hhh] = $this->setDashboardGetCustomData();
 
 				// DASH_DISPLAY_DATA
-				$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh]][$this->hhh . 'DASH_DISPLAY_DATA' . $this->hhh] = $this->setDashboardDisplayData();
+				$this->fileContentDynamic[$this->componentCodeName][$this->hhh . 'DASH_DISPLAY_DATA' . $this->hhh] = $this->setDashboardDisplayData();
 			}
 			else
 			{
@@ -797,7 +841,6 @@ class Infusion extends Interpretation
 			if (isset($this->componentData->site_views) && ComponentbuilderHelper::checkArray($this->componentData->site_views))
 			{
 				$this->target = 'site';
-				// var_dump($this->componentData->site_views);exit;
 				// start dynamic build
 				foreach ($this->componentData->site_views as $view)
 				{
@@ -821,6 +864,9 @@ class Infusion extends Interpretation
 					$this->placeholders[$this->bbb . 'SViews' . $this->ddd] = $view['settings']->Code;
 					$this->placeholders[$this->bbb . 'sviews' . $this->ddd] = $view['settings']->code;
 					$this->placeholders[$this->bbb . 'SVIEWS' . $this->ddd] = $view['settings']->CODE;
+
+					// Trigger Event: jcb_ce_onBeforeBuildSiteViewContent
+					$this->triggerEvent('jcb_ce_onBeforeBuildSiteViewContent', array(&$this->componentContext, &$view, &$view['settings']->code, &$this->fileContentStatic, &$this->fileContentDynamic[$view['settings']->code], &$this->placeholders, &$this->hhh));
 
 					// set license per view if needed
 					$this->setLockLicensePer($view['settings']->code, $this->target);
@@ -874,14 +920,8 @@ class Infusion extends Interpretation
 						$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'SITE_AFTER_GET_ITEMS' . $this->hhh] = $this->getCustomScriptBuilder($this->target . '_php_after_getitems', $view['settings']->code, PHP_EOL, null, true);
 					}
 					// add to lang array
-					if (!isset($this->langContent['site'][$this->langPrefix . '_' . $view['settings']->CODE]))
-					{
-						$this->langContent['site'][$this->langPrefix . '_' . $view['settings']->CODE] = $view['settings']->name;
-					}
-					if (!isset($this->langContent['site'][$this->langPrefix . '_' . $view['settings']->CODE . '_DESC']))
-					{
-						$this->langContent['site'][$this->langPrefix . '_' . $view['settings']->CODE . '_DESC'] = $view['settings']->description;
-					}
+					$this->setLangContent('site', $this->langPrefix . '_' . $view['settings']->CODE, $view['settings']->name);
+					$this->setLangContent('site', $this->langPrefix . '_' . $view['settings']->CODE . '_DESC', $view['settings']->description);
 					// SITE_CUSTOM_METHODS <<<DYNAMIC>>>
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'SITE_CUSTOM_METHODS' . $this->hhh] = $this->setCustomViewCustomItemMethods($view['settings']->main_get, $view['settings']->code);
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'SITE_CUSTOM_METHODS' . $this->hhh] .= $this->setCustomViewCustomMethods($view, $view['settings']->code);
@@ -902,6 +942,9 @@ class Infusion extends Interpretation
 					// set the site form if needed
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'SITE_TOP_FORM' . $this->hhh] = $this->setCustomViewForm($view['settings']->code, 1);
 					$this->fileContentDynamic[$view['settings']->code][$this->hhh . 'SITE_BOTTOM_FORM' . $this->hhh] = $this->setCustomViewForm($view['settings']->code, 2);
+
+					// Trigger Event: jcb_ce_onAfterBuildSiteViewContent
+					$this->triggerEvent('jcb_ce_onAfterBuildSiteViewContent', array(&$this->componentContext, &$view, &$view['settings']->code, &$this->fileContentStatic, &$this->fileContentDynamic[$view['settings']->code], &$this->placeholders, &$this->hhh));
 				}
 				// setup the layouts
 				$this->setCustomViewLayouts();
@@ -985,6 +1028,106 @@ class Infusion extends Interpretation
 			{
 				$this->fileContentStatic[$this->hhh . 'README' . $this->hhh] = $this->componentData->readme;
 			}
+
+			// tweak system to set stuff to the module domain
+			$_backup_target = $this->target;
+			$_backup_lang = $this->lang;
+			$_backup_langPrefix = $this->langPrefix;
+			// infuse module data if set
+			if (ComponentbuilderHelper::checkArray($this->joomlaModules))
+			{
+				foreach ($this->joomlaModules as $module)
+				{
+					if (ComponentbuilderHelper::checkObject($module))
+					{
+						$this->target     = $module->key;
+						$this->lang       = $module->key;
+						$this->langPrefix = $module->lang_prefix;
+						// MODCODE
+						$this->fileContentDynamic[$module->key][$this->hhh . 'MODCODE' . $this->hhh] = $this->getModCode($module);
+						// DYNAMICGET
+						$this->fileContentDynamic[$module->key][$this->hhh . 'DYNAMICGETS' . $this->hhh] = $this->setCustomViewCustomMethods($module, $module->key);
+						// HELPERCODE
+						if ($module->add_class_helper >= 1)
+						{
+							$this->fileContentDynamic[$module->key][$this->hhh . 'HELPERCODE' . $this->hhh] = $this->getModHelperCode($module);
+						}
+						// MODDEFAULT
+						$this->fileContentDynamic[$module->key][$this->hhh . 'MODDEFAULT' . $this->hhh] = $this->getModDefault($module);
+						// only add install script if needed
+						if ($module->add_install_script)
+						{
+							// INSTALLCLASS
+							$this->fileContentDynamic[$module->key][$this->hhh . 'INSTALLCLASS' . $this->hhh] = $this->getExtensionInstallClass($module);
+						}
+						// FIELDSET
+						if (isset($module->form_files) && ComponentbuilderHelper::checkArray($module->form_files))
+						{
+							foreach($module->form_files as $file => $files)
+							{
+								foreach ($files as $field_name => $fieldsets)
+								{
+									foreach ($fieldsets as $fieldset => $fields)
+									{
+										// FIELDSET_ . $file.$field_name.$fieldset
+										$this->fileContentDynamic[$module->key][$this->hhh . 'FIELDSET_' . $file.$field_name.$fieldset . $this->hhh] =
+											$this->getExtensionFieldsetXML($module, $fields);
+									}
+								}
+							}
+						}
+						// MAINXML
+						$this->fileContentDynamic[$module->key][$this->hhh . 'MAINXML' . $this->hhh] = $this->getModuleMainXML($module);
+					}
+				}
+			}
+			// infuse plugin data if set
+			if (ComponentbuilderHelper::checkArray($this->joomlaPlugins))
+			{
+				foreach ($this->joomlaPlugins as $plugin)
+				{
+					if (ComponentbuilderHelper::checkObject($plugin))
+					{
+						$this->target = $plugin->key;
+						$this->lang = $plugin->key;
+						$this->langPrefix = $plugin->lang_prefix;
+						// MAINCLASS
+						$this->fileContentDynamic[$plugin->key][$this->hhh . 'MAINCLASS' . $this->hhh] = $this->getPluginMainClass($plugin);
+						// only add install script if needed
+						if ($plugin->add_install_script)
+						{
+							// INSTALLCLASS
+							$this->fileContentDynamic[$plugin->key][$this->hhh . 'INSTALLCLASS' . $this->hhh] = $this->getExtensionInstallClass($plugin);
+						}
+						// FIELDSET
+						if (isset($plugin->form_files) && ComponentbuilderHelper::checkArray($plugin->form_files))
+						{
+							foreach($plugin->form_files as $file => $files)
+							{
+								foreach ($files as $field_name => $fieldsets)
+								{
+									foreach ($fieldsets as $fieldset => $fields)
+									{
+										// FIELDSET_ . $file.$field_name.$fieldset
+										$this->fileContentDynamic[$plugin->key][$this->hhh . 'FIELDSET_' . $file.$field_name.$fieldset . $this->hhh] =
+											$this->getExtensionFieldsetXML($plugin, $fields);
+									}
+								}
+							}
+						}
+						// MAINXML
+						$this->fileContentDynamic[$plugin->key][$this->hhh . 'MAINXML' . $this->hhh] = $this->getPluginMainXML($plugin);
+					}
+				}
+			}
+			// rest globals
+			$this->target = $_backup_target;
+			$this->lang = $_backup_lang;
+			$this->langPrefix = $_backup_langPrefix;
+
+			// Trigger Event: jcb_ce_onAfterBuildFilesContent
+			$this->triggerEvent('jcb_ce_onAfterBuildFilesContent', array(&$this->componentContext, &$this->componentData, &$this->fileContentStatic, &$this->fileContentDynamic, &$this->placeholders, &$this->hhh));
+
 			return true;
 		}
 		return false;
@@ -1074,6 +1217,7 @@ class Infusion extends Interpretation
 	 */
 	public function setLangFileData()
 	{
+		// reset values
 		$values = array();
 		$mainLangLoader = array();
 		// check the admin lang is set
@@ -1112,6 +1256,9 @@ class Infusion extends Interpretation
 		// now we insert the values into the files
 		if (ComponentbuilderHelper::checkArray($this->languages))
 		{
+			// Trigger Event: jcb_ce_onBeforeBuildAllLangFiles
+			$this->triggerEvent('jcb_ce_onBeforeBuildAllLangFiles', array(&$this->componentContext, &$this->languages, &$this->langTag));
+			// rest xml array
 			$langXML = array();
 			foreach ($this->languages as $tag => $areas)
 			{
@@ -1186,7 +1333,7 @@ class Infusion extends Interpretation
 					$langXML[$p][] = '<language tag="' . $tag . '">language/' . $tag . '/' . $fileName . '</language>';
 				}
 			}
-			// load the lang xml 
+			// load the lang xml
 			if (ComponentbuilderHelper::checkArray($langXML))
 			{
 				$replace = array();
@@ -1199,7 +1346,7 @@ class Infusion extends Interpretation
 					$replace[$this->hhh . 'SITE_LANGUAGES' . $this->hhh] = implode(PHP_EOL . $this->_t(2), $langXML['site']);
 				}
 				// build xml path
-				$xmlPath = $this->componentPath . '/' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '.xml';
+				$xmlPath = $this->componentPath . '/' . $this->componentCodeName . '.xml';
 				// get the content in xml
 				$componentXML = ComponentbuilderHelper::getFileContents($xmlPath);
 				// update the xml content

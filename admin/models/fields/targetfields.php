@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -41,19 +41,26 @@ class JFormFieldTargetfields extends JFormFieldList
 		$jinput = JFactory::getApplication()->input;
 		// get the id
 		$ID = $jinput->getInt('id', 0);
+		// get the view name
+		$VIEW = $jinput->get('view', null, 'WORD');
 		// rest the fields ids
 		$fieldIds = array();
-		if (is_numeric($ID) && $ID >= 1)
+		// if this is an actual admin view then we are done
+		if ('admin_view'  === $VIEW && is_numeric($ID) && $ID >= 1)
+		{
+			$adminView = $ID;
+		}
+		elseif (is_numeric($ID) && $ID >= 1)
 		{
 			// get the admin view ID
 			$adminView = ComponentbuilderHelper::getVar('admin_fields_conditions', (int) $ID, 'id', 'admin_view');
 		}
-		else
+		elseif ('admin_view'  !== $VIEW)
 		{
 			// get the admin view ID
 			$adminView = $jinput->getInt('refid', 0);
 		}
-		if (is_numeric($adminView) && $adminView >= 1)
+		if (isset($adminView) && is_numeric($adminView) && $adminView >= 1)
 		{
 			// get all the fields linked to the admin view
 			if ($addFields = ComponentbuilderHelper::getVar('admin_fields', (int) $adminView, 'admin_view', 'addfields'))

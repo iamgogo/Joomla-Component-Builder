@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,50 @@ use Joomla\Registry\Registry;
  * Componentbuilder Snippet Model
  */
 class ComponentbuilderModelSnippet extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'details' => array(
+			'left' => array(
+				'type',
+				'heading',
+				'description',
+				'usage'
+			),
+			'right' => array(
+				'snippet'
+			),
+			'above' => array(
+				'name',
+				'url',
+				'library'
+			)
+		),
+		'contributor' => array(
+			'left' => array(
+				'contributor_company',
+				'contributor_website'
+			),
+			'right' => array(
+				'contributor_name',
+				'contributor_email'
+			),
+			'fullwidth' => array(
+				'note_contributor_details'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -112,8 +149,23 @@ class ComponentbuilderModelSnippet extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.snippet', 'snippet', $options);
+		$form = $this->loadForm('com_componentbuilder.snippet', 'snippet', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -188,6 +240,13 @@ class ComponentbuilderModelSnippet extends JModelAdmin
 				$form->setValue($redirectedField, null, $redirectedValue);
 			}
 		}
+
+		// Only load the GUID if new item
+		if (0 == $id)
+		{
+			$form->setValue('guid', null, ComponentbuilderHelper::GUID());
+		}
+
 		return $form;
 	}
 
@@ -343,6 +402,8 @@ class ComponentbuilderModelSnippet extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.snippet', $data);
 		}
 
 		return $data;
@@ -787,6 +848,13 @@ class ComponentbuilderModelSnippet extends JModelAdmin
 			$data['contributor_email'] = $contributor['contributor_email'];
 			$data['contributor_website'] = $contributor['contributor_website'];
 		}
+
+		// Set the GUID if empty or not valid
+		if (isset($data['guid']) && !ComponentbuilderHelper::validGUID($data['guid']))
+		{
+			$data['guid'] = (string) ComponentbuilderHelper::GUID();
+		}
+
 
 		// Set the snippet string to base64 string.
 		if (isset($data['snippet']))

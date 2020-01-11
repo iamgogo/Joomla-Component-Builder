@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,31 @@ use Joomla\Registry\Registry;
  * Componentbuilder Component_dashboard Model
  */
 class ComponentbuilderModelComponent_dashboard extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'dashboard' => array(
+			'fullwidth' => array(
+				'note_php_dashboard_note',
+				'php_dashboard_methods',
+				'dashboard_tab'
+			),
+			'above' => array(
+				'joomla_component'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -51,6 +69,55 @@ class ComponentbuilderModelComponent_dashboard extends JModelAdmin
 		// get instance of the table
 		return JTable::getInstance($type, $prefix, $config);
 	}
+
+
+	/**
+	 * get VDM internal session key
+	 *
+	 * @return  string  the session key
+	 *
+	 */
+	public function getVDM()
+	{
+		if (!isset($this->vastDevMod))
+		{
+			$_id = 0; // new item probably (since it was not set in the getItem method)
+
+			if (empty($_id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $_id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('component_dashboard__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'component_dashboard__'.$id);
+				ComponentbuilderHelper::set('component_dashboard__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
+		}
+		return $this->vastDevMod;
+	}
+
     
 	/**
 	 * Method to get a single record.
@@ -95,6 +162,38 @@ class ComponentbuilderModelComponent_dashboard extends JModelAdmin
 				$item->dashboard_tab = $dashboard_tab->toArray();
 			}
 
+
+			if (empty($item->id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $item->id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('component_dashboard__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'component_dashboard__'.$id);
+				ComponentbuilderHelper::set('component_dashboard__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
 			// update the fields
 			$objectUpdate = new stdClass();
 			$objectUpdate->id = (int) $item->id;
@@ -151,8 +250,23 @@ class ComponentbuilderModelComponent_dashboard extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.component_dashboard', 'component_dashboard', $options);
+		$form = $this->loadForm('com_componentbuilder.component_dashboard', 'component_dashboard', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -384,6 +498,8 @@ class ComponentbuilderModelComponent_dashboard extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.component_dashboard', $data);
 		}
 
 		return $data;

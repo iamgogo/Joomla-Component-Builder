@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -53,7 +53,7 @@ class ComponentbuilderViewCompiler extends JViewLegacy
 		// Check for errors.
 		if (count($errors = $this->get('Errors')))
 		{
-			throw new Exception(implode("\n", $errors), 500);
+			throw new Exception(implode(PHP_EOL, $errors), 500);
 		}
 
 		parent::display($tpl);
@@ -231,16 +231,16 @@ class ComponentbuilderViewCompiler extends JViewLegacy
 		// Set the Custom JS script to view
 		$this->document->addScriptDeclaration("
 			function getComponentDetails_server(id){
-				var getUrl = JRouter(\"index.php?option=com_componentbuilder&task=ajax.getComponentDetails&format=json\");
+				var getUrl = JRouter(\"index.php?option=com_componentbuilder&task=ajax.getComponentDetails&format=json&raw=true\");
 				if(token.length > 0 && id > 0){
-					var request = 'token='+token+'&id='+id;
+					var request = token+'=1&id='+id;
 				}
 				return jQuery.ajax({
 					type: 'GET',
 					url: getUrl,
-					dataType: 'jsonp',
+					dataType: 'json',
 					data: request,
-					jsonp: 'callback'
+					jsonp: false
 				});
 			}
 			function getComponentDetails(id) {
@@ -250,7 +250,9 @@ class ComponentbuilderViewCompiler extends JViewLegacy
 					}
 				});
 			}
-			var noticeboard = \"https://www.vdm.io/componentbuilder-noticeboard-md\";
+			
+			var noticeboard = \"https://vdm.bz/componentbuilder-noticeboard-md\";
+			var proboard = \"https://vdm.bz/componentbuilder-pro-noticeboard-md\";
 			jQuery(document).ready(function () {
 				jQuery.get(noticeboard)
 				.success(function(board) { 
@@ -269,25 +271,37 @@ class ComponentbuilderViewCompiler extends JViewLegacy
 				.error(function(jqXHR, textStatus, errorThrown) { 
 					jQuery(\"#noticeboard-md\").html(all_is_good);
 				});
+				jQuery.get(proboard)
+				.success(function(board) { 
+					if (board.length > 5) {
+						jQuery(\"#proboard-md\").html(marked(board));
+					} else {
+						jQuery(\"#proboard-md\").html(all_is_good);
+					}
+				})
+				.error(function(jqXHR, textStatus, errorThrown) { 
+					jQuery(\"#proboard-md\").html(all_is_good);
+				});
 			});
 			// to check is READ/NEW
 			function getIS(type,notice){
 				if (type == 1) {
-					var getUrl = JRouter(\"index.php?option=com_componentbuilder&task=ajax.isNew&format=json\");
+					var getUrl = JRouter(\"index.php?option=com_componentbuilder&task=ajax.isNew&format=json&raw=true\");
 				} else if (type == 2) {
-					var getUrl = JRouter(\"index.php?option=com_componentbuilder&task=ajax.isRead&format=json\");
+					var getUrl = JRouter(\"index.php?option=com_componentbuilder&task=ajax.isRead&format=json&raw=true\");
 				}	
 				if(token.length > 0 && notice.length){
-					var request = \"token=\"+token+\"&notice=\"+notice;
+					var request = token+\"=1&notice=\"+notice;
 				}
 				return jQuery.ajax({
 					type: \"POST\",
 					url: getUrl,
-					dataType: \"jsonp\",
+					dataType: 'json',
 					data: request,
-					jsonp: \"callback\"
+					jsonp: false
 				});
 			}
+			
 		");
 	}
 
@@ -308,6 +322,11 @@ class ComponentbuilderViewCompiler extends JViewLegacy
 		{
 			// add Run Expansion button.
 			JToolBarHelper::custom('compiler.runExpansion', 'expand-2', '', 'COM_COMPONENTBUILDER_RUN_EXPANSION', false);
+		}
+		if ($this->canDo->get('compiler.translate'))
+		{
+			// add Translate button.
+			JToolBarHelper::custom('compiler.runTranslator', 'comments-2', '', 'COM_COMPONENTBUILDER_TRANSLATE', false);
 		}
 		if ($this->canDo->get('compiler.clear_tmp'))
 		{

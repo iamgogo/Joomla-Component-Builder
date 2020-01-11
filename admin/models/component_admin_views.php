@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,30 @@ use Joomla\Registry\Registry;
  * Componentbuilder Component_admin_views Model
  */
 class ComponentbuilderModelComponent_admin_views extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'views' => array(
+			'fullwidth' => array(
+				'note_on_admin_views',
+				'addadmin_views'
+			),
+			'above' => array(
+				'joomla_component'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -145,8 +162,23 @@ class ComponentbuilderModelComponent_admin_views extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.component_admin_views', 'component_admin_views', $options);
+		$form = $this->loadForm('com_componentbuilder.component_admin_views', 'component_admin_views', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -378,6 +410,8 @@ class ComponentbuilderModelComponent_admin_views extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.component_admin_views', $data);
 		}
 
 		return $data;

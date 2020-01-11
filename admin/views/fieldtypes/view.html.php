@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -37,6 +37,8 @@ class ComponentbuilderViewFieldtypes extends JViewLegacy
 		$this->listOrder = $this->escape($this->state->get('list.ordering'));
 		$this->listDirn = $this->escape($this->state->get('list.direction'));
 		$this->saveOrder = $this->listOrder == 'ordering';
+		// set the return here value
+		$this->return_here = urlencode(base64_encode((string) JUri::getInstance()));
 		// get global action permissions
 		$this->canDo = ComponentbuilderHelper::getActions('fieldtype');
 		$this->canEdit = $this->canDo->get('fieldtype.edit');
@@ -247,7 +249,7 @@ class ComponentbuilderViewFieldtypes extends JViewLegacy
 			'a.published' => JText::_('JSTATUS'),
 			'a.name' => JText::_('COM_COMPONENTBUILDER_FIELDTYPE_NAME_LABEL'),
 			'a.short_description' => JText::_('COM_COMPONENTBUILDER_FIELDTYPE_SHORT_DESCRIPTION_LABEL'),
-			'c.category_title' => JText::_('COM_COMPONENTBUILDER_FIELDTYPE_FIELDTYPE_CATEGORY'),
+			'c.category_title' => JText::_('COM_COMPONENTBUILDER_FIELDTYPE_FIELDTYPES_CATEGORIES'),
 			'a.id' => JText::_('JGRID_HEADING_ID')
 		);
 	}

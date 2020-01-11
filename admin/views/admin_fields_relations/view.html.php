@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -192,6 +192,10 @@ class ComponentbuilderViewAdmin_fields_relations extends JViewLegacy
 		$this->document->addScriptDeclaration("var token = '".JSession::getFormToken()."';");
 		$this->document->addScript(JURI::root() . $this->script, (ComponentbuilderHelper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');
 		$this->document->addScript(JURI::root() . "administrator/components/com_componentbuilder/views/admin_fields_relations/submitbutton.js", (ComponentbuilderHelper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript'); 
+		// add var key
+		$this->document->addScriptDeclaration("var vastDevMod = '" . $this->get('VDM') . "';");
+		// add return_here
+		$this->document->addScriptDeclaration("var return_here = '" . urlencode(base64_encode((string) JUri::getInstance())) . "';");
 		JText::script('view not acceptable. Error');
 	}
 }

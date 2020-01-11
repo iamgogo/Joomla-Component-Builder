@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,29 @@ use Joomla\Registry\Registry;
  * Componentbuilder Admin_custom_tabs Model
  */
 class ComponentbuilderModelAdmin_custom_tabs extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'tabs' => array(
+			'fullwidth' => array(
+				'tabs'
+			),
+			'above' => array(
+				'admin_view'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -114,8 +130,23 @@ class ComponentbuilderModelAdmin_custom_tabs extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.admin_custom_tabs', 'admin_custom_tabs', $options);
+		$form = $this->loadForm('com_componentbuilder.admin_custom_tabs', 'admin_custom_tabs', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -347,6 +378,8 @@ class ComponentbuilderModelAdmin_custom_tabs extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.admin_custom_tabs', $data);
 		}
 
 		return $data;

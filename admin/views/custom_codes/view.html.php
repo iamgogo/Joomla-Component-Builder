@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -37,6 +37,8 @@ class ComponentbuilderViewCustom_codes extends JViewLegacy
 		$this->listOrder = $this->escape($this->state->get('list.ordering'));
 		$this->listDirn = $this->escape($this->state->get('list.direction'));
 		$this->saveOrder = $this->listOrder == 'ordering';
+		// set the return here value
+		$this->return_here = urlencode(base64_encode((string) JUri::getInstance()));
 		// get global action permissions
 		$this->canDo = ComponentbuilderHelper::getActions('custom_code');
 		$this->canEdit = $this->canDo->get('custom_code.edit');
@@ -191,7 +193,15 @@ class ComponentbuilderViewCustom_codes extends JViewLegacy
 
 		// Set Component System Name Selection
 		$this->componentSystem_nameOptions = JFormHelper::loadFieldType('Component')->options;
-		if ($this->componentSystem_nameOptions)
+		// We do some sanitation for Component System Name filter
+		if (ComponentbuilderHelper::checkArray($this->componentSystem_nameOptions) &&
+			isset($this->componentSystem_nameOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->componentSystem_nameOptions[0]->value))
+		{
+			unset($this->componentSystem_nameOptions[0]);
+		}
+		// Only load Component System Name filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->componentSystem_nameOptions))
 		{
 			// Component System Name Filter
 			JHtmlSidebar::addFilter(
@@ -213,7 +223,15 @@ class ComponentbuilderViewCustom_codes extends JViewLegacy
 
 		// Set Target Selection
 		$this->targetOptions = $this->getTheTargetSelections();
-		if ($this->targetOptions)
+		// We do some sanitation for Target filter
+		if (ComponentbuilderHelper::checkArray($this->targetOptions) &&
+			isset($this->targetOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->targetOptions[0]->value))
+		{
+			unset($this->targetOptions[0]);
+		}
+		// Only load Target filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->targetOptions))
 		{
 			// Target Filter
 			JHtmlSidebar::addFilter(
@@ -235,7 +253,15 @@ class ComponentbuilderViewCustom_codes extends JViewLegacy
 
 		// Set Type Selection
 		$this->typeOptions = $this->getTheTypeSelections();
-		if ($this->typeOptions)
+		// We do some sanitation for Type filter
+		if (ComponentbuilderHelper::checkArray($this->typeOptions) &&
+			isset($this->typeOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->typeOptions[0]->value))
+		{
+			unset($this->typeOptions[0]);
+		}
+		// Only load Type filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->typeOptions))
 		{
 			// Type Filter
 			JHtmlSidebar::addFilter(
@@ -257,7 +283,15 @@ class ComponentbuilderViewCustom_codes extends JViewLegacy
 
 		// Set Comment Type Selection
 		$this->comment_typeOptions = $this->getTheComment_typeSelections();
-		if ($this->comment_typeOptions)
+		// We do some sanitation for Comment Type filter
+		if (ComponentbuilderHelper::checkArray($this->comment_typeOptions) &&
+			isset($this->comment_typeOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->comment_typeOptions[0]->value))
+		{
+			unset($this->comment_typeOptions[0]);
+		}
+		// Only load Comment Type filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->comment_typeOptions))
 		{
 			// Comment Type Filter
 			JHtmlSidebar::addFilter(

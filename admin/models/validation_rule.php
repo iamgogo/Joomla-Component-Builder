@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,35 @@ use Joomla\Registry\Registry;
  * Componentbuilder Validation_rule Model
  */
 class ComponentbuilderModelValidation_rule extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'extends_formrule' => array(
+			'left' => array(
+				'name'
+			),
+			'right' => array(
+				'short_description'
+			),
+			'fullwidth' => array(
+				'php'
+			),
+			'above' => array(
+				'inherit'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -52,10 +74,54 @@ class ComponentbuilderModelValidation_rule extends JModelAdmin
 		return JTable::getInstance($type, $prefix, $config);
 	}
 
+
+	/**
+	 * get VDM internal session key
+	 *
+	 * @return  string  the session key
+	 *
+	 */
 	public function getVDM()
 	{
+		if (!isset($this->vastDevMod))
+		{
+			$_id = 0; // new item probably (since it was not set in the getItem method)
+
+			if (empty($_id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $_id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('validation_rule__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'validation_rule__'.$id);
+				ComponentbuilderHelper::set('validation_rule__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
+		}
 		return $this->vastDevMod;
 	}
+
     
 	/**
 	 * Method to get a single record.
@@ -100,7 +166,7 @@ class ComponentbuilderModelValidation_rule extends JModelAdmin
 			else
 			{
 				$id = $item->id;
-			}			
+			}
 			// set the id and view name to session
 			if ($vdm = ComponentbuilderHelper::get('validation_rule__'.$id))
 			{
@@ -116,6 +182,13 @@ class ComponentbuilderModelValidation_rule extends JModelAdmin
 				$jinput = JFactory::getApplication()->input;
 				$return = $jinput->get('return', null, 'base64');
 				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
 			}
 			
 			if (!empty($item->id))
@@ -143,8 +216,23 @@ class ComponentbuilderModelValidation_rule extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.validation_rule', 'validation_rule', $options);
+		$form = $this->loadForm('com_componentbuilder.validation_rule', 'validation_rule', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -374,6 +462,8 @@ class ComponentbuilderModelValidation_rule extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.validation_rule', $data);
 		}
 
 		return $data;

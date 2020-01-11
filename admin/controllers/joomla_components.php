@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -121,7 +121,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 		// set massage
 		$message = JText::_('COM_COMPONENTBUILDER_YOU_DO_NOT_HAVE_PERMISSION_TO_RUN_THE_EXPANSION_MODULE');
 		// check if this user has the right to run expansion
-		if($user->authorise('compiler.run_expansion', 'com_componentbuilder'))
+		if($user->authorise('joomla_components.run_expansion', 'com_componentbuilder'))
 		{
 			// set massage
 			$message = JText::_('COM_COMPONENTBUILDER_EXPANSION_FAILED_PLEASE_CHECK_YOUR_SETTINGS_IN_THE_GLOBAL_OPTIONS_OF_JCB_UNDER_THE_DEVELOPMENT_METHOD_TAB');
@@ -159,7 +159,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 		// set page redirect
 		$redirect_url = JRoute::_('index.php?option=com_componentbuilder&view=joomla_components', false);
 		$message = JText::_('COM_COMPONENTBUILDER_COULD_NOT_CLEAR_THE_TMP_FOLDER');
-		if($user->authorise('core.admin', 'com_componentbuilder'))
+		if($user->authorise('joomla_components.clear_tmp', 'com_componentbuilder') && $user->authorise('core.options', 'com_componentbuilder'))
 		{
 			// get the model
 			$model = $this->getModel('compiler');
@@ -181,7 +181,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 	{
 		// check if import is allowed for this user.
 		$user = JFactory::getUser();
-		if ($user->authorise('joomla_component.import', 'com_componentbuilder') && $user->authorise('core.import', 'com_componentbuilder'))
+		if ($user->authorise('joomla_component.import_jcb_packages', 'com_componentbuilder') && $user->authorise('core.import', 'com_componentbuilder'))
 		{
 			$session = JFactory::getSession();
 			$session->set('backto_VDM_IMPORT', 'joomla_components');
@@ -205,7 +205,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 		$model = $this->getModel('Joomla_components');
 		// check if export is allowed for this user.
 		$model->user = JFactory::getUser();
-		if ($model->user->authorise('joomla_component.export', 'com_componentbuilder') && $model->user->authorise('core.export', 'com_componentbuilder'))
+		if ($model->user->authorise('joomla_component.export_jcb_packages', 'com_componentbuilder') && $model->user->authorise('core.export', 'com_componentbuilder'))
 		{
 			// Get the input
 			$input = JFactory::getApplication()->input;
@@ -286,13 +286,13 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 		$model = componentbuilderHelper::getModel('joomla_components', JPATH_ADMINISTRATOR . '/components/com_componentbuilder');
 		// set user
 		$model->user = $this->getApiUser();
+		// make sure to set active type (adding this script from custom code :)
+		$model->activeType = 'manualBackup';
 		// check if export is allowed for this user. (we need this sorry)
-		if ($model->user->authorise('joomla_component.export', 'com_componentbuilder') && $model->user->authorise('core.export', 'com_componentbuilder'))
+		if ($model->user->authorise('joomla_component.export_jcb_packages', 'com_componentbuilder') && $model->user->authorise('core.export', 'com_componentbuilder'))
 		{
 			// get all component IDs to backup
 			$pks = componentbuilderHelper::getComponentIDs();
-			// make sure to set active type to backup
-			$model->activeType = 'manualBackup';
 			// set auto loader
 			ComponentbuilderHelper::autoLoader('smart');
 			// manual backup message
@@ -413,7 +413,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 				}				
 			}
 			// quite only if auto backup (adding this script from custom code :)
-			if ('backup' === 'manualBackup')
+			if ('backup' === $model->activeType)
 			{
 				echo "# " . $backupNoticeStatus . "\n" .implode("\n", $backupNotice);
 				// clear session
@@ -424,7 +424,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 			return;
 		}
 		// quite only if auto backup (adding this script from custom code :)
-		if ('backup' === 'manualBackup')
+		if ('backup' === $model->activeType)
 		{
 			echo "# Error\n" . JText::_('COM_COMPONENTBUILDER_ACCESS_DENIED');
 			// clear session
@@ -443,7 +443,7 @@ class ComponentbuilderControllerJoomla_components extends JControllerAdmin
 		$model = $this->getModel('Joomla_components');
 		// check if export is allowed for this user.
 		$model->user = JFactory::getUser();
-		if ($model->user->authorise('joomla_component.cloner', 'com_componentbuilder') && $model->user->authorise('core.copy', 'com_componentbuilder'))
+		if ($model->user->authorise('joomla_component.clone', 'com_componentbuilder') && $model->user->authorise('core.copy', 'com_componentbuilder'))
 		{
 			// Get the input
 			$input = JFactory::getApplication()->input;

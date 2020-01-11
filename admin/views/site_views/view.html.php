@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -37,6 +37,8 @@ class ComponentbuilderViewSite_views extends JViewLegacy
 		$this->listOrder = $this->escape($this->state->get('list.ordering'));
 		$this->listDirn = $this->escape($this->state->get('list.direction'));
 		$this->saveOrder = $this->listOrder == 'ordering';
+		// set the return here value
+		$this->return_here = urlencode(base64_encode((string) JUri::getInstance()));
 		// get global action permissions
 		$this->canDo = ComponentbuilderHelper::getActions('site_view');
 		$this->canEdit = $this->canDo->get('core.edit');
@@ -191,7 +193,15 @@ class ComponentbuilderViewSite_views extends JViewLegacy
 
 		// Set Main Get Name Selection
 		$this->main_getNameOptions = JFormHelper::loadFieldType('Maingets')->options;
-		if ($this->main_getNameOptions)
+		// We do some sanitation for Main Get Name filter
+		if (ComponentbuilderHelper::checkArray($this->main_getNameOptions) &&
+			isset($this->main_getNameOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->main_getNameOptions[0]->value))
+		{
+			unset($this->main_getNameOptions[0]);
+		}
+		// Only load Main Get Name filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->main_getNameOptions))
 		{
 			// Main Get Name Filter
 			JHtmlSidebar::addFilter(
@@ -213,7 +223,15 @@ class ComponentbuilderViewSite_views extends JViewLegacy
 
 		// Set Add Php Ajax Selection
 		$this->add_php_ajaxOptions = $this->getTheAdd_php_ajaxSelections();
-		if ($this->add_php_ajaxOptions)
+		// We do some sanitation for Add Php Ajax filter
+		if (ComponentbuilderHelper::checkArray($this->add_php_ajaxOptions) &&
+			isset($this->add_php_ajaxOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->add_php_ajaxOptions[0]->value))
+		{
+			unset($this->add_php_ajaxOptions[0]);
+		}
+		// Only load Add Php Ajax filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->add_php_ajaxOptions))
 		{
 			// Add Php Ajax Filter
 			JHtmlSidebar::addFilter(
@@ -235,7 +253,15 @@ class ComponentbuilderViewSite_views extends JViewLegacy
 
 		// Set Add Custom Button Selection
 		$this->add_custom_buttonOptions = $this->getTheAdd_custom_buttonSelections();
-		if ($this->add_custom_buttonOptions)
+		// We do some sanitation for Add Custom Button filter
+		if (ComponentbuilderHelper::checkArray($this->add_custom_buttonOptions) &&
+			isset($this->add_custom_buttonOptions[0]->value) &&
+			!ComponentbuilderHelper::checkString($this->add_custom_buttonOptions[0]->value))
+		{
+			unset($this->add_custom_buttonOptions[0]);
+		}
+		// Only load Add Custom Button filter if it has values
+		if (ComponentbuilderHelper::checkArray($this->add_custom_buttonOptions))
 		{
 			// Add Custom Button Filter
 			JHtmlSidebar::addFilter(

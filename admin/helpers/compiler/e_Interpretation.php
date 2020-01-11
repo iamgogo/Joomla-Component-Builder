@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -17,6 +17,20 @@ defined('_JEXEC') or die('Restricted access');
  */
 class Interpretation extends Fields
 {
+
+	/**
+	 * The global config Field Sets
+	 *
+	 * @var     array
+	 */
+	public $configFieldSets = array();
+
+	/**
+	 * The global config Field Sets Custom Fields
+	 *
+	 * @var     array
+	 */
+	public $configFieldSetsCustomField = array();
 
 	/**
 	 * The contributors
@@ -96,11 +110,11 @@ class Interpretation extends Fields
 	public $validationFixBuilder = array();
 
 	/**
-	 * The edit body script builder
+	 * The view script builder
 	 *
 	 * @var    array
 	 */
-	public $editBodyViewScriptBuilder = array();
+	public $viewScriptBuilder = array();
 
 	/**
 	 * The target relation control
@@ -177,7 +191,7 @@ class Interpretation extends Fields
 	 *
 	 * @var    array
 	 */
-	protected $permissionFields = array();
+	public $permissionFields = array();
 
 	/**
 	 * Custom Admin View List Link
@@ -200,6 +214,13 @@ class Interpretation extends Fields
 	 */
 	protected $hasIdRequest = array();
 	protected $libwarning = array();
+
+	/**
+	 * alignment names
+	 * 
+	 * @var    array
+	 */
+	protected $alignmentOptions = array(1 => 'left', 2 => 'right', 3 => 'fullwidth', 4 => 'above', 5 => 'under', 6 => 'leftside', 7 => 'rightside');
 
 	/**
 	 * Constructor
@@ -238,7 +259,7 @@ class Interpretation extends Fields
 		if (isset($this->componentData->add_email_helper) && $this->componentData->add_email_helper)
 		{
 			// set email helper in place with component name
-			$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+			$component = $this->componentCodeName;
 			$Component = $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh];
 			$target = array('admin' => 'emailer');
 			$done = $this->buildDynamique($target, 'emailer', $component);
@@ -355,12 +376,12 @@ class Interpretation extends Fields
 		$bool[] = $this->_t(3) . "return \$this->" . $globalbool . ";";
 		$bool[] = $this->_t(2) . "}";
 		$bool[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the global params";
-		$bool[] = $this->_t(2) . "\$params = JComponentHelper::getParams('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "', true);";
+		$bool[] = $this->_t(2) . "\$params = JComponentHelper::getParams('com_" . $this->componentCodeName . "', true);";
 		$bool[] = $this->_t(2) . "\$whmcs_key = \$params->get('whmcs_key', null);";
 		$bool[] = $this->_t(2) . "if (\$whmcs_key)";
 		$bool[] = $this->_t(2) . "{";
 		$bool[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " load the file";
-		$bool[] = $this->_t(3) . "JLoader::import( 'whmcs', JPATH_ADMINISTRATOR .'/components/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "');";
+		$bool[] = $this->_t(3) . "JLoader::import( 'whmcs', JPATH_ADMINISTRATOR .'/components/com_" . $this->componentCodeName . "');";
 		$bool[] = $this->_t(3) . "\$the = new WHMCS(\$whmcs_key);";
 		$bool[] = $this->_t(3) . "\$this->" . $globalbool . " = \$the->_is;";
 		$bool[] = $this->_t(3) . "return \$this->" . $globalbool . ";";
@@ -387,12 +408,12 @@ class Interpretation extends Fields
 		$helper[] = $this->_t(1) . "public static function isGenuine()";
 		$helper[] = $this->_t(1) . "{";
 		$helper[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the global params";
-		$helper[] = $this->_t(2) . "\$params = JComponentHelper::getParams('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "', true);";
+		$helper[] = $this->_t(2) . "\$params = JComponentHelper::getParams('com_" . $this->componentCodeName . "', true);";
 		$helper[] = $this->_t(2) . "\$whmcs_key = \$params->get('whmcs_key', null);";
 		$helper[] = $this->_t(2) . "if (\$whmcs_key)";
 		$helper[] = $this->_t(2) . "{";
 		$helper[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " load the file";
-		$helper[] = $this->_t(3) . "JLoader::import( 'whmcs', JPATH_ADMINISTRATOR .'/components/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "');";
+		$helper[] = $this->_t(3) . "JLoader::import( 'whmcs', JPATH_ADMINISTRATOR .'/components/com_" . $this->componentCodeName . "');";
 		$helper[] = $this->_t(3) . "\$the = new WHMCS(\$whmcs_key);";
 		$helper[] = $this->_t(3) . "return \$the->_is;";
 		$helper[] = $this->_t(2) . "}";
@@ -614,7 +635,7 @@ class Interpretation extends Fields
 		}
 		// give notice of this issue
 		$this->app->enqueueMessage(JText::_('<hr /><h3>WHMCS Error</h3>'), 'Error');
-		$this->app->enqueueMessage(JText::sprintf('The <b>WHMCS class</b> could not be added to this component. You will need to enable the add-on in the Joomla Component area (Add WHMCS)->Yes.', $this->libraries[$id]->name), 'Error');
+		$this->app->enqueueMessage(JText::sprintf('The <b>WHMCS class</b> could not be added to this component. You will need to enable the add-on in the Joomla Component area (Add WHMCS)->Yes. If you have done this, then please check that you have your own <b>Basic Encryption<b/> set in the global settings of JCB. Then open and save this component again, making sure that your WHMCS settings are still correct.', $this->libraries[$id]->name), 'Error');
 		return "//" . $this->setLine(__LINE__) . " The WHMCS class could not be added to this component." . PHP_EOL . "//" . $this->setLine(__LINE__) . " Please note that you will need to enable the add-on in the Joomla Component area (Add WHMCS)->Yes.";
 	}
 
@@ -628,12 +649,12 @@ class Interpretation extends Fields
 		// WHMCS_ENCRYPT_FILE
 		$this->fileContentStatic[$this->hhh . 'WHMCS_ENCRYPT_FILE' . $this->hhh] = '';
 		// check if encryption is ative
-		if ((isset($this->basicEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->basicEncryptionBuilder)) ||
-			(isset($this->mediumEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->mediumEncryptionBuilder)) ||
-			(isset($this->whmcsEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->whmcsEncryptionBuilder)) ||
+		if ((isset($this->basicFieldModeling) && ComponentbuilderHelper::checkArray($this->basicFieldModeling)) ||
+			(isset($this->mediumFieldModeling) && ComponentbuilderHelper::checkArray($this->mediumFieldModeling)) ||
+			(isset($this->whmcsFieldModeling) && ComponentbuilderHelper::checkArray($this->whmcsFieldModeling)) ||
 			$this->componentData->add_license)
 		{
-			if (isset($this->whmcsEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->whmcsEncryptionBuilder) || $this->componentData->add_license)
+			if (isset($this->whmcsFieldModeling) && ComponentbuilderHelper::checkArray($this->whmcsFieldModeling) || $this->componentData->add_license)
 			{
 				// set whmcs encrypt file into place
 				$target = array('admin' => 'whmcs');
@@ -644,7 +665,7 @@ class Interpretation extends Fields
 				$this->fileContentStatic[$this->hhh . 'WHMCS_ENCRYPT_FILE' . $this->hhh] = PHP_EOL . $this->_t(3) . "<filename>whmcs.php</filename>";
 			}
 			// get component name
-			$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+			$component = $this->componentCodeName;
 			// set the getCryptKey function to the helper class
 			$function = array();
 			// start building the getCryptKey function/class method
@@ -662,7 +683,7 @@ class Interpretation extends Fields
 			$function[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the global params";
 			$function[] = $this->_t(2) . "\$params = JComponentHelper::getParams('com_" . $component . "', true);";
 			// add the basic option
-			if (isset($this->basicEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->basicEncryptionBuilder))
+			if (isset($this->basicFieldModeling) && ComponentbuilderHelper::checkArray($this->basicFieldModeling))
 			{
 				$function[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Basic Encryption Type";
 				$function[] = $this->_t(2) . "if ('basic' === \$type)";
@@ -675,7 +696,7 @@ class Interpretation extends Fields
 				$function[] = $this->_t(2) . "}";
 			}
 			// add the medium option
-			if (isset($this->mediumEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->mediumEncryptionBuilder))
+			if (isset($this->mediumFieldModeling) && ComponentbuilderHelper::checkArray($this->mediumFieldModeling))
 			{
 				$function[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Medium Encryption Type";
 				$function[] = $this->_t(2) . "if ('medium' === \$type)";
@@ -698,7 +719,7 @@ class Interpretation extends Fields
 				$function[] = $this->_t(2) . "}";
 			}
 			// add the whmcs option
-			if (isset($this->whmcsEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->whmcsEncryptionBuilder) || $this->componentData->add_license)
+			if (isset($this->whmcsFieldModeling) && ComponentbuilderHelper::checkArray($this->whmcsFieldModeling) || $this->componentData->add_license)
 			{
 				$function[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " WHMCS Encryption Type";
 				$function[] = $this->_t(2) . "if ('whmcs' === \$type || 'advanced' === \$type)";
@@ -717,7 +738,7 @@ class Interpretation extends Fields
 			$function[] = PHP_EOL . $this->_t(2) . "return \$default;";
 			$function[] = $this->_t(1) . "}";
 			// set the getMediumCryptKey class/method
-			if (isset($this->mediumEncryptionBuilder) && ComponentbuilderHelper::checkArray($this->mediumEncryptionBuilder))
+			if (isset($this->mediumFieldModeling) && ComponentbuilderHelper::checkArray($this->mediumFieldModeling))
 			{
 				$function[] = PHP_EOL . PHP_EOL . $this->_t(1) . "/**";
 				$function[] = $this->_t(1) . " *	The Medium Encryption Key";
@@ -850,7 +871,7 @@ class Interpretation extends Fields
 			// UPDATESERVER
 			$updateServer = array();
 			$updateServer[] = PHP_EOL . $this->_t(1) . "<updateservers>";
-			$updateServer[] = $this->_t(2) . '<server type="extension" enabled="1" element="com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '" name="' . $this->fileContentStatic[$this->hhh . 'Component_name' . $this->hhh] . '">' . $this->componentData->update_server_url . '</server>';
+			$updateServer[] = $this->_t(2) . '<server type="extension" enabled="1" element="com_' . $this->componentCodeName . '" name="' . $this->fileContentStatic[$this->hhh . 'Component_name' . $this->hhh] . '">' . $this->componentData->update_server_url . '</server>';
 			$updateServer[] = $this->_t(1) . '</updateservers>';
 			// return the array to string
 			$updateServer = implode(PHP_EOL, $updateServer);
@@ -1001,7 +1022,7 @@ class Interpretation extends Fields
 			$updateXML[] = $this->_t(1) . "<update>";
 			$updateXML[] = $this->_t(2) . "<name>" . $this->fileContentStatic[$this->hhh . 'Component_name' . $this->hhh] . "</name>";
 			$updateXML[] = $this->_t(2) . "<description>" . $this->fileContentStatic[$this->hhh . 'SHORT_DESCRIPTION' . $this->hhh] . "</description>";
-			$updateXML[] = $this->_t(2) . "<element>com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "</element>";
+			$updateXML[] = $this->_t(2) . "<element>com_" . $this->componentCodeName . "</element>";
 			$updateXML[] = $this->_t(2) . "<type>component</type>";
 			$updateXML[] = $this->_t(2) . "<version>" . $update['version'] . "</version>";
 			$updateXML[] = $this->_t(2) . '<infourl title="' . $this->fileContentStatic[$this->hhh . 'Component_name' . $this->hhh] . '!">' . $this->fileContentStatic[$this->hhh . 'AUTHORWEBSITE' . $this->hhh] . '</infourl>';
@@ -1084,7 +1105,7 @@ class Interpretation extends Fields
 		$help[] = $this->_t(2) . "\$db	= JFactory::getDbo();";
 		$help[] = $this->_t(2) . "\$query	= \$db->getQuery(true);";
 		$help[] = $this->_t(2) . "\$query->select(array('a.id','a.groups','a.target','a.type','a.article','a.url'));";
-		$help[] = $this->_t(2) . "\$query->from('#__" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_help_document AS a');";
+		$help[] = $this->_t(2) . "\$query->from('#__" . $this->componentCodeName . "_help_document AS a');";
 		$help[] = $this->_t(2) . "\$query->where('a." . $target . " = '.\$db->quote(\$view));";
 		$help[] = $this->_t(2) . "\$query->where('a.location = " . (int) $location . "');";
 		$help[] = $this->_t(2) . "\$query->where('a.published = 1');";
@@ -1141,7 +1162,7 @@ class Interpretation extends Fields
 		$help[] = $this->_t(1) . "protected static function loadHelpTextLink(\$id)";
 		$help[] = $this->_t(1) . "{";
 		$help[] = $this->_t(2) . "\$token = JSession::getFormToken();";
-		$help[] = $this->_t(2) . "return 'index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&task=help.getText&id=' . (int) \$id . '&token=' . \$token;";
+		$help[] = $this->_t(2) . "return 'index.php?option=com_" . $this->componentCodeName . "&task=help.getText&id=' . (int) \$id . '&token=' . \$token;";
 		$help[] = $this->_t(1) . "}";
 		// return the help methods
 		return implode(PHP_EOL, $help);
@@ -1470,19 +1491,49 @@ class Interpretation extends Fields
 		return '';
 	}
 
+	public function setAdminViewMenu(&$viewName_single, &$view)
+	{
+		$xml = '';
+		// build the file target values
+		$target = array('site' => $viewName_single);
+		// build the edit.xml file
+		if ($this->buildDynamique($target, 'admin_menu'))
+		{
+			// set the lang
+			$lang = ComponentbuilderHelper::safeString('com_' . $this->componentCodeName . '_menu_' . $viewName_single, 'U');
+			$this->setLangContent('adminsys', $lang . '_TITLE', 'Create ' . $view['settings']->name_single);
+			$this->setLangContent('adminsys', $lang . '_OPTION', 'Create ' . $view['settings']->name_single);
+			$this->setLangContent('adminsys', $lang . '_DESC', $view['settings']->short_description);
+			//start loading xml
+			$xml = '<?xml version="1.0" encoding="utf-8" ?>';
+			$xml .= PHP_EOL . '<metadata>';
+			$xml .= PHP_EOL . $this->_t(1) . '<layout title="' . $lang . '_TITLE" option="' . $lang . '_OPTION">';
+			$xml .= PHP_EOL . $this->_t(2) . '<message>';
+			$xml .= PHP_EOL . $this->_t(3) . '<![CDATA[' . $lang . '_DESC]]>';
+			$xml .= PHP_EOL . $this->_t(2) . '</message>';
+			$xml .= PHP_EOL . $this->_t(1) . '</layout>';
+			$xml .= PHP_EOL . '</metadata>';
+		}
+		else
+		{
+			$this->app->enqueueMessage(JText::sprintf('<hr /><p>Site menu for <b>%s</b> was not build.</p>', $viewName_single), 'Warning');
+		}
+		return $xml;
+	}
+
 	public function setCustomViewMenu(&$view)
 	{
 		$xml = '';
-		// build the file
+		// build the file target values
 		$target = array('site' => $view['settings']->code);
-		$done = $this->buildDynamique($target, 'menu');
-		if ($done)
+		// build the default.xml file
+		if ($this->buildDynamique($target, 'menu'))
 		{
 			// set the lang
-			$lang = ComponentbuilderHelper::safeString('com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '_menu_' . $view['settings']->code, 'U');
-			$this->langContent['adminsys'][$lang . '_TITLE'] = $view['settings']->name;
-			$this->langContent['adminsys'][$lang . '_OPTION'] = $view['settings']->name;
-			$this->langContent['adminsys'][$lang . '_DESC'] = $view['settings']->description;
+			$lang = ComponentbuilderHelper::safeString('com_' . $this->componentCodeName . '_menu_' . $view['settings']->code, 'U');
+			$this->setLangContent('adminsys', $lang . '_TITLE', $view['settings']->name);
+			$this->setLangContent('adminsys', $lang . '_OPTION', $view['settings']->name);
+			$this->setLangContent('adminsys', $lang . '_DESC',  $view['settings']->description);
 			//start loading xml
 			$xml = '<?xml version="1.0" encoding="utf-8" ?>';
 			$xml .= PHP_EOL . '<metadata>';
@@ -1496,8 +1547,8 @@ class Interpretation extends Fields
 				$xml .= PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Add fields to the request variables for the layout. -->';
 				$xml .= PHP_EOL . $this->_t(1) . '<fields name="request">';
 				$xml .= PHP_EOL . $this->_t(2) . '<fieldset name="request"';
-				$xml .= PHP_EOL . $this->_t(3) . 'addrulepath="/administrator/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/models/rules"';
-				$xml .= PHP_EOL . $this->_t(3) . 'addfieldpath="/administrator/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/models/fields">';
+				$xml .= PHP_EOL . $this->_t(3) . 'addrulepath="/administrator/components/com_' . $this->componentCodeName . '/models/rules"';
+				$xml .= PHP_EOL . $this->_t(3) . 'addfieldpath="/administrator/components/com_' . $this->componentCodeName . '/models/fields">';
 				if (isset($this->hasIdRequest[$view['settings']->code]) && ComponentbuilderHelper::checkArray($this->hasIdRequest[$view['settings']->code]))
 				{
 					foreach ($this->hasIdRequest[$view['settings']->code] as $requestFieldXML)
@@ -1525,14 +1576,18 @@ class Interpretation extends Fields
 					$xml .= PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Adding page parameters -->';
 					$xml .= PHP_EOL . $this->_t(1) . '<fields name="params">';
 					$xml .= PHP_EOL . $this->_t(2) . '<fieldset name="basic" label="COM_' . $this->fileContentStatic[$this->hhh . 'COMPONENT' . $this->hhh] . '"';
-					$xml .= PHP_EOL . $this->_t(3) . 'addrulepath="/administrator/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/models/rules"';
-					$xml .= PHP_EOL . $this->_t(3) . 'addfieldpath="/administrator/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/models/fields">';
+					$xml .= PHP_EOL . $this->_t(3) . 'addrulepath="/administrator/components/com_' . $this->componentCodeName . '/models/rules"';
+					$xml .= PHP_EOL . $this->_t(3) . 'addfieldpath="/administrator/components/com_' . $this->componentCodeName . '/models/fields">';
 					$xml .= implode($this->_t(3), $params);
 					$xml .= PHP_EOL . $this->_t(2) . '</fieldset>';
 					$xml .= PHP_EOL . $this->_t(1) . '</fields>';
 				}
 			}
 			$xml .= PHP_EOL . '</metadata>';
+		}
+		else
+		{
+			$this->app->enqueueMessage(JText::sprintf('<hr /><p>Site menu for <b>%s</b> was not build.</p>', $view['settings']->code), 'Warning');
 		}
 		return $xml;
 	}
@@ -1547,10 +1602,9 @@ class Interpretation extends Fields
 			$target = ComponentbuilderHelper::getBetween($field, 'display="', '"');
 			if (!ComponentbuilderHelper::checkString($target) || $target === 'menu')
 			{
-
 				$field = str_replace('display="menu"', '', $field);
-				// we load fields that have options
-				if (strpos($field, 'Option Set. -->') !== false && strpos($field, $menuSetter) === false && !ComponentbuilderHelper::checkString($target))
+				// we update fields that have options if not only added to menu
+				if ($target !== 'menu' && strpos($field, 'Option Set. -->') !== false && strpos($field, $menuSetter) === false && !ComponentbuilderHelper::checkString($target))
 				{
 					// we add the global option
 					$field = str_replace('Option Set. -->', $this->setLine(__LINE__) . ' Global & Option Set. -->' . PHP_EOL . $this->_t(3) . '<option value="">' . PHP_EOL . $this->_t(4) . 'JGLOBAL_USE_GLOBAL</option>', $field);
@@ -1781,6 +1835,8 @@ class Interpretation extends Fields
 				// now loop the array
 				foreach ($array['decode'] as $decode)
 				{
+					$if = '';
+					$decoder = '';
 					if ('json' === $decode)
 					{
 						$if = PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "if (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkJson(" . $string . "->" . $field . "))" . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "{";
@@ -1793,23 +1849,39 @@ class Interpretation extends Fields
 						// base64_decode
 						$decoder = $string . "->" . $field . " = base64_decode(" . $string . "->" . $field . ");";
 					}
-					elseif (strpos($decode, '_encryption') !== false)
+					elseif (strpos($decode, '_encryption') !== false || 'expert_mode' === $decode)
 					{
 						foreach ($this->cryptionTypes as $cryptionType)
 						{
-							if ($cryptionType . '_encryption' === $decode)
+							if ($cryptionType . '_encryption' === $decode || $cryptionType . '_mode' === $decode)
 							{
-								$if = PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "if (!empty(" . $string . "->" . $field . ") && \$" . $cryptionType . "key && !is_numeric(" . $string . "->" . $field . ") && " . $string . "->" . $field . " === base64_encode(base64_decode(" . $string . "->" . $field . ", true)))" . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "{";
-								// set decryption
-								$decoder = $string . "->" . $field . " = rtrim(\$" . $cryptionType . "->decryptString(" . $string . "->" . $field . "), " . '"\0"' . ");";
+								if ('expert' !== $cryptionType)
+								{
+									$if = PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "if (!empty(" . $string . "->" . $field . ") && \$" . $cryptionType . "key && !is_numeric(" . $string . "->" . $field . ") && " . $string . "->" . $field . " === base64_encode(base64_decode(" . $string . "->" . $field . ", true)))" . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "{";
+									// set decryption
+									$decoder = $string . "->" . $field . " = rtrim(\$" . $cryptionType . "->decryptString(" . $string . "->" . $field . "), " . '"\0"' . ");";
+								}
+								elseif (isset($this->{$cryptionType . 'FieldModeling'}[$array['admin_view']][$field]))
+								{
+									$_placeholder_for_field = array('[[[field]]]' => $string . "->" . $field);
+									$fieldDecode .= $this->setPlaceholders(PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . implode(PHP_EOL . $this->_t(1) . $tab . $this->_t(1), $this->{$cryptionType . 'FieldModeling'}[$array['admin_view']][$field]['get']), $_placeholder_for_field);
+								}
+								// activate site decryption
 								$this->siteDecrypt[$cryptionType][$code] = true;
 							}
 						}
 					}
-
-					// build decoder string
-					$fieldDecode .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Check if we can decode " . $field .$if . PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Decode " . $field;
-					$fieldDecode .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . $decoder . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "}";
+					// check if we have found the details
+					if (ComponentbuilderHelper::checkString($if))
+					{
+						// build decoder string
+						$fieldDecode .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Check if we can decode " . $field .$if . PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Decode " . $field;
+					}
+					if (ComponentbuilderHelper::checkString($decoder))
+					{
+						// build decoder string
+						$fieldDecode .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . $decoder . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "}";
+					}
 				}
 			}
 		}
@@ -1824,7 +1896,7 @@ class Interpretation extends Fields
 		$Component = $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh];
 		// set context 
 		$context = (isset($get['context'])) ? $get['context'] : $code;
-		$context = 'com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '.' . $context;
+		$context = 'com_' . $this->componentCodeName . '.' . $context;
 		// load parms builder only once
 		$params = false;
 		foreach ($checker as $field => $array)
@@ -2067,6 +2139,30 @@ class Interpretation extends Fields
 		return $filters;
 	}
 
+	public function setCustomViewGroup(&$group, &$code, $tab = '')
+	{
+		$grouping = '';
+		if (ComponentbuilderHelper::checkArray($group))
+		{
+			foreach ($group as $gr)
+			{
+				list($as, $field) = array_map('trim', explode('.', $gr['table_key']));
+				// set the string
+				$string = "\$query->group('" . $gr['table_key'] . "');";
+				// sort where
+				if ($as === 'a' || (isset($this->siteMainGet[$this->target][$code][$as]) && ComponentbuilderHelper::checkString($this->siteMainGet[$this->target][$code][$as])))
+				{
+					$grouping .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . $string;
+				}
+				else
+				{
+					$this->otherGroup[$this->target][$code][$as][$field] = PHP_EOL . $this->_t(2) . $string;
+				}
+			}
+		}
+		return $grouping;
+	}
+
 	public function setCustomViewOrder(&$order, &$code, $tab = '')
 	{
 		$ordering = '';
@@ -2253,7 +2349,7 @@ class Interpretation extends Fields
 			if (isset($this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh]) && $this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh] != $view['settings']->code)
 			{
 				$redirectMessage = $this->_t(3) . "//" . $this->setLine(__LINE__) . " redirect away to the default view if no access allowed.";
-				$redirectString = "JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh] . "')";
+				$redirectString = "JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=" . $this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh] . "')";
 			}
 			else
 			{
@@ -2261,15 +2357,12 @@ class Interpretation extends Fields
 				$redirectString = 'JURI::root()';
 			}
 			$accessCheck[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if this user has permission to access item";
-			$accessCheck[] = $this->_t(2) . "if (!" . $userString . "->authorise('site." . $view['settings']->code . ".access', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+			$accessCheck[] = $this->_t(2) . "if (!" . $userString . "->authorise('site." . $view['settings']->code . ".access', 'com_" . $this->componentCodeName . "'))";
 			$accessCheck[] = $this->_t(2) . "{";
 			$accessCheck[] = $this->_t(3) . "\$app = JFactory::getApplication();";
 			// set lang
 			$langKeyWord = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Not authorised to view ' . $view['settings']->code . '!', 'U');
-			if (!isset($this->langContent['site'][$langKeyWord]))
-			{
-				$this->langContent['site'][$langKeyWord] = 'Not authorised to view ' . $view['settings']->code . '!';
-			}
+			$this->setLangContent('site', $langKeyWord, 'Not authorised to view ' . $view['settings']->code . '!');
 			$accessCheck[] = $this->_t(3) . "\$app->enqueueMessage(JText:" . ":_('" . $langKeyWord . "'), 'error');";
 			$accessCheck[] = $redirectMessage;
 			$accessCheck[] = $this->_t(3) . "\$app->redirect(" . $redirectString . ");";
@@ -2313,11 +2406,25 @@ class Interpretation extends Fields
 			// set main get query
 			$getItem .= $this->setCustomViewQuery($get->main_get, $code, $tab);
 			// setup filters
-			$getItem .= $this->setCustomViewFilter($get->filter, $code, $tab);
+			if (isset($get->filter))
+			{
+				$getItem .= $this->setCustomViewFilter($get->filter, $code, $tab);
+			}
 			// setup Where
-			$getItem .= $this->setCustomViewWhere($get->where, $code, $tab);
+			if (isset($get->where))
+			{
+				$getItem .= $this->setCustomViewWhere($get->where, $code, $tab);
+			}
 			// setup ordering
-			$getItem .= $this->setCustomViewOrder($get->order, $code, $tab);
+			if (isset($get->order))
+			{
+				$getItem .= $this->setCustomViewOrder($get->order, $code, $tab);
+			}
+			// setup grouping
+			if (isset($get->group))
+			{
+				$getItem .= $this->setCustomViewGroup($get->group, $code, $tab);
+			}
 			// get ready to get query
 			$getItem .= PHP_EOL . PHP_EOL . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Reset the query using our newly populated query object.";
 			$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$db->setQuery(\$query);";
@@ -2334,10 +2441,7 @@ class Interpretation extends Fields
 			{
 				$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "\$app = JFactory::getApplication();";
 				$langKeyWoord = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Not found or access denied', 'U');
-				if (!isset($this->langContent[$this->lang][$langKeyWoord]))
-				{
-					$this->langContent[$this->lang][$langKeyWoord] = 'Not found, or access denied.';
-				}
+				$this->setLangContent($this->lang, $langKeyWoord, 'Not found, or access denied.');
 				$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " If no data is found redirect to default page and show warning.";
 				$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "\$app->enqueueMessage(JText:" . ":_('" . $langKeyWoord . "'), 'warning');";
 				if ('site' === $this->target)
@@ -2345,7 +2449,7 @@ class Interpretation extends Fields
 					// check that the default and the redirect page is not the same
 					if (isset($this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh]) && $this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh] != $code)
 					{
-						$redirectString = "JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh] . "')";
+						$redirectString = "JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=" . $this->fileContentStatic[$this->hhh . 'SITE_DEFAULT_VIEW' . $this->hhh] . "')";
 					}
 					else
 					{
@@ -2355,7 +2459,7 @@ class Interpretation extends Fields
 				}
 				else
 				{
-					$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "\$app->redirect('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "');";
+					$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "\$app->redirect('index.php?option=com_" . $this->componentCodeName . "');";
 				}
 				$getItem .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "return false;";
 			}
@@ -2423,10 +2527,21 @@ class Interpretation extends Fields
 			{
 				if (isset($this->siteDecrypt[$cryptionType][$code]) && $this->siteDecrypt[$cryptionType][$code])
 				{
-					$script .= PHP_EOL . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
-					$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
-					$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
-					$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+					if ('expert' !== $cryptionType)
+					{
+						$script .= PHP_EOL . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
+						$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
+						$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
+						$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+					}
+					elseif (isset($this->{$cryptionType . 'FieldModelInitiator'}[$code]) 
+						&& isset($this->{$cryptionType . 'FieldModelInitiator'}[$code]['get']))
+					{
+						foreach ($this->{$cryptionType . 'FieldModelInitiator'}[$code]['get'] as $block)
+						{
+							$script .= PHP_EOL . $this->_t(1) . implode(PHP_EOL . $this->_t(1), $block);
+						}
+					}
 				}
 			}
 			$getItem = $script . $getItem;
@@ -2471,16 +2586,25 @@ class Interpretation extends Fields
 	{
 		$methods = '';
 		// then set the needed custom methods
-		if (ComponentbuilderHelper::checkArray($main_view['settings']->custom_get))
+		if (ComponentbuilderHelper::checkArray($main_view) && isset($main_view['settings']) && ComponentbuilderHelper::checkObject($main_view['settings']) && isset($main_view['settings']->custom_get))
+		{
+			$_dynamic_get = $main_view['settings']->custom_get;
+		}
+		elseif (ComponentbuilderHelper::checkObject($main_view) && isset($main_view->custom_get))
+		{
+			$_dynamic_get = $main_view->custom_get;
+		}
+		// check if we have an array
+		if (isset($_dynamic_get) && ComponentbuilderHelper::checkArray($_dynamic_get))
 		{
 			// start dynamic build
-			foreach ($main_view['settings']->custom_get as $view)
+			foreach ($_dynamic_get as $view)
 			{
 				// fix alias to use in code
 				$view->code = ComponentbuilderHelper::safeString($code);
 				$view->Code = ComponentbuilderHelper::safeString($view->code, 'F');
 				$view->CODE = ComponentbuilderHelper::safeString($view->code, 'U');
-				$main = '';
+				$main       = '';
 				if ($view->gettype == 3)
 				{
 					// SITE_GET_ITEM <<<DYNAMIC>>>
@@ -2510,7 +2634,7 @@ class Interpretation extends Fields
 					$main .= PHP_EOL . $this->_t(3) . "\$this->initSet = true;";
 					$main .= PHP_EOL . $this->_t(2) . "}";
 					$main .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the global params";
-					$main .= PHP_EOL . $this->_t(2) . "\$globalParams = JComponentHelper::getParams('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "', true);";
+					$main .= PHP_EOL . $this->_t(2) . "\$globalParams = JComponentHelper::getParams('com_" . $this->componentCodeName . "', true);";
 					// set php before listquery
 					if (isset($view->add_php_getlistquery) && $view->add_php_getlistquery == 1 && isset($view->php_getlistquery) && ComponentbuilderHelper::checkString($view->php_getlistquery))
 					{
@@ -2549,7 +2673,10 @@ class Interpretation extends Fields
 			}
 		}
 		// load uikit get method
-		$methods .= $this->setUikitGetMethod();
+		if (ComponentbuilderHelper::checkArray($main_view) && isset($main_view['settings']))
+		{
+			$methods .= $this->setUikitGetMethod();
+		}
 
 		return $methods;
 	}
@@ -2798,6 +2925,14 @@ class Interpretation extends Fields
 								$methods .= $string;
 							}
 						}
+						// add any other grouping that was set
+						if (isset($this->otherGroup[$this->target][$default['code']][$default['as']]) && ComponentbuilderHelper::checkArray($this->otherGroup[$this->target][$default['code']][$default['as']]))
+						{
+							foreach ($this->otherGroup[$this->target][$default['code']][$default['as']] as $field => $string)
+							{
+								$methods .= $string;
+							}
+						}
 						$methods .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Reset the query using our newly populated query object.";
 						$methods .= PHP_EOL . $this->_t(2) . "\$db->setQuery(\$query);";
 						$methods .= PHP_EOL . $this->_t(2) . "\$db->execute();";
@@ -2913,10 +3048,21 @@ class Interpretation extends Fields
 						{
 							if (isset($this->siteDecrypt[$cryptionType][$code]) && $this->siteDecrypt[$cryptionType][$code])
 							{
-								$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
-								$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
-								$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
-								$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);" . PHP_EOL;
+								if ('expert' !== $cryptionType)
+								{
+									$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
+									$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
+									$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
+									$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);" . PHP_EOL;
+								}
+								elseif (isset($this->{$cryptionType . 'FieldModelInitiator'}[$code]) 
+									&& isset($this->{$cryptionType . 'FieldModelInitiator'}[$code]['get']))
+								{
+									foreach ($this->{$cryptionType . 'FieldModelInitiator'}[$code]['get'] as $block)
+									{
+										$script .= PHP_EOL . $this->_t(2) . implode(PHP_EOL . $this->_t(2), $block);
+									}
+								}
 							}
 						}
 						$methods = str_replace($this->hhh . 'CRYPT' . $this->hhh, $script, $methods);
@@ -3026,16 +3172,30 @@ class Interpretation extends Fields
 			$getItem .= PHP_EOL . $this->_t(2) . "\$db = JFactory::getDbo();";
 			$getItem .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Create a new query object.";
 			$getItem .= PHP_EOL . $this->_t(2) . "\$query = \$db->getQuery(true);";
-			// check if there is any custom script
-			$getItem .= $this->getCustomScriptBuilder($this->target . '_php_getlistquery', $code, '', PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Filtering.", true);
 			// set main get query
 			$getItem .= $this->setCustomViewQuery($get->main_get, $code);
+			// check if there is any custom script
+			$getItem .= $this->getCustomScriptBuilder($this->target . '_php_getlistquery', $code, '', PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Filtering.", true);
 			// setup filters
-			$getItem .= $this->setCustomViewFilter($get->filter, $code);
+			if (isset($get->filter))
+			{
+				$getItem .= $this->setCustomViewFilter($get->filter, $code);
+			}
 			// setup where
-			$getItem .= $this->setCustomViewWhere($get->where, $code);
+			if (isset($get->where))
+			{
+				$getItem .= $this->setCustomViewWhere($get->where, $code);
+			}
 			// setup ordering
-			$getItem .= $this->setCustomViewOrder($get->order, $code);
+			if (isset($get->order))
+			{
+				$getItem .= $this->setCustomViewOrder($get->order, $code);
+			}
+			// setup grouping
+			if (isset($get->group))
+			{
+				$getItem .= $this->setCustomViewGroup($get->group, $code);
+			}
 			if ($return)
 			{
 				// return the query object
@@ -3156,10 +3316,21 @@ class Interpretation extends Fields
 		{
 			if ($this->siteDecrypt[$cryptionType][$code])
 			{
-				$script .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
-				$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
-				$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
-				$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+				if ('expert' !== $cryptionType)
+				{
+					$script .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
+					$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
+					$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
+					$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+				}
+				elseif (isset($this->{$cryptionType . 'FieldModelInitiator'}[$code]) 
+					&& isset($this->{$cryptionType . 'FieldModelInitiator'}[$code]['get']))
+				{
+					foreach ($this->{$cryptionType . 'FieldModelInitiator'}[$code]['get'] as $block)
+					{
+						$script .= PHP_EOL . $this->_t(2) . implode(PHP_EOL . $this->_t(2), $block);
+					}
+				}
 			}
 		}
 		return $script . $getItem;
@@ -3247,17 +3418,19 @@ class Interpretation extends Fields
 			$method .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Check for errors.";
 			$method .= PHP_EOL . $this->_t(2) . "if (count(\$errors = \$this->get('Errors')))";
 			$method .= PHP_EOL . $this->_t(2) . "{";
-			$method .= PHP_EOL . $this->_t(3) . "throw new Exception(implode(" . '"\n", $errors), 500);';
+			$method .= PHP_EOL . $this->_t(3) . "throw new Exception(implode(PHP_EOL, \$errors), 500);";
 			$method .= PHP_EOL . $this->_t(2) . "}";
 			// add events if needed
 			if ($view['settings']->main_get->gettype == 1 && ComponentbuilderHelper::checkArray($view['settings']->main_get->plugin_events))
 			{
 				$method .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Process the content plugins.";
-				$method .= PHP_EOL . $this->_t(2) . "JPluginHelper::importPlugin('content');";
-				$method .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Setup Event Object.";
-				$method .= PHP_EOL . $this->_t(2) . "\$this->item->event = new stdClass;";
-				$method .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Check if item has params, or pass global params";
-				$method .= PHP_EOL . $this->_t(2) . "\$params = (isset(\$this->item->params) && " . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkJson(\$this->item->params)) ? json_decode(\$this->item->params) : \$this->params;";
+				$method .= PHP_EOL . $this->_t(2) . "if (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkObject(\$this->item))";
+				$method .= PHP_EOL . $this->_t(2) . "{";
+				$method .= PHP_EOL . $this->_t(3) . "JPluginHelper::importPlugin('content');";
+				$method .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Setup Event Object.";
+				$method .= PHP_EOL . $this->_t(3) . "\$this->item->event = new stdClass;";
+				$method .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Check if item has params, or pass global params";
+				$method .= PHP_EOL . $this->_t(3) . "\$params = (isset(\$this->item->params) && " . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkJson(\$this->item->params)) ? json_decode(\$this->item->params) : \$this->params;";
 				// load the defaults
 				foreach ($view['settings']->main_get->plugin_events as $plugin_event)
 				{
@@ -3266,15 +3439,16 @@ class Interpretation extends Fields
 					{
 						// TODO the onContentPrepare already gets triggered on the fields of its relation
 						// $method .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " onContentPrepare Event Trigger.";
-						// $method .= PHP_EOL . $this->_t(2) . "\$dispatcher->trigger('onContentPrepare', array ('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . ".article', &\$this->item, &\$this->params, 0));";
+						// $method .= PHP_EOL . $this->_t(2) . "\$dispatcher->trigger('onContentPrepare', array ('com_" . $this->componentCodeName . ".article', &\$this->item, &\$this->params, 0));";
 					}
 					else
 					{
-						$method .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " " . $plugin_event . " Event Trigger.";
-						$method .= PHP_EOL . $this->_t(2) . "\$results = \$dispatcher->trigger('" . $plugin_event . "', array('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $view['settings']->context . "', &\$this->item, &\$params, 0));";
-						$method .= PHP_EOL . $this->_t(2) . '$this->item->event->' . $plugin_event . ' = trim(implode("\n", $results));';
+						$method .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " " . $plugin_event . " Event Trigger.";
+						$method .= PHP_EOL . $this->_t(3) . "\$results = \$dispatcher->trigger('" . $plugin_event . "', array('com_" . $this->componentCodeName . "." . $view['settings']->context . "', &\$this->item, &\$params, 0));";
+						$method .= PHP_EOL . $this->_t(3) . '$this->item->event->' . $plugin_event . ' = trim(implode("\n", $results));';
 					}
 				}
+				$method .= PHP_EOL . $this->_t(2) . "}";
 			}
 			$method .= PHP_EOL . PHP_EOL . $this->_t(2) . "parent::display(\$tpl);";
 		}
@@ -3505,14 +3679,14 @@ class Interpretation extends Fields
 					// Load to lang
 					$keyLang = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($custom_button['name'], 'U');
 					$keyCode = ComponentbuilderHelper::safeString($custom_button['name']);
-					$this->langContent[$this->lang][$keyLang] = trim($custom_button['name']);
+					$this->setLangContent($this->lang, $keyLang, $custom_button['name']);
 					// load the button
 					if (3 !== $type && ($custom_button['target'] != 2 || $this->target === 'site'))
 					{
 						// add cpanel button TODO does not work well on site with permissions
 						if ($custom_button['target'] == 2 || $this->target === 'site')
 						{
-							$buttons[] = $this->_t(1) . $tab . $this->_t(1) . "if (\$this->user->authorise('" . $viewName . "." . $keyCode . "', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+							$buttons[] = $this->_t(1) . $tab . $this->_t(1) . "if (\$this->user->authorise('" . $viewName . "." . $keyCode . "', 'com_" . $this->componentCodeName . "'))";
 						}
 						else
 						{
@@ -3533,7 +3707,7 @@ class Interpretation extends Fields
 							{
 								$this->onlyFunctionButton[$viewsName] = array();
 							}
-							$this->onlyFunctionButton[$viewsName][] = $this->_t(1) . $tab . "if (\$this->user->authorise('" . $viewName . "." . $keyCode . "', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+							$this->onlyFunctionButton[$viewsName][] = $this->_t(1) . $tab . "if (\$this->user->authorise('" . $viewName . "." . $keyCode . "', 'com_" . $this->componentCodeName . "'))";
 							$this->onlyFunctionButton[$viewsName][] = $this->_t(1) . $tab . "{";
 							$this->onlyFunctionButton[$viewsName][] = $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " add " . $custom_button['name'] . " button.";
 							$this->onlyFunctionButton[$viewsName][] = $this->_t(1) . $tab . $this->_t(1) . "JToolBarHelper::custom('" . $viewsName . "." . $custom_button['method'] . "', '" . $custom_button['icomoon'] . "', '', '" . $keyLang . "', false);";
@@ -3541,7 +3715,7 @@ class Interpretation extends Fields
 						}
 						else
 						{
-							$buttons[] = $this->_t(1) . $tab . $this->_t(1) . "if (\$this->user->authorise('" . $viewName . "." . $keyCode . "', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+							$buttons[] = $this->_t(1) . $tab . $this->_t(1) . "if (\$this->user->authorise('" . $viewName . "." . $keyCode . "', 'com_" . $this->componentCodeName . "'))";
 							$buttons[] = $this->_t(1) . $tab . $this->_t(1) . "{";
 							$buttons[] = $this->_t(1) . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " add " . $custom_button['name'] . " button.";
 							$buttons[] = $this->_t(1) . $tab . $this->_t(2) . "JToolBarHelper::custom('" . $viewsName . "." . $custom_button['method'] . "', '" . $custom_button['icomoon'] . "', '', '" . $keyLang . "', '" . $validateSelection . "');";
@@ -3669,11 +3843,11 @@ class Interpretation extends Fields
 			// set path
 			if ('site' === $this->target)
 			{
-				$path = '/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/assets/js/' . $view['settings']->code . '.js';
+				$path = '/components/com_' . $this->componentCodeName . '/assets/js/' . $view['settings']->code . '.js';
 			}
 			else
 			{
-				$path = '/administrator/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/assets/js/' . $view['settings']->code . '.js';
+				$path = '/administrator/components/com_' . $this->componentCodeName . '/assets/js/' . $view['settings']->code . '.js';
 			}
 			// add script to file
 			$this->fileContentDynamic[$view['settings']->code][$this->hhh . $TARGET . '_JAVASCRIPT_FILE' . $this->hhh] = $this->setPlaceholders($view['settings']->javascript_file, $this->placeholders);
@@ -3829,7 +4003,7 @@ class Interpretation extends Fields
 			$chart[] = PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " add the google chart builder class.";
 			$chart[] = $this->_t(2) . "require_once JPATH_COMPONENT_ADMINISTRATOR.'/helpers/chartbuilder.php';";
 			$chart[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " load the google chart js.";
-			$chart[] = $this->_t(2) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/js/google.jsapi.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$chart[] = $this->_t(2) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/js/google.jsapi.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			$chart[] = $this->_t(2) . "\$this->document->addScript('https://canvg.googlecode.com/svn/trunk/rgbcolor.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			$chart[] = $this->_t(2) . "\$this->document->addScript('https://canvg.googlecode.com/svn/trunk/canvg.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			return implode(PHP_EOL, $chart);
@@ -3839,26 +4013,40 @@ class Interpretation extends Fields
 
 	public function setLibrariesLoader($view)
 	{
+		// check call sig
+		if (isset($view['settings']) && isset($view['settings']->code))
+		{
+			$code = $view['settings']->code;
+			$view_active = true;
+		}
+		elseif (isset($view->code_name))
+		{
+			$code = $view->code_name;
+			$view_active = false;
+		}
 		// reset bucket
 		$setter = '';
 		// allways load these in
-		$setter .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " always make sure jquery is loaded.";
-		$setter .= PHP_EOL . $this->_t(2) . "JHtml::_('jquery.framework');";
-		$setter .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Load the header checker class.";
-		if ($this->target === 'site')
+		if ($view_active)
 		{
-			$setter .= PHP_EOL . $this->_t(2) . "require_once( JPATH_COMPONENT_SITE.'/helpers/headercheck.php' );";
+			$setter .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " always make sure jquery is loaded.";
+			$setter .= PHP_EOL . $this->_t(2) . "JHtml::_('jquery.framework');";
+			$setter .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Load the header checker class.";
+			if ($this->target === 'site')
+			{
+				$setter .= PHP_EOL . $this->_t(2) . "require_once( JPATH_COMPONENT_SITE.'/helpers/headercheck.php' );";
+			}
+			else
+			{
+				$setter .= PHP_EOL . $this->_t(2) . "require_once( JPATH_COMPONENT_ADMINISTRATOR.'/helpers/headercheck.php' );";
+			}
+			$setter .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Initialize the header checker.";
+			$setter .= PHP_EOL . $this->_t(2) . "\$HeaderCheck = new " . $this->componentCodeName . "HeaderCheck;";
 		}
-		else
-		{
-			$setter .= PHP_EOL . $this->_t(2) . "require_once( JPATH_COMPONENT_ADMINISTRATOR.'/helpers/headercheck.php' );";
-		}
-		$setter .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Initialize the header checker.";
-		$setter .= PHP_EOL . $this->_t(2) . "\$HeaderCheck = new " . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "HeaderCheck;";
 		// check if this view should get libraries
-		if (isset($this->libManager[$this->target][$view['settings']->code]) && ComponentbuilderHelper::checkArray($this->libManager[$this->target][$view['settings']->code]))
+		if (isset($this->libManager[$this->target][$code]) && ComponentbuilderHelper::checkArray($this->libManager[$this->target][$code]))
 		{
-			foreach ($this->libManager[$this->target][$view['settings']->code] as $id => $true)
+			foreach ($this->libManager[$this->target][$code] as $id => $true)
 			{
 				if (isset($this->libraries[$id]) && ComponentbuilderHelper::checkObject($this->libraries[$id]) && isset($this->libraries[$id]->document) && ComponentbuilderHelper::checkString($this->libraries[$id]->document))
 				{
@@ -3870,6 +4058,11 @@ class Interpretation extends Fields
 					$setter .= $this->setLibraryDocument($id);
 				}
 			}
+		}
+		// convert back to $document if module call (oops :)
+		if (!$view_active)
+		{
+			return str_replace('$this->document->', '$document->', $setter);
 		}
 		return $setter;
 	}
@@ -4057,15 +4250,15 @@ class Interpretation extends Fields
 	{
 		if (strpos($root, '/media/') !== false && strpos($root, '/admin/') === false && strpos($root, '/site/') === false)
 		{
-			return str_replace('/media/', '/media/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/', $root);
+			return str_replace('/media/', '/media/com_' . $this->componentCodeName . '/', $root);
 		}
 		elseif (strpos($root, '/media/') === false && strpos($root, '/admin/') !== false && strpos($root, '/site/') === false)
 		{
-			return str_replace('/admin/', '/administrator/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/', $root);
+			return str_replace('/admin/', '/administrator/components/com_' . $this->componentCodeName . '/', $root);
 		}
 		elseif (strpos($root, '/media/') === false && strpos($root, '/admin/') === false && strpos($root, '/site/') !== false)
 		{
-			return str_replace('/site/', '/components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/', $root);
+			return str_replace('/site/', '/components/com_' . $this->componentCodeName . '/', $root);
 		}
 		return $root;
 	}
@@ -4102,12 +4295,12 @@ class Interpretation extends Fields
 			$setter .= PHP_EOL . PHP_EOL . $tabV . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The uikit css.";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "if ((!\$HeaderCheck->css_loaded('uikit.min') || \$uikit == 1) && \$uikit != 2 && \$uikit != 3)";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "{";
-			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/css/uikit'.\$style.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v2/css/uikit'.\$style.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The uikit js.";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "if ((!\$HeaderCheck->js_loaded('uikit.min') || \$uikit == 1) && \$uikit != 2 && \$uikit != 3)";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "{";
-			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/js/uikit'.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v2/js/uikit'.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "}";
 		}
 		// load the components need
@@ -4152,16 +4345,16 @@ class Interpretation extends Fields
 			$setter .= PHP_EOL . $tabV . $this->_t(4) . "foreach (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::\$uk_components[\$class] as \$name)";
 			$setter .= PHP_EOL . $tabV . $this->_t(4) . "{";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "//" . $this->setLine(__LINE__) . " check if the CSS file exists.";
-			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css'))";
+			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->componentCodeName . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css'))";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "{";
 			$setter .= PHP_EOL . $tabV . $this->_t(6) . "//" . $this->setLine(__LINE__) . " load the css.";
-			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "//" . $this->setLine(__LINE__) . " check if the JavaScript file exists.";
-			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/js/components/'.\$name.\$size.'.js'))";
+			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->componentCodeName . "/uikit-v2/js/components/'.\$name.\$size.'.js'))";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "{";
 			$setter .= PHP_EOL . $tabV . $this->_t(6) . "//" . $this->setLine(__LINE__) . " load the js.";
-			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/js/components/'.\$name.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('type' => 'text/javascript', 'async' => 'async') : true);";
+			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v2/js/components/'.\$name.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('type' => 'text/javascript', 'async' => 'async') : true);";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(4) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(3) . "}";
@@ -4181,16 +4374,16 @@ class Interpretation extends Fields
 			$setter .= PHP_EOL . $tabV . $this->_t(4) . "foreach (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::\$uk_components[\$class] as \$name)";
 			$setter .= PHP_EOL . $tabV . $this->_t(4) . "{";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "//" . $this->setLine(__LINE__) . " check if the CSS file exists.";
-			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css'))";
+			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->componentCodeName . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css'))";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "{";
 			$setter .= PHP_EOL . $tabV . $this->_t(6) . "//" . $this->setLine(__LINE__) . " load the css.";
-			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v2/css/components/'.\$name.\$style.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "//" . $this->setLine(__LINE__) . " check if the JavaScript file exists.";
-			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/js/components/'.\$name.\$size.'.js'))";
+			$setter .= PHP_EOL . $tabV . $this->_t(5) . "if (JFile::exists(JPATH_ROOT.'/media/com_" . $this->componentCodeName . "/uikit-v2/js/components/'.\$name.\$size.'.js'))";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "{";
 			$setter .= PHP_EOL . $tabV . $this->_t(6) . "//" . $this->setLine(__LINE__) . " load the js.";
-			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v2/js/components/'.\$name.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('type' => 'text/javascript', 'async' => 'async') : true);";
+			$setter .= PHP_EOL . $tabV . $this->_t(6) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v2/js/components/'.\$name.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('type' => 'text/javascript', 'async' => 'async') : true);";
 			$setter .= PHP_EOL . $tabV . $this->_t(5) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(4) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(3) . "}";
@@ -4210,12 +4403,13 @@ class Interpretation extends Fields
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The uikit css.";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "if ((!\$HeaderCheck->css_loaded('uikit.min') || \$uikit == 1) && \$uikit != 2 && \$uikit != 3)";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "{";
-			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v3/css/uikit'.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v3/css/uikit'.\$size.'.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "}";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The uikit js.";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "if ((!\$HeaderCheck->js_loaded('uikit.min') || \$uikit == 1) && \$uikit != 2 && \$uikit != 3)";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "{";
-			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/uikit-v3/js/uikit'.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v3/js/uikit'.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$setter .= PHP_EOL . $tabV . $this->_t(3) . "\$this->document->addScript(JURI::root(true) .'/media/com_" . $this->componentCodeName . "/uikit-v3/js/uikit-icons'.\$size.'.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			$setter .= PHP_EOL . $tabV . $this->_t(2) . "}";
 			if (2 == $this->uikit)
 			{
@@ -4285,7 +4479,7 @@ class Interpretation extends Fields
 			{
 				case 1:
 					// top
-					return '<form action="<?php echo JRoute::_(\'index.php?option=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '\'); ?>" method="post" name="adminForm" id="adminForm">' . PHP_EOL;
+					return '<form action="<?php echo JRoute::_(\'index.php?option=com_' . $this->componentCodeName . '\'); ?>" method="post" name="adminForm" id="adminForm">' . PHP_EOL;
 					break;
 				case 2:
 					// bottom
@@ -4476,19 +4670,38 @@ class Interpretation extends Fields
 		// decryption
 		foreach ($this->cryptionTypes as $cryptionType)
 		{
-			if (isset($this->{$cryptionType . 'EncryptionBuilder'}[$view]) && ComponentbuilderHelper::checkArray($this->{$cryptionType . 'EncryptionBuilder'}[$view]))
+			if (isset($this->{$cryptionType . 'FieldModeling'}[$view]) && ComponentbuilderHelper::checkArray($this->{$cryptionType . 'FieldModeling'}[$view]))
 			{
-				$script .= PHP_EOL . PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
-				$script .= PHP_EOL . $this->_t(3) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
-				$script .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
-				$script .= PHP_EOL . $this->_t(3) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
-				foreach ($this->{$cryptionType . 'EncryptionBuilder'}[$view] as $baseString)
+				if ('expert' !== $cryptionType)
 				{
-					$script .= PHP_EOL . PHP_EOL . $this->_t(3) . "if (!empty(\$item->" . $baseString . ") && \$" . $cryptionType . "key && !is_numeric(\$item->" . $baseString . ") && \$item->" . $baseString . " === base64_encode(base64_decode(\$item->" . $baseString . ", true)))";
-					$script .= PHP_EOL . $this->_t(3) . "{";
-					$script .= PHP_EOL . $this->_t(4) . "//" . $this->setLine(__LINE__) . " " . $cryptionType . " decrypt data " . $baseString . ".";
-					$script .= PHP_EOL . $this->_t(4) . "\$item->" . $baseString . " = rtrim(\$" . $cryptionType . "->decryptString(\$item->" . $baseString . "), " . '"\0"' . ");";
-					$script .= PHP_EOL . $this->_t(3) . "}";
+					$script .= PHP_EOL . PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption.";
+					$script .= PHP_EOL . $this->_t(3) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
+					$script .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
+					$script .= PHP_EOL . $this->_t(3) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+					foreach ($this->{$cryptionType . 'FieldModeling'}[$view] as $baseString)
+					{
+						$script .= PHP_EOL . PHP_EOL . $this->_t(3) . "if (!empty(\$item->" . $baseString . ") && \$" . $cryptionType . "key && !is_numeric(\$item->" . $baseString . ") && \$item->" . $baseString . " === base64_encode(base64_decode(\$item->" . $baseString . ", true)))";
+						$script .= PHP_EOL . $this->_t(3) . "{";
+						$script .= PHP_EOL . $this->_t(4) . "//" . $this->setLine(__LINE__) . " " . $cryptionType . " decrypt data " . $baseString . ".";
+						$script .= PHP_EOL . $this->_t(4) . "\$item->" . $baseString . " = rtrim(\$" . $cryptionType . "->decryptString(\$item->" . $baseString . "), " . '"\0"' . ");";
+						$script .= PHP_EOL . $this->_t(3) . "}";
+					}
+				}
+				else
+				{
+					if (isset($this->{$cryptionType . 'FieldModelInitiator'}[$view]['get']))
+					{
+						foreach ($this->{$cryptionType . 'FieldModelInitiator'}[$view]['get'] as $block)
+						{
+							$script .= PHP_EOL . $this->_t(3) . implode(PHP_EOL . $this->_t(3), $block);
+						}
+					}
+					// set the expert script
+					foreach ($this->{$cryptionType . 'FieldModeling'}[$view] as $baseString => $opener_)
+					{
+						$_placeholder_for_field = array('[[[field]]]' => '$item->' . $baseString);
+						$script .= $this->setPlaceholders(PHP_EOL . $this->_t(3) . implode(PHP_EOL . $this->_t(3), $opener_['get']), $_placeholder_for_field);
+					}
 				}
 			}
 		}
@@ -4556,7 +4769,7 @@ class Interpretation extends Fields
 		$script = '';
 		// get component name
 		$Component = $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh];
-		$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+		$component = $this->componentCodeName;
 		// check if there was script added before modeling of data
 		$script .= $this->getCustomScriptBuilder('php_before_save', $view, PHP_EOL . PHP_EOL);
 		// turn array into JSON string
@@ -4620,19 +4833,39 @@ class Interpretation extends Fields
 		// turn string into encrypted string
 		foreach ($this->cryptionTypes as $cryptionType)
 		{
-			if (isset($this->{$cryptionType . 'EncryptionBuilder'}[$view]) && ComponentbuilderHelper::checkArray($this->{$cryptionType . 'EncryptionBuilder'}[$view]))
+			if (isset($this->{$cryptionType . 'FieldModeling'}[$view]) && ComponentbuilderHelper::checkArray($this->{$cryptionType . 'FieldModeling'}[$view]))
 			{
-				$script .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption key.";
-				$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
-				$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the encryption object";
-				$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
-				foreach ($this->{$cryptionType . 'EncryptionBuilder'}[$view] as $baseString)
+				if ('expert' !== $cryptionType)
 				{
-					$script .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Encrypt data " . $baseString . ".";
-					$script .= PHP_EOL . $this->_t(2) . "if (isset(\$data['" . $baseString . "']) && \$" . $cryptionType . "key)";
-					$script .= PHP_EOL . $this->_t(2) . "{";
-					$script .= PHP_EOL . $this->_t(3) . "\$data['" . $baseString . "'] = \$" . $cryptionType . "->encryptString(\$data['" . $baseString . "']);";
-					$script .= PHP_EOL . $this->_t(2) . "}";
+					$script .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption key.";
+					$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
+					$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the encryption object";
+					$script .= PHP_EOL . $this->_t(2) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+					foreach ($this->{$cryptionType . 'FieldModeling'}[$view] as $baseString)
+					{
+						$script .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Encrypt data " . $baseString . ".";
+						$script .= PHP_EOL . $this->_t(2) . "if (isset(\$data['" . $baseString . "']) && \$" . $cryptionType . "key)";
+						$script .= PHP_EOL . $this->_t(2) . "{";
+						$script .= PHP_EOL . $this->_t(3) . "\$data['" . $baseString . "'] = \$" . $cryptionType . "->encryptString(\$data['" . $baseString . "']);";
+						$script .= PHP_EOL . $this->_t(2) . "}";
+					}
+				}
+				else
+				{
+					if (isset($this->{$cryptionType . 'FieldModelInitiator'}[$view]) && 
+						isset($this->{$cryptionType . 'FieldModelInitiator'}[$view]['save']))
+					{
+						foreach ($this->{$cryptionType . 'FieldModelInitiator'}[$view]['save'] as $block)
+						{
+							$script .= PHP_EOL . $this->_t(2) . implode(PHP_EOL . $this->_t(2), $block);
+						}
+					}
+					// set the expert script
+					foreach ($this->{$cryptionType . 'FieldModeling'}[$view] as $baseString => $locker_)
+					{
+						$_placeholder_for_field = array('[[[field]]]' => "\$data['" . $baseString . "']");
+						$script .= $this->setPlaceholders(PHP_EOL . $this->_t(2) . implode(PHP_EOL . $this->_t(2), $locker_['save']), $_placeholder_for_field);
+					}
 				}
 			}
 		}
@@ -4646,7 +4879,7 @@ class Interpretation extends Fields
 		// reset
 		$oserver = "";
 		// set component name
-		$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+		$component = $this->componentCodeName;
 		// add the tags observer
 		if (isset($this->tagsBuilder[$view]) && ComponentbuilderHelper::checkString($this->tagsBuilder[$view]))
 		{
@@ -4679,7 +4912,7 @@ class Interpretation extends Fields
 		if (isset($this->componentData->admin_views) && ComponentbuilderHelper::checkArray($this->componentData->admin_views))
 		{
 			// set component name
-			$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+			$component = $this->componentCodeName;
 			// reset
 			$dbStuff = array();
 			// start loading the content type data
@@ -4766,7 +4999,7 @@ class Interpretation extends Fields
 		$script = $this->setComponentToContentTypes('install');
 
 		// set the component name
-		$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+		$component = $this->componentCodeName;
 
 		// add the assets table update for permissions rules
 		if (isset($this->assetsRules) && ComponentbuilderHelper::checkArray($this->assetsRules))
@@ -4841,7 +5074,7 @@ class Interpretation extends Fields
 		if (isset($this->componentData->admin_views) && ComponentbuilderHelper::checkArray($this->componentData->admin_views))
 		{
 			$script .= PHP_EOL . $this->_t(3) . 'echo \'<a target="_blank" href="' . $this->fileContentStatic[$this->hhh . 'AUTHORWEBSITE' . $this->hhh] . '" title="' . $this->fileContentStatic[$this->hhh . 'Component_name' . $this->hhh] . '">';
-			$script .= PHP_EOL . $this->_t(4) . '<img src="components/com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '/assets/images/vdm-component.' . $this->componentImageType . '"/>';
+			$script .= PHP_EOL . $this->_t(4) . '<img src="components/com_' . $this->componentCodeName . '/assets/images/vdm-component.' . $this->componentImageType . '"/>';
 			$script .= PHP_EOL . $this->_t(4) . '</a>';
 			$script .= PHP_EOL . $this->_t(4) . "<h3>Upgrade to Version " . $this->fileContentStatic[$this->hhh . 'ACTUALVERSION' . $this->hhh] . " Was Successful! Let us know if anything is not working as expected.</h3>';";
 		}
@@ -4859,7 +5092,7 @@ class Interpretation extends Fields
 		$script = '';
 		if (isset($this->uninstallScriptBuilder) && ComponentbuilderHelper::checkArray($this->uninstallScriptBuilder))
 		{
-			$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+			$component = $this->componentCodeName;
 			// start loading the data to delet
 			$script .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get Application object";
 			$script .= PHP_EOL . $this->_t(2) . "\$app = JFactory::getApplication();";
@@ -5121,7 +5354,7 @@ class Interpretation extends Fields
 			$script[] = $this->_t(2) . "\$folders = JFolder::folders(\$installPath);";
 			$script[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if we have folders we may want to copy";
 			$script[] = $this->_t(2) . "\$doNotCopy = array('media','admin','site'); // Joomla already deals with these";
-			$script[] = $this->_t(2) . "if (count(\$folders) > 1)";
+			$script[] = $this->_t(2) . "if (count((array) \$folders) > 1)";
 			$script[] = $this->_t(2) . "{";
 			$script[] = $this->_t(3) . "foreach (\$folders as \$folder)";
 			$script[] = $this->_t(3) . "{";
@@ -5265,20 +5498,22 @@ class Interpretation extends Fields
 			$routeHelper[] = $this->_t(4) . "'" . $viewName_single . "'  => array((int) \$id)";
 			$routeHelper[] = $this->_t(3) . ");";
 			$routeHelper[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Create the link";
-			$routeHelper[] = $this->_t(3) . "\$link = 'index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $viewName_single . "&id='. \$id;";
+			$routeHelper[] = $this->_t(3) . "\$link = 'index.php?option=com_" . $this->componentCodeName . "&view=" . $viewName_single . "&id='. \$id;";
 			$routeHelper[] = $this->_t(2) . "}";
 			$routeHelper[] = $this->_t(2) . "else";
 			$routeHelper[] = $this->_t(2) . "{";
 			$routeHelper[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Initialize the needel array.";
-			$routeHelper[] = $this->_t(3) . "\$needles = array();";
-			$routeHelper[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . "Create the link but don't add the id.";
-			$routeHelper[] = $this->_t(3) . "\$link = 'index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $viewName_single . "';";
+			$routeHelper[] = $this->_t(3) . "\$needles = array(";
+			$routeHelper[] = $this->_t(4) . "'" . $viewName_single . "'  => array()";
+			$routeHelper[] = $this->_t(3) . ");";
+			$routeHelper[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Create the link but don't add the id.";
+			$routeHelper[] = $this->_t(3) . "\$link = 'index.php?option=com_" . $this->componentCodeName . "&view=" . $viewName_single . "';";
 			$routeHelper[] = $this->_t(2) . "}";
 			if ('category' != $viewName_single && 'categories' != $viewName_single)
 			{
 				$routeHelper[] = $this->_t(2) . "if (\$catid > 1)";
 				$routeHelper[] = $this->_t(2) . "{";
-				$routeHelper[] = $this->_t(3) . "\$categories = JCategories::getInstance('" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $viewName_list . "');";
+				$routeHelper[] = $this->_t(3) . "\$categories = JCategories::getInstance('" . $this->componentCodeName . "." . $viewName_list . "');";
 				$routeHelper[] = $this->_t(3) . "\$category = \$categories->get(\$catid);";
 				$routeHelper[] = $this->_t(3) . "if (\$category)";
 				$routeHelper[] = $this->_t(3) . "{";
@@ -5320,7 +5555,7 @@ class Interpretation extends Fields
 			{
 				// load the custom script for the switch based on dynamic get
 				$routerSwitch[] = PHP_EOL . $this->_t(3) . "case '" . $view . "':";
-				$routerSwitch[] = $this->setPlaceholders($this->setDynamicValues(base64_decode($viewArray['settings']->main_get->php_router_parse)), $this->placeholders);
+				$routerSwitch[] = $this->setPlaceholders($viewArray['settings']->main_get->php_router_parse, $this->placeholders);
 				$routerSwitch[] = $this->_t(4) . "break;";
 
 				return implode(PHP_EOL, $routerSwitch);
@@ -5341,7 +5576,7 @@ class Interpretation extends Fields
 						{
 							if (isset($get['selection']['table']))
 							{
-								$viewTable = str_replace('#__' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '_', '', $get['selection']['table']);
+								$viewTable = str_replace('#__' . $this->componentCodeName . '_', '', $get['selection']['table']);
 							}
 						}
 						break;
@@ -5906,11 +6141,11 @@ class Interpretation extends Fields
 			}
 			$fixUniqe[] = PHP_EOL . $this->_t(3) . "if (" . implode(' || ', $ifStatment) . ")";
 			$fixUniqe[] = $this->_t(3) . "{";
-			if ($setCategory && count($titles) == 1)
+			if ($setCategory && count((array) $titles) == 1)
 			{
 				$fixUniqe[] = $this->_t(4) . "list(" . implode('', $titleVars) . ", \$" . $alias . ") = \$this->generateNewTitle(\$data['" . $category . "'], \$data['" . $alias . "'], " . implode('', $titleData) . ");";
 			}
-			elseif (count($titles) == 1)
+			elseif (count((array) $titles) == 1)
 			{
 				$fixUniqe[] = $this->_t(4) . "list(" . implode(', ', $titleVars) . ", \$" . $alias . ") = \$this->_generateNewTitle(\$data['" . $alias . "'], " . implode('', $titleData) . ");";
 			}
@@ -5943,7 +6178,7 @@ class Interpretation extends Fields
 			$fixUniqe[] = $this->_t(4) . "{";
 			$fixUniqe[] = $this->_t(5) . "\$data['" . $alias . "'] = JFilterOutput::stringURLSafe(" . implode(' . " " . ', $titleData) . ");";
 			$fixUniqe[] = $this->_t(4) . "}";
-			$fixUniqe[] = PHP_EOL . $this->_t(4) . "\$table = JTable::getInstance('" . $viewName_single . "', '" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "Table');";
+			$fixUniqe[] = PHP_EOL . $this->_t(4) . "\$table = JTable::getInstance('" . $viewName_single . "', '" . $this->componentCodeName . "Table');";
 			if ($setCategory && count($titles) == 1)
 			{
 				$fixUniqe[] = PHP_EOL . $this->_t(4) . "if (\$table->load(array('" . $alias . "' => \$data['" . $alias . "'], '" . $category . "' => \$data['" . $category . "'])) && (\$table->id != \$data['id'] || \$data['id'] == 0))";
@@ -5967,6 +6202,19 @@ class Interpretation extends Fields
 			$fixUniqe[] = $this->_t(4) . "}";
 			$fixUniqe[] = $this->_t(3) . "}";
 			$fixUniqe[] = $this->_t(2) . "}";
+
+//			$fixUniqe[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Update alias if still empty at this point";
+//			$fixUniqe[] = $this->_t(2) . "if (\$data['" . $alias . "'] == null || empty(\$data['" . $alias . "']))";
+//			$fixUniqe[] = $this->_t(2) . "{";
+//			$fixUniqe[] = $this->_t(3) . "if (JFactory::getConfig()->get('unicodeslugs') == 1)";
+//			$fixUniqe[] = $this->_t(3) . "{";
+//			$fixUniqe[] = $this->_t(4) . "\$data['" . $alias . "'] = JFilterOutput::stringURLUnicodeSlug(" . implode(' . " " . ', $titleData) . ");";
+//			$fixUniqe[] = $this->_t(3) . "}";
+//			$fixUniqe[] = $this->_t(3) . "else";
+//			$fixUniqe[] = $this->_t(3) . "{";
+//			$fixUniqe[] = $this->_t(4) . "\$data['" . $alias . "'] = JFilterOutput::stringURLSafe(" . implode(' . " " . ', $titleData) . ");";
+//			$fixUniqe[] = $this->_t(3) . "}";
+//			$fixUniqe[] = $this->_t(2) . "}";
 		}
 		// handel other uniqe fields
 		$fixUniqe[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Alter the uniqe field for save as copy";
@@ -6138,7 +6386,7 @@ class Interpretation extends Fields
 		if (isset($this->queryBuilder) && ComponentbuilderHelper::checkArray($this->queryBuilder))
 		{
 			// set the main db prefix
-			$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+			$component = $this->componentCodeName;
 			// start building the db
 			$db = '';
 			foreach ($this->queryBuilder as $view => $fields)
@@ -6196,7 +6444,7 @@ class Interpretation extends Fields
 					}
 					else
 					{
-						$default = $data['null_switch'] . " DEFAULT ''";
+						$default = $data['null_switch'];
 					}
 					// set the lenght
 					$lenght = '';
@@ -6238,7 +6486,7 @@ class Interpretation extends Fields
 				// check if default field was over written
 				if (!isset($this->fieldsNames[$view]['params']))
 				{
-					$db_ .= PHP_EOL . $this->_t(1) . "`params` text NOT NULL DEFAULT '',";
+					$db_ .= PHP_EOL . $this->_t(1) . "`params` text NOT NULL,";
 				}
 				// check if default field was over written
 				if (!isset($this->fieldsNames[$view]['published']))
@@ -6286,7 +6534,7 @@ class Interpretation extends Fields
 					$db_ .= PHP_EOL . $this->_t(1) . "`hits` INT(10) unsigned NOT NULL DEFAULT 0,";
 				}
 				// check if view has access
-				if (isset($this->accessBuilder[$view]) && ComponentbuilderHelper::checkString($this->accessBuilder[$view]))
+				if (isset($this->accessBuilder[$view]) && ComponentbuilderHelper::checkString($this->accessBuilder[$view]) && !isset($this->fieldsNames[$view]['access']))
 				{
 					$db_ .= PHP_EOL . $this->_t(1) . "`access` INT(10) unsigned NOT NULL DEFAULT 0,";
 				}
@@ -6298,49 +6546,66 @@ class Interpretation extends Fields
 				// check if metadata is added to this view
 				if (isset($this->metadataBuilder[$view]) && ComponentbuilderHelper::checkString($this->metadataBuilder[$view]))
 				{
-					$db_ .= PHP_EOL . $this->_t(1) . "`metakey` TEXT NOT NULL DEFAULT '',";
-					$db_ .= PHP_EOL . $this->_t(1) . "`metadesc` TEXT NOT NULL DEFAULT '',";
-					$db_ .= PHP_EOL . $this->_t(1) . "`metadata` TEXT NOT NULL DEFAULT '',";
+					// check if default field was over written
+					if (!isset($this->fieldsNames[$view]['metakey']))
+					{
+						$db_ .= PHP_EOL . $this->_t(1) . "`metakey` TEXT NOT NULL,";
+					}
+					// check if default field was over written
+					if (!isset($this->fieldsNames[$view]['metadesc']))
+					{
+						$db_ .= PHP_EOL . $this->_t(1) . "`metadesc` TEXT NOT NULL,";
+					}
+					// check if default field was over written
+					if (!isset($this->fieldsNames[$view]['metadata']))
+					{
+						$db_ .= PHP_EOL . $this->_t(1) . "`metadata` TEXT NOT NULL,";
+					}
 				}
+				// TODO (we may want this to be dynamicly set)
 				$db_ .= PHP_EOL . $this->_t(1) . "PRIMARY KEY  (`id`)";
+				// check if a key was set for any of the default fields then we should not set it again
+				$check_keys_set = array();
 				if (isset($this->dbUniqueKeys[$view]) && ComponentbuilderHelper::checkArray($this->dbUniqueKeys[$view]))
 				{
 					foreach ($this->dbUniqueKeys[$view] as $nr => $key)
 					{
 						$db_ .= "," . PHP_EOL . $this->_t(1) . "UNIQUE KEY `idx_" . $key . "` (`" . $key . "`)";
+						$check_keys_set[$key] = $key;
 					}
-				}
-				// check if view has access
-				if (isset($this->accessBuilder[$view]) && ComponentbuilderHelper::checkString($this->accessBuilder[$view]))
-				{
-					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_access` (`access`)";
-				}
-				// check if default field was over written
-				if (!isset($this->fieldsNames[$view]['checked_out']))
-				{
-					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_checkout` (`checked_out`)";
-				}
-				// check if default field was over written
-				if (!isset($this->fieldsNames[$view]['created_by']))
-				{
-					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_createdby` (`created_by`)";
-				}
-				// check if default field was over written
-				if (!isset($this->fieldsNames[$view]['modified_by']))
-				{
-					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_modifiedby` (`modified_by`)";
-				}
-				// check if default field was over written
-				if (!isset($this->fieldsNames[$view]['published']))
-				{
-					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_state` (`published`)";
 				}
 				if (isset($this->dbKeys[$view]) && ComponentbuilderHelper::checkArray($this->dbKeys[$view]))
 				{
 					foreach ($this->dbKeys[$view] as $nr => $key)
 					{
 						$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_" . $key . "` (`" . $key . "`)";
+						$check_keys_set[$key] = $key;
 					}
+				}
+				// check if view has access
+				if (!isset($check_keys_set['access']) && isset($this->accessBuilder[$view]) && ComponentbuilderHelper::checkString($this->accessBuilder[$view]))
+				{
+					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_access` (`access`)";
+				}
+				// check if default field was over written
+				if (!isset($check_keys_set['checked_out']))
+				{
+					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_checkout` (`checked_out`)";
+				}
+				// check if default field was over written
+				if (!isset($check_keys_set['created_by']))
+				{
+					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_createdby` (`created_by`)";
+				}
+				// check if default field was over written
+				if (!isset($check_keys_set['modified_by']))
+				{
+					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_modifiedby` (`modified_by`)";
+				}
+				// check if default field was over written
+				if (!isset($check_keys_set['published']))
+				{
+					$db_ .= "," . PHP_EOL . $this->_t(1) . "KEY `idx_state` (`published`)";
 				}
 				// easy bucket
 				$easy = array();
@@ -6358,13 +6623,25 @@ class Interpretation extends Fields
 						$easy[$_mysqlTableKey] = $this->mysqlTableKeys[$_mysqlTableKey]['default'];
 					}
 				}
-				$db_ .= PHP_EOL . ") ENGINE=" . $easy['engine'] . " AUTO_INCREMENT=0 DEFAULT CHARSET=" . $easy['charset'] . " DEFAULT COLLATE=" . $easy['collate'] . ";";
+				// add a little fix for the row_format
+				if (ComponentbuilderHelper::checkString($easy['row_format']))
+				{
+					$easy['row_format'] = ' ROW_FORMAT=' . $easy['row_format'];
+				}
+				// now build db string
+				$db_ .= PHP_EOL . ") ENGINE=" . $easy['engine'] . " AUTO_INCREMENT=0 DEFAULT CHARSET=" . $easy['charset'] . " DEFAULT COLLATE=" . $easy['collate'] . $easy['row_format'] . ";";
 
 				// check if this is a new table that should be added via update SQL
 				if (isset($this->addSQL['adminview']) && ComponentbuilderHelper::checkArray($this->addSQL['adminview']) && in_array($view, $this->addSQL['adminview']))
 				{
 					// build the update array
 					$this->updateSQLBuilder["CREATETABLEIFNOTEXISTS`#__" . $component . "_" . $view . "`"] = $db_;
+				}
+				// check if the table row_format has changed
+				if (ComponentbuilderHelper::checkString($easy['row_format']) && isset($this->updateSQL['table_row_format']) && isset($this->updateSQL['table_row_format'][$view]))
+				{
+					// build the update array
+					$this->updateSQLBuilder["ALTERTABLE`#__" . $component . "_" . $view . "`" . trim($easy['row_format'])] = "ALTER TABLE `#__" . $component . "_" . $view . "`" . $easy['row_format'] . ";";
 				}
 				// check if the table engine has changed
 				if (isset($this->updateSQL['table_engine']) && isset($this->updateSQL['table_engine'][$view]))
@@ -6421,83 +6698,86 @@ class Interpretation extends Fields
 	{
 		// add final list of needed lang strings
 		$componentName = JFilterOutput::cleanText($this->componentData->name);
-		$this->langContent['adminsys'][$this->langPrefix] = $componentName;
-		$this->langContent['adminsys'][$this->langPrefix . '_CONFIGURATION'] = $componentName . ' Configuration';
-		$this->langContent['admin'][$this->langPrefix] = $componentName;
-		$this->langContent['admin'][$this->langPrefix . '_BACK'] = 'Back';
-		$this->langContent['admin'][$this->langPrefix . '_DASH'] = 'Dashboard';
-		$this->langContent['admin'][$this->langPrefix . '_VERSION'] = 'Version';
-		$this->langContent['admin'][$this->langPrefix . '_DATE'] = 'Date';
-		$this->langContent['admin'][$this->langPrefix . '_AUTHOR'] = 'Author';
-		$this->langContent['admin'][$this->langPrefix . '_WEBSITE'] = 'Website';
-		$this->langContent['admin'][$this->langPrefix . '_LICENSE'] = 'License';
-		$this->langContent['admin'][$this->langPrefix . '_CONTRIBUTORS'] = 'Contributors';
-		$this->langContent['admin'][$this->langPrefix . '_CONTRIBUTOR'] = 'Contributor';
-		$this->langContent['admin'][$this->langPrefix . '_DASHBOARD'] = $componentName . ' Dashboard';
-		$this->langContent['admin'][$this->langPrefix . '_SAVE_SUCCESS'] = "Great! Item successfully saved.";
-		$this->langContent['admin'][$this->langPrefix . '_SAVE_WARNING'] = "The value already existed so please select another.";
-		$this->langContent['admin'][$this->langPrefix . '_HELP_MANAGER'] = "Help";
-		$this->langContent['admin'][$this->langPrefix . '_NEW'] = "New";
-		$this->langContent['admin'][$this->langPrefix . '_CLOSE_NEW'] = "Close & New";
-		$this->langContent['admin'][$this->langPrefix . '_CREATE_NEW_S'] = "Create New %s";
-		$this->langContent['admin'][$this->langPrefix . '_EDIT_S'] = "Edit %s";
-		$this->langContent['admin'][$this->langPrefix . '_KEEP_ORIGINAL_STATE'] = "- Keep Original State -";
-		$this->langContent['admin'][$this->langPrefix . '_KEEP_ORIGINAL_ACCESS'] = "- Keep Original Access -";
-		$this->langContent['admin'][$this->langPrefix . '_KEEP_ORIGINAL_CATEGORY'] = "- Keep Original Category -";
-		$this->langContent['admin'][$this->langPrefix . '_PUBLISHED'] = 'Published';
-		$this->langContent['admin'][$this->langPrefix . '_INACTIVE'] = 'Inactive';
-		$this->langContent['admin'][$this->langPrefix . '_ARCHIVED'] = 'Archived';
-		$this->langContent['admin'][$this->langPrefix . '_TRASHED'] = 'Trashed';
-		$this->langContent['admin'][$this->langPrefix . '_NO_ACCESS_GRANTED'] = "No Access Granted!";
-		$this->langContent['admin'][$this->langPrefix . '_NOT_FOUND_OR_ACCESS_DENIED'] = "Not found or access denied!";
+		// Trigger Event: jcb_ce_onBeforeBuildAdminLang
+		$this->triggerEvent('jcb_ce_onBeforeBuildAdminLang', array(&$this->componentContext, &$this->langContent['admin'], &$this->langPrefix, &$componentName));
+		// start loding the defaults
+		$this->setLangContent('adminsys', $this->langPrefix, $componentName);
+		$this->setLangContent('adminsys', $this->langPrefix . '_CONFIGURATION', $componentName . ' Configuration');
+		$this->setLangContent('admin', $this->langPrefix, $componentName);
+		$this->setLangContent('admin', $this->langPrefix . '_BACK', 'Back');
+		$this->setLangContent('admin', $this->langPrefix . '_DASH', 'Dashboard');
+		$this->setLangContent('admin', $this->langPrefix . '_VERSION', 'Version');
+		$this->setLangContent('admin', $this->langPrefix . '_DATE', 'Date');
+		$this->setLangContent('admin', $this->langPrefix . '_AUTHOR', 'Author');
+		$this->setLangContent('admin', $this->langPrefix . '_WEBSITE', 'Website');
+		$this->setLangContent('admin', $this->langPrefix . '_LICENSE', 'License');
+		$this->setLangContent('admin', $this->langPrefix . '_CONTRIBUTORS', 'Contributors');
+		$this->setLangContent('admin', $this->langPrefix . '_CONTRIBUTOR', 'Contributor');
+		$this->setLangContent('admin', $this->langPrefix . '_DASHBOARD', $componentName . ' Dashboard');
+		$this->setLangContent('admin', $this->langPrefix . '_SAVE_SUCCESS', "Great! Item successfully saved.");
+		$this->setLangContent('admin', $this->langPrefix . '_SAVE_WARNING', "The value already existed so please select another.");
+		$this->setLangContent('admin', $this->langPrefix . '_HELP_MANAGER', "Help");
+		$this->setLangContent('admin', $this->langPrefix . '_NEW', "New");
+		$this->setLangContent('admin', $this->langPrefix . '_CLOSE_NEW', "Close & New");
+		$this->setLangContent('admin', $this->langPrefix . '_CREATE_NEW_S', "Create New %s");
+		$this->setLangContent('admin', $this->langPrefix . '_EDIT_S', "Edit %s");
+		$this->setLangContent('admin', $this->langPrefix . '_KEEP_ORIGINAL_STATE', "- Keep Original State -");
+		$this->setLangContent('admin', $this->langPrefix . '_KEEP_ORIGINAL_ACCESS', "- Keep Original Access -");
+		$this->setLangContent('admin', $this->langPrefix . '_KEEP_ORIGINAL_CATEGORY', "- Keep Original Category -");
+		$this->setLangContent('admin', $this->langPrefix . '_PUBLISHED', 'Published');
+		$this->setLangContent('admin', $this->langPrefix . '_INACTIVE', 'Inactive');
+		$this->setLangContent('admin', $this->langPrefix . '_ARCHIVED', 'Archived');
+		$this->setLangContent('admin', $this->langPrefix . '_TRASHED', 'Trashed');
+		$this->setLangContent('admin', $this->langPrefix . '_NO_ACCESS_GRANTED', "No Access Granted!");
+		$this->setLangContent('admin', $this->langPrefix . '_NOT_FOUND_OR_ACCESS_DENIED', "Not found or access denied!");
 		if ($this->componentData->add_license && $this->componentData->license_type == 3)
 		{
-			$this->langContent['admin']['NIE_REG_NIE'] = "<br /><br /><center><h1>License not set for " . $componentName . ".</h1><p>Notify your administrator!<br />The license can be obtained from <a href='".$this->componentData->whmcs_buy_link."' target='_blank'>" . $this->componentData->companyname . "</a>.</p></center>";
+			$this->setLangContent('admin', 'NIE_REG_NIE', "<br /><br /><center><h1>License not set for " . $componentName . ".</h1><p>Notify your administrator!<br />The license can be obtained from <a href='".$this->componentData->whmcs_buy_link."' target='_blank'>" . $this->componentData->companyname . "</a>.</p></center>");
 		}
 		// add the langug files needed to import and export data
 		if ($this->addEximport)
 		{
-			$this->langContent['admin'][$this->langPrefix . '_EXPORT_FAILED'] = "Export Failed";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_FAILED'] = "Import Failed";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_TITLE'] = "Data Importer";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_NO_IMPORT_TYPE_FOUND'] = "Import type not found.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_UNABLE_TO_FIND_IMPORT_PACKAGE'] = "Package to import not found.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_ERROR'] = "Import error.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_SUCCESS'] = "Great! Import successful.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_WARNIMPORTFILE'] = "Warning, import file error.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_NO_FILE_SELECTED'] = "No import file selected.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_PLEASE_SELECT_A_FILE'] = "Please select a file to import.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_PLEASE_SELECT_ALL_COLUMNS'] = "Please link all columns.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_PLEASE_SELECT_A_DIRECTORY'] = "Please enter the file directory.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_WARNIMPORTUPLOADERROR'] = "Warning, import upload error.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_PLEASE_ENTER_A_PACKAGE_DIRECTORY'] = "Please enter the file directory.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_PATH_DOES_NOT_HAVE_A_VALID_PACKAGE'] = "Path does not have a valid file.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_DOES_NOT_HAVE_A_VALID_FILE_TYPE'] = "Does not have a valid file type.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_ENTER_A_URL'] = "Please enter a url.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_MSG_INVALID_URL'] = "Invalid url.";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_CONTINUE'] = "Continue";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_FROM_UPLOAD'] = "Upload";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_SELECT_FILE'] = "Select File";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_UPLOAD_BOTTON'] = "Upload File";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_FROM_DIRECTORY'] = "Directory";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_SELECT_FILE_DIRECTORY'] = "Set the path to file";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_GET_BOTTON'] = "Get File";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_FROM_URL'] = "URL";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_SELECT_FILE_URL'] = "Enter file URL";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_UPDATE_DATA'] = "Import Data";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_FORMATS_ACCEPTED'] = "formats accepted";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_LINK_FILE_TO_TABLE_COLUMNS'] = "Link File to Table Columns";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_TABLE_COLUMNS'] = "Table Columns";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_FILE_COLUMNS'] = "File Columns";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_PLEASE_SELECT_COLUMN'] = "-- Please Select Column --";
-			$this->langContent['admin'][$this->langPrefix . '_IMPORT_IGNORE_COLUMN'] = "-- Ignore This Column --";
+			$this->setLangContent('admin', $this->langPrefix . '_EXPORT_FAILED', "Export Failed");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_FAILED', "Import Failed");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_TITLE', "Data Importer");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_NO_IMPORT_TYPE_FOUND', "Import type not found.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_UNABLE_TO_FIND_IMPORT_PACKAGE', "Package to import not found.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_ERROR', "Import error.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_SUCCESS', "Great! Import successful.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_WARNIMPORTFILE', "Warning, import file error.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_NO_FILE_SELECTED', "No import file selected.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_PLEASE_SELECT_A_FILE', "Please select a file to import.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_PLEASE_SELECT_ALL_COLUMNS', "Please link all columns.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_PLEASE_SELECT_A_DIRECTORY', "Please enter the file directory.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_WARNIMPORTUPLOADERROR', "Warning, import upload error.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_PLEASE_ENTER_A_PACKAGE_DIRECTORY', "Please enter the file directory.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_PATH_DOES_NOT_HAVE_A_VALID_PACKAGE', "Path does not have a valid file.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_DOES_NOT_HAVE_A_VALID_FILE_TYPE', "Does not have a valid file type.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_ENTER_A_URL', "Please enter a url.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_MSG_INVALID_URL', "Invalid url.");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_CONTINUE', "Continue");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_FROM_UPLOAD', "Upload");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_SELECT_FILE', "Select File");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_UPLOAD_BOTTON', "Upload File");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_FROM_DIRECTORY', "Directory");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_SELECT_FILE_DIRECTORY', "Set the path to file");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_GET_BOTTON', "Get File");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_FROM_URL', "URL");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_SELECT_FILE_URL', "Enter file URL");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_UPDATE_DATA', "Import Data");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_FORMATS_ACCEPTED', "formats accepted");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_LINK_FILE_TO_TABLE_COLUMNS', "Link File to Table Columns");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_TABLE_COLUMNS', "Table Columns");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_FILE_COLUMNS', "File Columns");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_PLEASE_SELECT_COLUMN', "-- Please Select Column --");
+			$this->setLangContent('admin', $this->langPrefix . '_IMPORT_IGNORE_COLUMN', "-- Ignore This Column --");
 		}
 		// check if the both array is set
 		if (isset($this->langContent['both']) && ComponentbuilderHelper::checkArray($this->langContent['both']))
 		{
 			foreach ($this->langContent['both'] as $keylang => $langval)
 			{
-				$this->langContent['admin'][$keylang] = $langval;
+				$this->setLangContent('admin', $keylang, $langval);
 			}
 		}
 		// check if the both admin array is set
@@ -6505,11 +6785,14 @@ class Interpretation extends Fields
 		{
 			foreach ($this->langContent['bothadmin'] as $keylang => $langval)
 			{
-				$this->langContent['admin'][$keylang] = $langval;
+				$this->setLangContent('admin', $keylang, $langval);
 			}
 		}
 		if (isset($this->langContent['admin']) && ComponentbuilderHelper::checkArray($this->langContent['admin']))
 		{
+			// Trigger Event: jcb_ce_onAfterBuildAdminLang
+			$this->triggerEvent('jcb_ce_onAfterBuildAdminLang', array(&$this->componentContext, &$this->langContent['admin'], &$this->langPrefix, &$componentName));
+			// sort the strings
 			ksort($this->langContent['admin']);
 			// load to global languages
 			$this->languages[$this->langTag]['admin'] = $this->langContent['admin'];
@@ -6524,33 +6807,37 @@ class Interpretation extends Fields
 	public function setLangSite()
 	{
 		// add final list of needed lang strings
-		$this->langContent['site'][$this->langPrefix] = ComponentbuilderHelper::safeString($this->componentData->name, 'W');
+		$componentName = JFilterOutput::cleanText($this->componentData->name);
+		// Trigger Event: jcb_ce_onBeforeBuildSiteLang
+		$this->triggerEvent('jcb_ce_onBeforeBuildSiteLang', array(&$this->componentContext, &$this->langContent['site'], &$this->langPrefix, &$componentName));
+		// add final list of needed lang strings
+		$this->setLangContent('site', $this->langPrefix, $componentName);
 		// some more defaults
-		$this->langContent['site']['JTOOLBAR_APPLY'] = "Save";
-		$this->langContent['site']['JTOOLBAR_SAVE_AS_COPY'] = "Save as Copy";
-		$this->langContent['site']['JTOOLBAR_SAVE'] = "Save & Close";
-		$this->langContent['site']['JTOOLBAR_SAVE_AND_NEW'] = "Save & New";
-		$this->langContent['site']['JTOOLBAR_CANCEL'] = "Cancel";
-		$this->langContent['site']['JTOOLBAR_CLOSE'] = "Close";
-		$this->langContent['site']['JTOOLBAR_HELP'] = "Help";
-		$this->langContent['site']['JGLOBAL_FIELD_ID_LABEL'] = "ID";
-		$this->langContent['site']['JGLOBAL_FIELD_ID_DESC'] = "Record number in the database.";
-		$this->langContent['site']['JGLOBAL_FIELD_MODIFIED_LABEL'] = "Modified Date";
-		$this->langContent['site']['COM_CONTENT_FIELD_MODIFIED_DESC'] = "The last date this item was modified.";
-		$this->langContent['site']['JGLOBAL_FIELD_MODIFIED_BY_LABEL'] = "Modified By";
-		$this->langContent['site']['JGLOBAL_FIELD_MODIFIED_BY_DESC'] = "The user who did the last modification.";
-		$this->langContent['site'][$this->langPrefix . '_NEW'] = "New";
-		$this->langContent['site'][$this->langPrefix . '_CREATE_NEW_S'] = "Create New %s";
-		$this->langContent['site'][$this->langPrefix . '_EDIT_S'] = "Edit %s";
-		$this->langContent['site'][$this->langPrefix . '_NO_ACCESS_GRANTED'] = "No Access Granted!";
-		$this->langContent['site'][$this->langPrefix . '_NOT_FOUND_OR_ACCESS_DENIED'] = "Not found or access denied!";
+		$this->setLangContent('site', 'JTOOLBAR_APPLY', "Save");
+		$this->setLangContent('site', 'JTOOLBAR_SAVE_AS_COPY', "Save as Copy");
+		$this->setLangContent('site', 'JTOOLBAR_SAVE', "Save & Close");
+		$this->setLangContent('site', 'JTOOLBAR_SAVE_AND_NEW', "Save & New");
+		$this->setLangContent('site', 'JTOOLBAR_CANCEL', "Cancel");
+		$this->setLangContent('site', 'JTOOLBAR_CLOSE', "Close");
+		$this->setLangContent('site', 'JTOOLBAR_HELP', "Help");
+		$this->setLangContent('site', 'JGLOBAL_FIELD_ID_LABEL', "ID");
+		$this->setLangContent('site', 'JGLOBAL_FIELD_ID_DESC', "Record number in the database.");
+		$this->setLangContent('site', 'JGLOBAL_FIELD_MODIFIED_LABEL', "Modified Date");
+		$this->setLangContent('site', 'COM_CONTENT_FIELD_MODIFIED_DESC', "The last date this item was modified.");
+		$this->setLangContent('site', 'JGLOBAL_FIELD_MODIFIED_BY_LABEL', "Modified By");
+		$this->setLangContent('site', 'JGLOBAL_FIELD_MODIFIED_BY_DESC', "The user who did the last modification.");
+		$this->setLangContent('site', $this->langPrefix . '_NEW', "New");
+		$this->setLangContent('site', $this->langPrefix . '_CREATE_NEW_S', "Create New %s");
+		$this->setLangContent('site', $this->langPrefix . '_EDIT_S', "Edit %s");
+		$this->setLangContent('site', $this->langPrefix . '_NO_ACCESS_GRANTED', "No Access Granted!");
+		$this->setLangContent('site', $this->langPrefix . '_NOT_FOUND_OR_ACCESS_DENIED', "Not found or access denied!");
 
 		// check if the both array is set
 		if (isset($this->langContent['both']) && ComponentbuilderHelper::checkArray($this->langContent['both']))
 		{
 			foreach ($this->langContent['both'] as $keylang => $langval)
 			{
-				$this->langContent['site'][$keylang] = $langval;
+				$this->setLangContent('site', $keylang, $langval);
 			}
 		}
 		// check if the both site array is set
@@ -6558,11 +6845,14 @@ class Interpretation extends Fields
 		{
 			foreach ($this->langContent['bothsite'] as $keylang => $langval)
 			{
-				$this->langContent['site'][$keylang] = $langval;
+				$this->setLangContent('site', $keylang, $langval);
 			}
 		}
 		if (isset($this->langContent['site']) && ComponentbuilderHelper::checkArray($this->langContent['site']))
 		{
+			// Trigger Event: jcb_ce_onAfterBuildSiteLang
+			$this->triggerEvent('jcb_ce_onAfterBuildSiteLang', array(&$this->componentContext, &$this->langContent['site'], &$this->langPrefix, &$componentName));
+			// sort the strings
 			ksort($this->langContent['site']);
 			// load to global languages
 			$this->languages[$this->langTag]['site'] = $this->langContent['site'];
@@ -6577,20 +6867,27 @@ class Interpretation extends Fields
 	public function setLangSiteSys()
 	{
 		// add final list of needed lang strings
-		$this->langContent['sitesys'][$this->langPrefix] = ComponentbuilderHelper::safeString($this->componentData->name, 'W');
-		$this->langContent['sitesys'][$this->langPrefix . '_NO_ACCESS_GRANTED'] = "No Access Granted!";
-		$this->langContent['sitesys'][$this->langPrefix . '_NOT_FOUND_OR_ACCESS_DENIED'] = "Not found or access denied!";
+		$componentName = JFilterOutput::cleanText($this->componentData->name);
+		// Trigger Event: jcb_ce_onBeforeBuildSiteSysLang
+		$this->triggerEvent('jcb_ce_onBeforeBuildSiteSysLang', array(&$this->componentContext, &$this->langContent['sitesys'], &$this->langPrefix, &$componentName));
+		// add final list of needed lang strings
+		$this->setLangContent('sitesys', $this->langPrefix, $componentName);
+		$this->setLangContent('sitesys', $this->langPrefix . '_NO_ACCESS_GRANTED', "No Access Granted!");
+		$this->setLangContent('sitesys', $this->langPrefix . '_NOT_FOUND_OR_ACCESS_DENIED', "Not found or access denied!");
 
 		// check if the both site array is set
 		if (isset($this->langContent['bothsite']) && ComponentbuilderHelper::checkArray($this->langContent['bothsite']))
 		{
 			foreach ($this->langContent['bothsite'] as $keylang => $langval)
 			{
-				$this->langContent['sitesys'][$keylang] = $langval;
+				$this->setLangContent('sitesys', $keylang, $langval);
 			}
 		}
 		if (isset($this->langContent['sitesys']) && ComponentbuilderHelper::checkArray($this->langContent['sitesys']))
 		{
+			// Trigger Event: jcb_ce_onAfterBuildSiteSysLang
+			$this->triggerEvent('jcb_ce_onAfterBuildSiteSysLang', array(&$this->componentContext, &$this->langContent['sitesys'], &$this->langPrefix, &$componentName));
+			// sort strings
 			ksort($this->langContent['sitesys']);
 			// load to global languages
 			$this->languages[$this->langTag]['sitesys'] = $this->langContent['sitesys'];
@@ -6604,16 +6901,23 @@ class Interpretation extends Fields
 
 	public function setLangAdminSys()
 	{
+		// add final list of needed lang strings
+		$componentName = JFilterOutput::cleanText($this->componentData->name);
+		// Trigger Event: jcb_ce_onBeforeBuildAdminSysLang
+		$this->triggerEvent('jcb_ce_onBeforeBuildAdminSysLang', array(&$this->componentContext, &$this->langContent['adminsys'], &$this->langPrefix, &$componentName));
 		// check if the both admin array is set
 		if (isset($this->langContent['bothadmin']) && ComponentbuilderHelper::checkArray($this->langContent['bothadmin']))
 		{
 			foreach ($this->langContent['bothadmin'] as $keylang => $langval)
 			{
-				$this->langContent['adminsys'][$keylang] = $langval;
+				$this->setLangContent('adminsys', $keylang, $langval);
 			}
 		}
 		if (isset($this->langContent['adminsys']) && ComponentbuilderHelper::checkArray($this->langContent['adminsys']))
 		{
+			// Trigger Event: jcb_ce_onAfterBuildAdminSysLang
+			$this->triggerEvent('jcb_ce_onAfterBuildAdminSysLang', array(&$this->componentContext, &$this->langContent['adminsys'], &$this->langPrefix, &$componentName));
+			// sort strings
 			ksort($this->langContent['adminsys']);
 			// load to global languages
 			$this->languages[$this->langTag]['adminsys'] = $this->langContent['adminsys'];
@@ -7025,7 +7329,7 @@ class Interpretation extends Fields
 			foreach ($this->customAdminViewListLink[$viewName_list] as $customLinkView)
 			{
 				$customAdminViewButton .= PHP_EOL . $this->_t(3) . "<?php if (\$canDo->get('" . $customLinkView['link'] . ".access')): ?>";
-				$customAdminViewButton .= PHP_EOL . $this->_t(4) . '<a class="hasTooltip btn btn-mini" href="index.php?option=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '&view=' . $customLinkView['link'] . '&id=<?php echo $item->id; ?>' . $ref . '" title="<?php echo JText:' . ':_(' . "'COM_" . $this->fileContentStatic[$this->hhh . 'COMPONENT' . $this->hhh] . '_' . $customLinkView['NAME'] . "'" . '); ?>" ><span class="icon-' . $customLinkView['icon'] . '"></span></a>';
+				$customAdminViewButton .= PHP_EOL . $this->_t(4) . '<a class="hasTooltip btn btn-mini" href="index.php?option=com_' . $this->componentCodeName . '&view=' . $customLinkView['link'] . '&id=<?php echo $item->id; ?>' . $ref . '" title="<?php echo JText:' . ':_(' . "'COM_" . $this->fileContentStatic[$this->hhh . 'COMPONENT' . $this->hhh] . '_' . $customLinkView['NAME'] . "'" . '); ?>" ><span class="icon-' . $customLinkView['icon'] . '"></span></a>';
 				$customAdminViewButton .= PHP_EOL . $this->_t(3) . "<?php else: ?>";
 				$customAdminViewButton .= PHP_EOL . $this->_t(4) . '<a class="hasTooltip btn btn-mini disabled" href="#" title="<?php echo JText:' . ':_(' . "'COM_" . $this->fileContentStatic[$this->hhh . 'COMPONENT' . $this->hhh] . '_' . $customLinkView['NAME'] . "'" . '); ?>"><span class="icon-' . $customLinkView['icon'] . '"></span></a>';
 				$customAdminViewButton .= PHP_EOL . $this->_t(3) . "<?php endif; ?>";
@@ -7110,7 +7414,7 @@ class Interpretation extends Fields
 		$referal = '';
 		if (!$ref)
 		{
-			$ref = '&ref=' . $viewName_list;
+			$ref = '&return=<?php echo $this->return_here; ?>';
 		}
 		// in linked tab/view so must add ref to default
 		else
@@ -7123,7 +7427,7 @@ class Interpretation extends Fields
 			// get the other view
 			$otherViews = $this->catCodeBuilder[$viewName_single]['views'];
 			// return the link to category
-			return 'index.php?option=com_categories&task=category.edit&id=<?php echo (int)$item->' . $item['code'] . '; ?>&extension=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '.' . $otherViews;
+			return 'index.php?option=com_categories&task=category.edit&id=<?php echo (int)$item->' . $item['code'] . '; ?>&extension=com_' . $this->componentCodeName . '.' . $otherViews;
 		}
 		elseif ($item['type'] === 'user' && !$item['title'])
 		{
@@ -7167,7 +7471,7 @@ class Interpretation extends Fields
 			// get the other view
 			$otherViews = $this->catCodeBuilder[$viewName_single]['views'];
 			// return the authority to category
-			return $user . "->authorise('core.edit', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $otherViews . ".category.' . (int)\$item->" . $item['code'] . ")";
+			return $user . "->authorise('core.edit', 'com_" . $this->componentCodeName . "." . $otherViews . ".category.' . (int)\$item->" . $item['code'] . ")";
 		}
 		elseif ($item['type'] === 'user' && !$item['title'])
 		{
@@ -7186,10 +7490,10 @@ class Interpretation extends Fields
 			// check if the item has permissions.
 			if ($coreLoadLink && (isset($coreLink['core.edit']) && isset($this->permissionBuilder[$coreLink['core.edit']])) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$coreLink['core.edit']]) && in_array($item['custom']['view'], $this->permissionBuilder[$coreLink['core.edit']]))
 			{
-				return $user . "->authorise('" . $coreLink['core.edit'] . "', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $item['custom']['view'] . ".' . (int)\$item->" . $item['id_code'] . ")";
+				return $user . "->authorise('" . $coreLink['core.edit'] . "', 'com_" . $this->componentCodeName . "." . $item['custom']['view'] . ".' . (int)\$item->" . $item['id_code'] . ")";
 			}
 			// return default for this external item
-			return $user . "->authorise('core.edit', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $item['custom']['view'] . ".' . (int)\$item->" . $item['id_code'] . ")";
+			return $user . "->authorise('core.edit', 'com_" . $this->componentCodeName . "." . $item['custom']['view'] . ".' . (int)\$item->" . $item['id_code'] . ")";
 		}
 		elseif (isset($item['custom']) && ComponentbuilderHelper::checkArray($item['custom']) && $item['custom']['extends'] === 'user' && !$item['title'] && isset($item['id_code']))
 		{
@@ -7240,15 +7544,9 @@ class Interpretation extends Fields
 			// set id lang
 			$idLangName = $langView . '_ID';
 			// add to lang array
-			if (!isset($this->langContent[$this->lang][$statusLangName]))
-			{
-				$this->langContent[$this->lang][$statusLangName] = 'Status';
-			}
+			$this->setLangContent($this->lang, $statusLangName, 'Status');
 			// add to lang array
-			if (!isset($this->langContent[$this->lang][$idLangName]))
-			{
-				$this->langContent[$this->lang][$idLangName] = 'Id';
-			}
+			$this->setLangContent($this->lang, $idLangName, 'Id');
 			// set default
 			$head = '<tr>';
 			$head .= PHP_EOL . $this->_t(1) . "<?php if (\$this->canEdit&& \$this->canState): ?>";
@@ -7338,215 +7636,79 @@ class Interpretation extends Fields
 		return '';
 	}
 
+	/**
+	 * set Tabs Layouts Fields Array
+	 *
+	 * @param   string   $view_name_single  The single view name
+	 *
+	 * @return  string   The array
+	 *
+	 */
+	public function getTabLayoutFieldsArray($view_name_single)
+	{
+		// check if the load build is set for this view
+		if (isset($this->layoutBuilder[$view_name_single]) && ComponentbuilderHelper::checkArray($this->layoutBuilder[$view_name_single]))
+		{
+			$layoutArray = array();
+			foreach ($this->layoutBuilder[$view_name_single] as $layout => $alignments)
+			{
+				// sort the alignments
+				ksort($alignments);
+				$alignmentArray= array();
+				foreach ($alignments as $alignment => $fields)
+				{
+					// sort the fields
+					ksort($fields);
+					$fieldArray= array();
+					foreach ($fields as $field)
+					{
+						// add each field
+						$fieldArray[] = PHP_EOL . $this->_t(4) . "'" . $field . "'";
+					}
+					// add the alignemnt key
+					$alignmentArray[] = PHP_EOL . $this->_t(3) . "'" . $this->alignmentOptions[$alignment] . "' => array(" . implode(',', $fieldArray) . PHP_EOL . $this->_t(3) . ")";
+				}
+				// add the layout key
+				$layoutArray[] = PHP_EOL . $this->_t(2) . "'" . ComponentbuilderHelper::safeString($layout) . "' => array(" . implode(',', $alignmentArray) . PHP_EOL . $this->_t(2) . ")";
+			}
+			return 'array(' . implode(',', $layoutArray) . PHP_EOL . $this->_t(1) . ")";
+		}
+		return 'array()';
+	}
+
+	/**
+	 * set Edit Body
+	 *
+	 * @param   array    $view  The view data
+	 *
+	 * @return  string   The edit body
+	 *
+	 */
 	public function setEditBody(&$view)
 	{
 		// set view name
-		$viewName_single = ComponentbuilderHelper::safeString($view['settings']->name_single);
-		// alignment
-		$alignmentNames = array(1 => 'left', 2 => 'right', 3 => 'fullwidth', 4 => 'above', 5 => 'under', 6 => 'leftside', 7 => 'rightside');
+		$view_name_single = ComponentbuilderHelper::safeString($view['settings']->name_single);
 		// main lang prefix
-		$langView = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($viewName_single, 'U');
-
-		if (isset($this->layoutBuilder[$viewName_single]) && ComponentbuilderHelper::checkArray($this->layoutBuilder[$viewName_single]))
+		$langView = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($view_name_single, 'U');
+		// check if the load build is set for this view
+		if (isset($this->layoutBuilder[$view_name_single]) && ComponentbuilderHelper::checkArray($this->layoutBuilder[$view_name_single]))
 		{
-			// set the linked view tabs
-			$linkedTab = array();
+			// reset the linked keys
 			$keys = array();
-			// setup correct core target
-			$coreLoad = false;
-			if (isset($this->permissionCore[$viewName_single]))
-			{
-				$core = $this->permissionCore[$viewName_single];
-				$coreLoad = true;
-			}
-			if (isset($this->linkedAdminViews[$viewName_single]) && ComponentbuilderHelper::checkArray($this->linkedAdminViews[$viewName_single]))
-			{
-				foreach ($this->linkedAdminViews[$viewName_single] as $linkedView)
-				{
-					$tabName = $view['settings']->tabs[(int) $linkedView['tab']];
-					$this->tabCounter[$viewName_single][$linkedView['tab']] = $tabName;
-					$linkedTab[$linkedView['adminview']] = $linkedView['tab'];
-					if (ComponentbuilderHelper::checkString($linkedView['key']) && ComponentbuilderHelper::checkString($linkedView['parentkey']))
-					{
-						$keys[$linkedView['adminview']] = array('key' => $linkedView['key'], 'parentKey' => $linkedView['parentkey']);
-					}
-					else
-					{
-						$keys[$linkedView['adminview']] = array('key' => null, 'parentKey' => null);
-					}
-					if (isset($linkedView['addnew']))
-					{
-						$keys[$linkedView['adminview']]['addNewButton'] = (int) $linkedView['addnew'];
-					}
-					else
-					{
-						$keys[$linkedView['adminview']]['addNewButton'] = 0;
-					}
-				}
-			}
+			$linkedViewIdentifier = array();
+			// set the linked view tabs
+			$linkedTab = $this->getEditBodyLinkedAdminViewsTabs($view, $view_name_single, $keys, $linkedViewIdentifier);
 			// custom tab searching array
 			$searchTabs = array();
-			// start tab set
-			$bucket = array();
+			// reset tab values
 			$leftside = '';
 			$rightside = '';
 			$footer = '';
 			$header = '';
 			$mainwidth = 12;
 			$sidewidth = 0;
-			ksort($this->tabCounter[$viewName_single]);
-			foreach ($this->tabCounter[$viewName_single] as $tabNr => $tabName)
-			{
-				// check if we must load a custom tab
-				
-				$tabWidth = 12;
-				$lrCounter = 0;
-				// set tab lang
-				$tabLangName = $langView . '_' . ComponentbuilderHelper::safeString($tabName, 'U');
-				// set tab code name
-				$tabCodeName = ComponentbuilderHelper::safeString($tabName);
-				/// set the values to use in search latter
-				$searchTabs[$tabCodeName] = $tabNr;
-				// add to lang array
-				if (!isset($this->langContent[$this->lang][$tabLangName]))
-				{
-					$this->langContent[$this->lang][$tabLangName] = $tabName;
-				}
-				// check if linked view belongs to this tab
-				$buildLayout = true;
-				$linkedViewId = '';
-				if (ComponentbuilderHelper::checkArray($linkedTab))
-				{
-					if (($linkedViewId = array_search($tabNr, $linkedTab)) !== false)
-					{
-						// don't build
-						$buildLayout = false;
-					}
-				}
-				if ($buildLayout)
-				{
-					// sort to make sure it loads left first
-					$alignments = $this->layoutBuilder[$viewName_single][$tabName];
-					ksort($alignments);
-					foreach ($alignments as $alignment => $names)
-					{
-						// set layout code name
-						$layoutCodeName = $tabCodeName . '_' . $alignmentNames[$alignment];
-						// reset each time
-						$items = '';
-						$itemCounter = 0;
-						ksort($names);
-						foreach ($names as $nr => $name)
-						{
-							if ($itemCounter == 0)
-							{
-								$items .= "'" . $name . "'";
-							}
-							else
-							{
-								$items .= "," . PHP_EOL . $this->_t(1) . "'" . $name . "'";
-							}
-							$itemCounter++;
-						}
-						switch ($alignment)
-						{
-							case 1: // left
-							case 2: // right
-								// count
-								$lrCounter++;
-								// set as items layout
-								$this->setLayout($viewName_single, $layoutCodeName, $items, 'layoutitems');
-								// set the lang to tab
-								$bucket[$tabCodeName]['lang'] = $tabLangName;
-								// load the body
-								if (!isset($bucket[$tabCodeName][(int) $alignment]))
-								{
-									$bucket[$tabCodeName][(int) $alignment] = '';
-								}
-								$bucket[$tabCodeName][(int) $alignment] .= "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-								break;
-							case 3: // fullwidth
-								// set as items layout
-								$this->setLayout($viewName_single, $layoutCodeName, $items, 'layoutfull');
-								// set the lang to tab
-								$bucket[$tabCodeName]['lang'] = $tabLangName;
-								// load the body
-								if (!isset($bucket[$tabCodeName][(int) $alignment]))
-								{
-									$bucket[$tabCodeName][(int) $alignment] = '';
-								}
-								$bucket[$tabCodeName][(int) $alignment] .= "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-								break;
-							case 4: // above
-								// set as title layout
-								$this->setLayout($viewName_single, $layoutCodeName, $items, 'layouttitle');
-								// load to header
-								$header .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-								break;
-							case 5: // under
-								// set as title layout
-								$this->setLayout($viewName_single, $layoutCodeName, $items, 'layouttitle');
-								// load to footer
-								$footer .= PHP_EOL . PHP_EOL . "<div class=\"clearfix\"></div>" . PHP_EOL . "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-								break;
-							case 6: // left side
-								$tabWidth = $tabWidth - 2;
-								// set as items layout
-								$this->setLayout($viewName_single, $layoutCodeName, $items, 'layoutitems');
-								// load the body
-								$leftside .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-								break;
-							case 7: // right side
-								$tabWidth = $tabWidth - 2;
-								// set as items layout
-								$this->setLayout($viewName_single, $layoutCodeName, $items, 'layoutitems');
-								// load the body
-								$rightside .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-								break;
-						}
-					}
-				}
-				else
-				{
-					// set layout code name
-					$layoutCodeName = $tabCodeName . '_fullwidth';
-					// set identifiers
-					$linkedViewIdentifier[$linkedViewId] = $tabCodeName;
-					//set function name
-					$codeName = ComponentbuilderHelper::safeString($this->uniquekey(3) . $tabCodeName);
-					// set as items layout
-					$this->setLayout($viewName_single, $layoutCodeName, $codeName, 'layoutlinkedview');
-					// set the lang to tab
-					$bucket[$tabCodeName]['lang'] = $tabLangName;
-					// set all the linked view stuff
-					$this->secondRunAdmin['setLinkedView'][] = array(
-						'viewId' => $linkedViewId,
-						'viewName_single' => $viewName_single,
-						'codeName' => $codeName,
-						'layoutCodeName' => $layoutCodeName,
-						'key' => $keys[$linkedViewId]['key'],
-						'parentKey' => $keys[$linkedViewId]['parentKey'],
-						'addNewButon' => $keys[$linkedViewId]['addNewButton']);
-					// load the body
-					if (!isset($bucket[$tabCodeName][3]))
-					{
-						$bucket[$tabCodeName][3] = '';
-					}
-					$bucket[$tabCodeName][3] .= "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $layoutCodeName . "', \$this); ?>";
-				}
-				// width calculator :)
-				if ($tabWidth == 8)
-				{
-					$mainwidth = 8;
-					$sidewidth = 2;
-				}
-				elseif ($tabWidth == 10 && $mainwidth != 8)
-				{
-					$mainwidth = 9;
-					$sidewidth = 3;
-				}
-				$bucket[$tabCodeName]['lr'] = $lrCounter;
-			}
+			// get the tabs with positions
+			$tabBucket = $this->getEditBodyTabs($view_name_single, $langView, $linkedTab, $keys, $linkedViewIdentifier, $searchTabs, $leftside, $rightside, $footer, $header, $mainwidth, $sidewidth);
 			// tab counter
 			$tabCounter = 0;
 			// check if width is still 12
@@ -7561,64 +7723,28 @@ class Interpretation extends Fields
 			{
 				$body .= PHP_EOL . $this->_t(1) . '<div class="' . $span . '">';
 			}
-			// now build the template
-			foreach ($bucket as $tabCodeName => $posions)
+			// now build the dynamic tabs
+			foreach ($tabBucket as $tabCodeName => $positions)
 			{
-				// check main if both left and right is set
-				$lrCounter = $posions['lr'];
 				// get lang string
-				$tabLangName = $posions['lang'];
-				// build main center
+				$tabLangName = $positions['lang'];
+				// build main center position
 				$main = '';
 				$mainbottom = '';
-				foreach ($posions as $posion => $string)
-				{
-					if ($lrCounter == 2)
-					{
-						switch ($posion)
-						{
-							case 1: // left
-							case 2: // right
-								$main .= PHP_EOL . $this->_t(3) . '<div class="span6">';
-								$main .= PHP_EOL . $this->_t(4) . $string;
-								$main .= PHP_EOL . $this->_t(3) . '</div>';
-								break;
-						}
-					}
-					else
-					{
-						switch ($posion)
-						{
-							case 1: // left
-							case 2: // right
-								$main .= PHP_EOL . $this->_t(3) . '<div class="span12">';
-								$main .= PHP_EOL . $this->_t(4) . $string;
-								$main .= PHP_EOL . $this->_t(3) . '</div>';
-								break;
-						}
-					}
-					switch ($posion)
-					{
-						case 3: // fullwidth
-							$mainbottom .= PHP_EOL . $this->_t(3) . '<div class="span12">';
-							$mainbottom .= PHP_EOL . $this->_t(4) . $string;
-							$mainbottom .= PHP_EOL . $this->_t(3) . '</div>';
-							break;
-					}
-				}
-				// set acctive tab
+				$this->setEditBodyTabMainCenterPositionDiv($main, $mainbottom, $positions);
+				// set acctive tab (must be in side foreach loop to get active tab code name)
 				if ($tabCounter == 0)
 				{
-					$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.startTabSet', '" . $viewName_single . "Tab', array('active' => '" . $tabCodeName . "')); ?>";
+					$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.startTabSet', '" . $view_name_single . "Tab', array('active' => '" . $tabCodeName . "')); ?>";
 				}
 				// check if custom tab must be added
-				if (($_customTabHTML = $this->addCustomTabs($searchTabs[$tabCodeName], $viewName_single, 1)) !== false)
+				if (($_customTabHTML = $this->addCustomTabs($searchTabs[$tabCodeName], $view_name_single, 1)) !== false)
 				{
 					$body .= $_customTabHTML;
 				}
 				// if this is a linked view set permissions
 				$closeIT = false;
-				if (isset($linkedViewIdentifier) && ComponentbuilderHelper::checkArray($linkedViewIdentifier) && in_array($tabCodeName, $linkedViewIdentifier))
+				if (ComponentbuilderHelper::checkArray($linkedViewIdentifier) && in_array($tabCodeName, $linkedViewIdentifier))
 				{
 					// get view name
 					$linkedViewId = array_search($tabCodeName, $linkedViewIdentifier);
@@ -7648,12 +7774,13 @@ class Interpretation extends Fields
 				{
 					$body .= PHP_EOL;
 				}
-				// start tab
-				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.addTab', '" . $viewName_single . "Tab', '" . $tabCodeName . "', JText:" . ":_('" . $tabLangName . "', true)); ?>";
+				// start addtab body
+				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.addTab', '" . $view_name_single . "Tab', '" . $tabCodeName . "', JText:" . ":_('" . $tabLangName . "', true)); ?>";
 				// add the main
 				$body .= PHP_EOL . $this->_t(2) . '<div class="row-fluid form-horizontal-desktop">';
 				$body .= $main;
 				$body .= PHP_EOL . $this->_t(2) . "</div>";
+				// add main body bottom div if needed
 				if (strlen($mainbottom) > 0)
 				{
 					// add the main bottom
@@ -7661,255 +7788,38 @@ class Interpretation extends Fields
 					$body .= $mainbottom;
 					$body .= PHP_EOL . $this->_t(2) . "</div>";
 				}
+				// end addtab body
 				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.endTab'); ?>";
+				// if we had permissions added
 				if ($closeIT)
 				{
 					$body .= PHP_EOL . $this->_t(1) . "<?php endif; ?>";
 				}
 				// check if custom tab must be added
-				if (($_customTabHTML = $this->addCustomTabs($searchTabs[$tabCodeName], $viewName_single, 2)) !== false)
+				if (($_customTabHTML = $this->addCustomTabs($searchTabs[$tabCodeName], $view_name_single, 2)) !== false)
 				{
 					$body .= $_customTabHTML;
 				}
 				// set counter
 				$tabCounter++;
 			}
-			// add option to load forms loded in via plugins (TODO) we may want to move these tab locations
+			// add option to load forms loaded in via plugins (TODO) we may want to move these tab locations
 			$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php \$this->ignore_fieldsets = array('details','metadata','vdmmetadata','accesscontrol'); ?>";
-			$body .= PHP_EOL . $this->_t(1) . "<?php \$this->tab_name = '" . $viewName_single . "Tab'; ?>";
+			$body .= PHP_EOL . $this->_t(1) . "<?php \$this->tab_name = '" . $view_name_single . "Tab'; ?>";
 			$body .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('joomla.edit.params', \$this); ?>";
-			// set default publishing tab lang
-			$tabLangName = $langView . '_PUBLISHING';
-			// add to lang array
-			if (!isset($this->langContent[$this->lang][$tabLangName]))
-			{
-				$this->langContent[$this->lang][$tabLangName] = 'Publishing';
-			}
-			// the default publishing items
-			$items = array('left' => array(), 'right' => array());
-			// Setup the default (custom) fields
-			// only load (1 => 'left', 2 => 'right')
-			$fieldsAddedRight = false;
-			if (isset($this->newPublishingFields[$viewName_single]))
-			{
-				foreach ($this->newPublishingFields[$viewName_single] as $df_alignment => $df_items)
-				{
-					foreach ($df_items as $df_order => $df_name)
-					{
-						if ($df_alignment == 2 || $df_alignment == 1)
-						{
-							$items[$alignmentNames[$df_alignment]][$df_order] = $df_name;
-						}
-						else
-						{
-							$this->app->enqueueMessage(JText::_('<hr /><h3>Field Warning</h3>'), 'Warning');
-							$this->app->enqueueMessage(JText::sprintf('Your <b>%s</b> field could not be added, since the <b>%s</b> alignment position is not available in the %s (publishing) tab. Please only target <b>Left or right</b> in the publishing tab.', $df_name, $alignmentNames[$df_alignment], $viewName_single), 'Warning');
-						}
-					}
-				}
-				// set switch to trigger notice if custom fields added to right
-				if (ComponentbuilderHelper::checkArray($items['right']))
-				{
-					$fieldsAddedRight = true;
-				}
-			}
-			// load all defaults
-			$loadDefaultFields = array(
-				'left' => array('created', 'created_by', 'modified', 'modified_by'),
-				'right' => array('published', 'ordering', 'access', 'version', 'hits', 'id')
-			);
-			foreach ($loadDefaultFields as $d_alignment => $defaultFields)
-			{
-				foreach ($defaultFields as $defaultField)
-				{
-					if (!isset($this->movedPublishingFields[$viewName_single][$defaultField]))
-					{
-						if ($defaultField != 'access')
-						{
-							$items[$d_alignment][] = $defaultField;
-						}
-						elseif ($defaultField === 'access' && isset($this->accessBuilder[$viewName_single]) && ComponentbuilderHelper::checkString($this->accessBuilder[$viewName_single]))
-						{
-							$items[$d_alignment][] = $defaultField;
-						}
-					}
-				}
-			}
-			// check if metadata is added to this view
-			if (isset($this->metadataBuilder[$viewName_single]) && ComponentbuilderHelper::checkString($this->metadataBuilder[$viewName_single]))
-			{
-				// set default publishing tab code name
-				$tabCodeNameLeft = 'publishing';
-				$tabCodeNameRight = 'metadata';
-				// the default publishing tiems
-				if (ComponentbuilderHelper::checkArray($items['left']) || ComponentbuilderHelper::checkArray($items['right']))
-				{
-					$items_one = '';
-					// load the items into one side
-					if (ComponentbuilderHelper::checkArray($items['left']))
-					{
-						$items_one .= "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['left']) . "'";
-					}
-					if (ComponentbuilderHelper::checkArray($items['right']))
-					{
-						// there is already fields just add these
-						if (strlen($items_one) > 3)
-						{
-							$items_one .= "," . PHP_EOL . $this->_t(1) . "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['right']) . "'";
-						}
-						// no fields has been added yet
-						else
-						{
-							$items_one .= "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['right']) . "'";
-						}
-					}
-					// only triger the info notice if there were custom fields targeted to the right alignment position.
-					if ($fieldsAddedRight)
-					{
-						$this->app->enqueueMessage(JText::_('<hr /><h3>Field Notice</h3>'), 'Notice');
-						$this->app->enqueueMessage(JText::sprintf('Your field/s added to the <b>right</b> alignment position in the %s (publishing) tab was added to the <b>left</b>. Since we have metadata fields on the right. Fields can only be loaded to the right of the publishing tab if there is no metadata fields.', $viewName_single), 'Notice');
-					}
-					// set the publishing layout
-					$this->setLayout($viewName_single, $tabCodeNameLeft, $items_one, 'layoutpublished');
-					$items_one = true;
-				}
-				else
-				{
-					$items_one = false;
-				}
-				// set the metadata layout
-				$this->setLayout($viewName_single, $tabCodeNameRight, false, 'layoutmetadata');
-				$items_two = true;
-			}
-			else
-			{
-				// set default publishing tab code name
-				$tabCodeNameLeft = 'publishing';
-				$tabCodeNameRight = 'publlshing';
-				// the default publishing tiems
-				if (ComponentbuilderHelper::checkArray($items['left']) || ComponentbuilderHelper::checkArray($items['right']))
-				{
-					// load left items that remain
-					if (ComponentbuilderHelper::checkArray($items['left']))
-					{
-						// load all items
-						$items_one = "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['left']) . "'";
-						// set the publishing layout
-						$this->setLayout($viewName_single, $tabCodeNameLeft, $items_one, 'layoutpublished');
-						$items_one = true;
-					}
-					// load right items that remain
-					if (ComponentbuilderHelper::checkArray($items['right']))
-					{
-						// load all items
-						$items_two = "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['right']) . "'";
-						// set the publishing layout
-						$this->setLayout($viewName_single, $tabCodeNameRight, $items_two, 'layoutpublished');
-						$items_two = true;
-					}
-				}
-				else
-				{
-					$items_one = false;
-					$items_two = false;
-				}
-			}
-			if ($items_one && $items_two)
-			{
-				$classs = "span6";
-			}
-			elseif ($items_one || $items_two)
-			{
-				$classs = "span12";
-			}
-			// only load this if needed
-			if ($items_one || $items_two)
-			{
-				// check if the item has permissions.
-				$publishingPer = array();
-				$allToBeChekced = array('core.delete', 'core.edit.created_by', 'core.edit.state', 'core.edit.created');
-				foreach ($allToBeChekced as $core_permission)
-				{
-					if ($coreLoad && isset($core[$core_permission]) && isset($this->permissionBuilder['global'][$core[$core_permission]]) && ComponentbuilderHelper::checkArray($this->permissionBuilder['global'][$core[$core_permission]]) && in_array($viewName_single, $this->permissionBuilder['global'][$core[$core_permission]]))
-					{
-						// set permissions.
-						$publishingPer[] = "\$this->canDo->get('" . $core[$core_permission] . "')";
-					}
-					else
-					{
-						// set permissions.
-						$publishingPer[] = "\$this->canDo->get('" . $core_permission . "')";
-					}
-				}
-				// check if custom tab must be added
-				if (($_customTabHTML = $this->addCustomTabs(15, $viewName_single, 1)) !== false)
-				{
-					$body .= $_customTabHTML;
-				}
-				$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php if (" . implode(' || ', $publishingPer) . ") : ?>";
-				// set the default publishing tab
-				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.addTab', '" . $viewName_single . "Tab', '" . $tabCodeNameLeft . "', JText:" . ":_('" . $tabLangName . "', true)); ?>";
-				$body .= PHP_EOL . $this->_t(2) . '<div class="row-fluid form-horizontal-desktop">';
-				if ($items_one)
-				{
-					$body .= PHP_EOL . $this->_t(3) . '<div class="' . $classs . '">';
-					$body .= PHP_EOL . $this->_t(4) . "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $tabCodeNameLeft . "', \$this); ?>";
-					$body .= PHP_EOL . $this->_t(3) . "</div>";
-				}
-				if ($items_two)
-				{
-					$body .= PHP_EOL . $this->_t(3) . '<div class="' . $classs . '">';
-					$body .= PHP_EOL . $this->_t(4) . "<?php echo JLayoutHelper::render('" . $viewName_single . "." . $tabCodeNameRight . "', \$this); ?>";
-					$body .= PHP_EOL . $this->_t(3) . "</div>";
-				}
-				$body .= PHP_EOL . $this->_t(2) . "</div>";
-				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.endTab'); ?>";
-				$body .= PHP_EOL . $this->_t(1) . "<?php endif; ?>";
-				// check if custom tab must be added
-				if (($_customTabHTML = $this->addCustomTabs(15, $viewName_single, 2)) !== false)
-				{
-					$body .= $_customTabHTML;
-				}
-			}
-			// make sure we dont load it to a view with the name component
-			if ($viewName_single != 'component')
-			{
-				// set permissions tab lang
-				$tabLangName = $langView . '_PERMISSION';
-				// set permissions tab code name
-				$tabCodeName = 'permissions';
-				// add to lang array
-				if (!isset($this->langContent[$this->lang][$tabLangName]))
-				{
-					$this->langContent[$this->lang][$tabLangName] = 'Permissions';
-				}
-				// set the permissions tab
-				$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php if (\$this->canDo->get('core.admin')) : ?>";
-				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.addTab', '" . $viewName_single . "Tab', '" . $tabCodeName . "', JText:" . ":_('" . $tabLangName . "', true)); ?>";
-				$body .= PHP_EOL . $this->_t(2) . '<div class="row-fluid form-horizontal-desktop">';
-				$body .= PHP_EOL . $this->_t(3) . '<div class="span12">';
-				$body .= PHP_EOL . $this->_t(4) . '<fieldset class="adminform">';
-				$body .= PHP_EOL . $this->_t(5) . '<div class="adminformlist">';
-				$body .= PHP_EOL . $this->_t(5) . "<?php foreach (\$this->form->getFieldset('accesscontrol') as \$field): ?>";
-				$body .= PHP_EOL . $this->_t(6) . "<div>";
-				$body .= PHP_EOL . $this->_t(7) . "<?php echo \$field->label; echo \$field->input;?>";
-				$body .= PHP_EOL . $this->_t(6) . "</div>";
-				$body .= PHP_EOL . $this->_t(6) . '<div class="clearfix"></div>';
-				$body .= PHP_EOL . $this->_t(5) . "<?php endforeach; ?>";
-				$body .= PHP_EOL . $this->_t(5) . "</div>";
-				$body .= PHP_EOL . $this->_t(4) . "</fieldset>";
-				$body .= PHP_EOL . $this->_t(3) . "</div>";
-				$body .= PHP_EOL . $this->_t(2) . "</div>";
-				$body .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.endTab'); ?>";
-				$body .= PHP_EOL . $this->_t(1) . "<?php endif; ?>";
-			}
+			// add the publish and meta data tabs
+			$body .= $this->getEditBodyPublishMetaTabs($view_name_single, $langView);
 			// end the tab set
 			$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.endTabSet'); ?>";
 			$body .= PHP_EOL . PHP_EOL . $this->_t(1) . "<div>";
-			$body .= PHP_EOL . $this->_t(2) . '<input type="hidden" name="task" value="' . $viewName_single . '.edit" />';
+			$body .= PHP_EOL . $this->_t(2) . '<input type="hidden" name="task" value="' . $view_name_single . '.edit" />';
 			$body .= PHP_EOL . $this->_t(2) . "<?php echo JHtml::_('form.token'); ?>";
 			$body .= PHP_EOL . $this->_t(1) . "</div>";
-			$body .= PHP_EOL . $this->_t(1) . "</div>";
+			// close divs
+			if (ComponentbuilderHelper::checkString($span))
+			{
+				$body .= PHP_EOL . $this->_t(1) . "</div>";
+			}
 			$body .= PHP_EOL . "</div>";
 			// check if left has been set
 			if (strlen($leftside) > 0)
@@ -7933,6 +7843,527 @@ class Interpretation extends Fields
 			return $header . $left . $body . $right . $footer;
 		}
 		return '';
+	}
+
+	/**
+	 * get Edit Body Linked Admin Views
+	 *
+	 * @param   array    $view                   The view data
+	 * @param   string   $view_name_single       The single view name
+	 * @param   array    $keys                   The tabs to add in layout
+	 * @param   array    $linkedViewIdentifier   The linked view identifier
+	 *
+	 * @return  array   The linked Admin Views tabs
+	 *
+	 */
+	protected function getEditBodyLinkedAdminViewsTabs(&$view, &$view_name_single, &$keys, &$linkedViewIdentifier)
+	{
+		// start linked tabs bucket
+		$linkedTab = array();
+		// check if the view has linked admin view 
+		if (isset($this->linkedAdminViews[$view_name_single]) && ComponentbuilderHelper::checkArray($this->linkedAdminViews[$view_name_single]))
+		{
+			foreach ($this->linkedAdminViews[$view_name_single] as $linkedView)
+			{
+				// get the tab name
+				$tabName = $view['settings']->tabs[(int) $linkedView['tab']];
+				// update the tab counter
+				$this->tabCounter[$view_name_single][$linkedView['tab']] = $tabName;
+				// add the linked view
+				$linkedTab[$linkedView['adminview']] = $linkedView['tab'];
+				// set the keys if values are set
+				if (ComponentbuilderHelper::checkString($linkedView['key']) && ComponentbuilderHelper::checkString($linkedView['parentkey']))
+				{
+					$keys[$linkedView['adminview']] = array('key' => $linkedView['key'], 'parentKey' => $linkedView['parentkey']);
+				}
+				else
+				{
+					$keys[$linkedView['adminview']] = array('key' => null, 'parentKey' => null);
+				}
+				// set the button switches
+				if (isset($linkedView['addnew']))
+				{
+					$keys[$linkedView['adminview']]['addNewButton'] = (int) $linkedView['addnew'];
+				}
+				else
+				{
+					$keys[$linkedView['adminview']]['addNewButton'] = 0;
+				}
+			}
+		}
+		return $linkedTab;
+	}
+
+	/**
+	 * get Edit Body Tabs
+	 *
+	 * @param   string    $view_name_single        The single view name
+	 * @param   string    $langView                The main lang prefix
+	 * @param   array     $linkedTab               The linked admin view tabs
+	 * @param   array     $keys                    The tabs to add in layout
+	 * @param   array     $linkedViewIdentifier    The linked view identifier
+	 * @param   array     $searchTabs              The tabs to add in layout
+	 * @param   string    $leftside                The left side html string
+	 * @param   string    $rightside               The right side html string
+	 * @param   string    $footer                  The footer html string
+	 * @param   string    $header                  The header html string
+	 * @param   int       $mainwidth               The main width value
+	 * @param   int       $sidewidth               The side width value
+	 *
+	 * @return  array   The linked tabs
+	 *
+	 */
+	protected function getEditBodyTabs(&$view_name_single, &$langView, &$linkedTab, &$keys, &$linkedViewIdentifier, &$searchTabs, &$leftside, &$rightside, &$footer, &$header, &$mainwidth, &$sidewidth)
+	{
+		// start tabs 
+		$tabs = array();
+		// sort the tabs based on key order
+		ksort($this->tabCounter[$view_name_single]);
+		// start tab builinging loop
+		foreach ($this->tabCounter[$view_name_single] as $tabNr => $tabName)
+		{
+			$tabWidth = 12;
+			$lrCounter = 0;
+			// set tab lang
+			$tabLangName = $langView . '_' . ComponentbuilderHelper::safeString($tabName, 'U');
+			// set tab code name
+			$tabCodeName = ComponentbuilderHelper::safeString($tabName);
+			/// set the values to use in search latter
+			$searchTabs[$tabCodeName] = $tabNr;
+			// add to lang array
+			$this->setLangContent($this->lang, $tabLangName, $tabName);
+			// check if linked view belongs to this tab
+			$buildLayout = true;
+			$linkedViewId = '';
+			if (ComponentbuilderHelper::checkArray($linkedTab))
+			{
+				if (($linkedViewId = array_search($tabNr, $linkedTab)) !== false)
+				{
+					// don't build (since this is a linked view)
+					$buildLayout = false;
+				}
+			}
+			// build layout these are actual fields
+			if ($buildLayout)
+			{
+				// sort to make sure it loads left first
+				$alignments = $this->layoutBuilder[$view_name_single][$tabName];
+				ksort($alignments);
+				foreach ($alignments as $alignment => $names)
+				{
+					// set layout code name
+					$layoutCodeName = $tabCodeName . '_' . $this->alignmentOptions[$alignment];
+					// reset each time
+					$items = '';
+					$itemCounter = 0;
+					// sort the names based on order of keys
+					ksort($names);
+					// build the items array for this alignment
+					foreach ($names as $nr => $name)
+					{
+						if ($itemCounter == 0)
+						{
+							$items .= "'" . $name . "'";
+						}
+						else
+						{
+							$items .= "," . PHP_EOL . $this->_t(1) . "'" . $name . "'";
+						}
+						$itemCounter++;
+					}
+					// based on alignment build the layout
+					switch ($alignment)
+					{
+						case 1: // left
+						case 2: // right
+							// count
+							$lrCounter++;
+							// set as items layout
+							$this->setLayout($view_name_single, $layoutCodeName, $items, 'layoutitems');
+							// set the lang to tab
+							$tabs[$tabCodeName]['lang'] = $tabLangName;
+							// load the body
+							if (!isset($tabs[$tabCodeName][(int) $alignment]))
+							{
+								$tabs[$tabCodeName][(int) $alignment] = '';
+							}
+							$tabs[$tabCodeName][(int) $alignment] .= "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+							break;
+						case 3: // fullwidth
+							// set as items layout
+							$this->setLayout($view_name_single, $layoutCodeName, $items, 'layoutfull');
+							// set the lang to tab
+							$tabs[$tabCodeName]['lang'] = $tabLangName;
+							// load the body
+							if (!isset($tabs[$tabCodeName][(int) $alignment]))
+							{
+								$tabs[$tabCodeName][(int) $alignment] = '';
+							}
+							$tabs[$tabCodeName][(int) $alignment] .= "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+							break;
+						case 4: // above
+							// set as title layout
+							$this->setLayout($view_name_single, $layoutCodeName, $items, 'layouttitle');
+							// load to header
+							$header .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+							break;
+						case 5: // under
+							// set as title layout
+							$this->setLayout($view_name_single, $layoutCodeName, $items, 'layouttitle');
+							// load to footer
+							$footer .= PHP_EOL . PHP_EOL . "<div class=\"clearfix\"></div>" . PHP_EOL . "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+							break;
+						case 6: // left side
+							$tabWidth = $tabWidth - 2;
+							// set as items layout
+							$this->setLayout($view_name_single, $layoutCodeName, $items, 'layoutitems');
+							// load the body
+							$leftside .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+							break;
+						case 7: // right side
+							$tabWidth = $tabWidth - 2;
+							// set as items layout
+							$this->setLayout($view_name_single, $layoutCodeName, $items, 'layoutitems');
+							// load the body
+							$rightside .= PHP_EOL . $this->_t(1) . "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+							break;
+					}
+				}
+			}
+			else
+			{
+				// set layout code name
+				$layoutCodeName = $tabCodeName . '_fullwidth';
+				// set identifiers
+				$linkedViewIdentifier[$linkedViewId] = $tabCodeName;
+				//set function name
+				$codeName = ComponentbuilderHelper::safeString($this->uniquekey(3) . $tabCodeName);
+				// set as items layout
+				$this->setLayout($view_name_single, $layoutCodeName, $codeName, 'layoutlinkedview');
+				// set the lang to tab
+				$tabs[$tabCodeName]['lang'] = $tabLangName;
+				// set all the linked view stuff
+				$this->secondRunAdmin['setLinkedView'][] = array(
+					'viewId' => $linkedViewId,
+					'view_name_single' => $view_name_single,
+					'codeName' => $codeName,
+					'layoutCodeName' => $layoutCodeName,
+					'key' => $keys[$linkedViewId]['key'],
+					'parentKey' => $keys[$linkedViewId]['parentKey'],
+					'addNewButon' => $keys[$linkedViewId]['addNewButton']);
+				// load the body
+				if (!isset($tabs[$tabCodeName][3]))
+				{
+					$tabs[$tabCodeName][3] = '';
+				}
+				$tabs[$tabCodeName][3] .= "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $layoutCodeName . "', \$this); ?>";
+			}
+			// width calculator :)
+			if ($tabWidth == 8)
+			{
+				$mainwidth = 8;
+				$sidewidth = 2;
+			}
+			elseif ($tabWidth == 10 && $mainwidth != 8)
+			{
+				$mainwidth = 9;
+				$sidewidth = 3;
+			}
+			$tabs[$tabCodeName]['lr'] = $lrCounter;
+		}
+		return $tabs;
+	}
+
+	/**
+	 * set Edit Body Main Center Positions Div
+	 *
+	 * @param   string    $main         The main position of this tab
+	 * @param   string    $mainbottom   The main bottom position of this tab
+	 * @param   array     $positions    The build positions of this tab
+	 *
+	 * @return  array   The linked Admin Views tabs
+	 *
+	 */
+	protected function setEditBodyTabMainCenterPositionDiv(&$main, &$mainbottom, &$positions)
+	{
+		foreach ($positions as $position => $string)
+		{
+			if ($positions['lr'] == 2)
+			{
+				switch ($position)
+				{
+					case 1: // left
+					case 2: // right
+						$main .= PHP_EOL . $this->_t(3) . '<div class="span6">';
+						$main .= PHP_EOL . $this->_t(4) . $string;
+						$main .= PHP_EOL . $this->_t(3) . '</div>';
+						break;
+				}
+			}
+			else
+			{
+				switch ($position)
+				{
+					case 1: // left
+					case 2: // right
+						$main .= PHP_EOL . $this->_t(3) . '<div class="span12">';
+						$main .= PHP_EOL . $this->_t(4) . $string;
+						$main .= PHP_EOL . $this->_t(3) . '</div>';
+						break;
+				}
+			}
+			switch ($position)
+			{
+				case 3: // fullwidth
+					$mainbottom .= PHP_EOL . $this->_t(3) . '<div class="span12">';
+					$mainbottom .= PHP_EOL . $this->_t(4) . $string;
+					$mainbottom .= PHP_EOL . $this->_t(3) . '</div>';
+					break;
+			}
+		}
+	}
+
+	/**
+	 * get Edit Body Publish and Meta Tab
+	 *
+	 * @param   string    $view_name_single    The single view name
+	 * @param   string    $langView            The main lang prefix
+	 *
+	 * @return  string   The published and Meta Data Tabs
+	 *
+	 */
+	protected function getEditBodyPublishMetaTabs(&$view_name_single, &$langView)
+	{
+		// build the two tabs
+		$tabs = '';
+		// set default publishing tab lang
+		$tabLangName = $langView . '_PUBLISHING';
+		// add to lang array
+		$this->setLangContent($this->lang, $tabLangName, 'Publishing');
+		// the default publishing items
+		$items = array('left' => array(), 'right' => array());
+		// Setup the default (custom) fields
+		// only load (1 => 'left', 2 => 'right')
+		$fieldsAddedRight = false;
+		if (isset($this->newPublishingFields[$view_name_single]))
+		{
+			foreach ($this->newPublishingFields[$view_name_single] as $df_alignment => $df_items)
+			{
+				foreach ($df_items as $df_order => $df_name)
+				{
+					if ($df_alignment == 2 || $df_alignment == 1)
+					{
+						$items[$this->alignmentOptions[$df_alignment]][$df_order] = $df_name;
+					}
+					else
+					{
+						$this->app->enqueueMessage(JText::_('<hr /><h3>Field Warning</h3>'), 'Warning');
+						$this->app->enqueueMessage(JText::sprintf('Your <b>%s</b> field could not be added, since the <b>%s</b> alignment position is not available in the %s (publishing) tab. Please only target <b>Left or right</b> in the publishing tab.', $df_name, $this->alignmentOptions[$df_alignment], $view_name_single), 'Warning');
+					}
+				}
+			}
+			// set switch to trigger notice if custom fields added to right
+			if (ComponentbuilderHelper::checkArray($items['right']))
+			{
+				$fieldsAddedRight = true;
+			}
+		}
+		// load all defaults
+		$loadDefaultFields = array(
+			'left' => array('created', 'created_by', 'modified', 'modified_by'),
+			'right' => array('published', 'ordering', 'access', 'version', 'hits', 'id')
+		);
+		foreach ($loadDefaultFields as $d_alignment => $defaultFields)
+		{
+			foreach ($defaultFields as $defaultField)
+			{
+				if (!isset($this->movedPublishingFields[$view_name_single][$defaultField]))
+				{
+					if ($defaultField != 'access')
+					{
+						$items[$d_alignment][] = $defaultField;
+					}
+					elseif ($defaultField === 'access' && isset($this->accessBuilder[$view_name_single]) && ComponentbuilderHelper::checkString($this->accessBuilder[$view_name_single]))
+					{
+						$items[$d_alignment][] = $defaultField;
+					}
+				}
+			}
+		}
+		// check if metadata is added to this view
+		if (isset($this->metadataBuilder[$view_name_single]) && ComponentbuilderHelper::checkString($this->metadataBuilder[$view_name_single]))
+		{
+			// set default publishing tab code name
+			$tabCodeNameLeft = 'publishing';
+			$tabCodeNameRight = 'metadata';
+			// the default publishing tiems
+			if (ComponentbuilderHelper::checkArray($items['left']) || ComponentbuilderHelper::checkArray($items['right']))
+			{
+				$items_one = '';
+				// load the items into one side
+				if (ComponentbuilderHelper::checkArray($items['left']))
+				{
+					$items_one .= "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['left']) . "'";
+				}
+				if (ComponentbuilderHelper::checkArray($items['right']))
+				{
+					// there is already fields just add these
+					if (strlen($items_one) > 3)
+					{
+						$items_one .= "," . PHP_EOL . $this->_t(1) . "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['right']) . "'";
+					}
+					// no fields has been added yet
+					else
+					{
+						$items_one .= "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['right']) . "'";
+					}
+				}
+				// only triger the info notice if there were custom fields targeted to the right alignment position.
+				if ($fieldsAddedRight)
+				{
+					$this->app->enqueueMessage(JText::_('<hr /><h3>Field Notice</h3>'), 'Notice');
+					$this->app->enqueueMessage(JText::sprintf('Your field/s added to the <b>right</b> alignment position in the %s (publishing) tab was added to the <b>left</b>. Since we have metadata fields on the right. Fields can only be loaded to the right of the publishing tab if there is no metadata fields.', $view_name_single), 'Notice');
+				}
+				// set the publishing layout
+				$this->setLayout($view_name_single, $tabCodeNameLeft, $items_one, 'layoutpublished');
+				$items_one = true;
+			}
+			else
+			{
+				$items_one = false;
+			}
+			// set the metadata layout
+			$this->setLayout($view_name_single, $tabCodeNameRight, false, 'layoutmetadata');
+			$items_two = true;
+		}
+		else
+		{
+			// set default publishing tab code name
+			$tabCodeNameLeft = 'publishing';
+			$tabCodeNameRight = 'publlshing';
+			// the default publishing tiems
+			if (ComponentbuilderHelper::checkArray($items['left']) || ComponentbuilderHelper::checkArray($items['right']))
+			{
+				// load left items that remain
+				if (ComponentbuilderHelper::checkArray($items['left']))
+				{
+					// load all items
+					$items_one = "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['left']) . "'";
+					// set the publishing layout
+					$this->setLayout($view_name_single, $tabCodeNameLeft, $items_one, 'layoutpublished');
+					$items_one = true;
+				}
+				// load right items that remain
+				if (ComponentbuilderHelper::checkArray($items['right']))
+				{
+					// load all items
+					$items_two = "'" . implode("'," . PHP_EOL . $this->_t(1) . "'", $items['right']) . "'";
+					// set the publishing layout
+					$this->setLayout($view_name_single, $tabCodeNameRight, $items_two, 'layoutpublished');
+					$items_two = true;
+				}
+			}
+			else
+			{
+				$items_one = false;
+				$items_two = false;
+			}
+		}
+		if ($items_one && $items_two)
+		{
+			$classs = "span6";
+		}
+		elseif ($items_one || $items_two)
+		{
+			$classs = "span12";
+		}
+		// setup correct core target
+		$coreLoad = false;
+		if (isset($this->permissionCore[$view_name_single]))
+		{
+			$core = $this->permissionCore[$view_name_single];
+			$coreLoad = true;
+		}
+		// only load this if needed
+		if ($items_one || $items_two)
+		{
+			// check if the item has permissions.
+			$publishingPer = array();
+			$allToBeChekced = array('core.delete', 'core.edit.created_by', 'core.edit.state', 'core.edit.created');
+			foreach ($allToBeChekced as $core_permission)
+			{
+				if ($coreLoad && isset($core[$core_permission]) && isset($this->permissionBuilder['global'][$core[$core_permission]]) && ComponentbuilderHelper::checkArray($this->permissionBuilder['global'][$core[$core_permission]]) && in_array($view_name_single, $this->permissionBuilder['global'][$core[$core_permission]]))
+				{
+					// set permissions.
+					$publishingPer[] = "\$this->canDo->get('" . $core[$core_permission] . "')";
+				}
+				else
+				{
+					// set permissions.
+					$publishingPer[] = "\$this->canDo->get('" . $core_permission . "')";
+				}
+			}
+			// check if custom tab must be added
+			if (($_customTabHTML = $this->addCustomTabs(15, $view_name_single, 1)) !== false)
+			{
+				$tabs .= $_customTabHTML;
+			}
+			$tabs .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php if (" . implode(' || ', $publishingPer) . ") : ?>";
+			// set the default publishing tab
+			$tabs .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.addTab', '" . $view_name_single . "Tab', '" . $tabCodeNameLeft . "', JText:" . ":_('" . $tabLangName . "', true)); ?>";
+			$tabs .= PHP_EOL . $this->_t(2) . '<div class="row-fluid form-horizontal-desktop">';
+			if ($items_one)
+			{
+				$tabs .= PHP_EOL . $this->_t(3) . '<div class="' . $classs . '">';
+				$tabs .= PHP_EOL . $this->_t(4) . "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $tabCodeNameLeft . "', \$this); ?>";
+				$tabs .= PHP_EOL . $this->_t(3) . "</div>";
+			}
+			if ($items_two)
+			{
+				$tabs .= PHP_EOL . $this->_t(3) . '<div class="' . $classs . '">';
+				$tabs .= PHP_EOL . $this->_t(4) . "<?php echo JLayoutHelper::render('" . $view_name_single . "." . $tabCodeNameRight . "', \$this); ?>";
+				$tabs .= PHP_EOL . $this->_t(3) . "</div>";
+			}
+			$tabs .= PHP_EOL . $this->_t(2) . "</div>";
+			$tabs .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.endTab'); ?>";
+			$tabs .= PHP_EOL . $this->_t(1) . "<?php endif; ?>";
+			// check if custom tab must be added
+			if (($_customTabHTML = $this->addCustomTabs(15, $view_name_single, 2)) !== false)
+			{
+				$tabs .= $_customTabHTML;
+			}
+		}
+
+		// make sure we dont load it to a view with the name component (as this will cause conflict with Joomla conventions)
+		if ($view_name_single != 'component')
+		{
+			// set permissions tab lang
+			$tabLangName = $langView . '_PERMISSION';
+			// set permissions tab code name
+			$tabCodeName = 'permissions';
+			// add to lang array
+			$this->setLangContent($this->lang, $tabLangName, 'Permissions');
+			// set the permissions tab
+			$tabs .= PHP_EOL . PHP_EOL . $this->_t(1) . "<?php if (\$this->canDo->get('core.admin')) : ?>";
+			$tabs .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.addTab', '" . $view_name_single . "Tab', '" . $tabCodeName . "', JText:" . ":_('" . $tabLangName . "', true)); ?>";
+			$tabs .= PHP_EOL . $this->_t(2) . '<div class="row-fluid form-horizontal-desktop">';
+			$tabs .= PHP_EOL . $this->_t(3) . '<div class="span12">';
+			$tabs .= PHP_EOL . $this->_t(4) . '<fieldset class="adminform">';
+			$tabs .= PHP_EOL . $this->_t(5) . '<div class="adminformlist">';
+			$tabs .= PHP_EOL . $this->_t(5) . "<?php foreach (\$this->form->getFieldset('accesscontrol') as \$field): ?>";
+			$tabs .= PHP_EOL . $this->_t(6) . "<div>";
+			$tabs .= PHP_EOL . $this->_t(7) . "<?php echo \$field->label; echo \$field->input;?>";
+			$tabs .= PHP_EOL . $this->_t(6) . "</div>";
+			$tabs .= PHP_EOL . $this->_t(6) . '<div class="clearfix"></div>';
+			$tabs .= PHP_EOL . $this->_t(5) . "<?php endforeach; ?>";
+			$tabs .= PHP_EOL . $this->_t(5) . "</div>";
+			$tabs .= PHP_EOL . $this->_t(4) . "</fieldset>";
+			$tabs .= PHP_EOL . $this->_t(3) . "</div>";
+			$tabs .= PHP_EOL . $this->_t(2) . "</div>";
+			$tabs .= PHP_EOL . $this->_t(1) . "<?php echo JHtml::_('bootstrap.endTab'); ?>";
+			$tabs .= PHP_EOL . $this->_t(1) . "<?php endif; ?>";
+		}
+		return $tabs;
 	}
 
 	protected function addCustomTabs($nr, $name_single, $target)
@@ -7971,7 +8402,7 @@ class Interpretation extends Fields
 			$fadein[] = $this->_t(1) . "// waiting spinner";
 			$fadein[] = $this->_t(1) . "var outerDiv = jQuery('body');";
 			$fadein[] = $this->_t(1) . "jQuery('<div id=\"loading\"></div>')";
-			$fadein[] = $this->_t(2) . ".css(\"background\", \"rgba(255, 255, 255, .8) url('components/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/assets/images/import.gif') 50% 15% no-repeat\")";
+			$fadein[] = $this->_t(2) . ".css(\"background\", \"rgba(255, 255, 255, .8) url('components/com_" . $this->componentCodeName . "/assets/images/import.gif') 50% 15% no-repeat\")";
 			$fadein[] = $this->_t(2) . ".css(\"top\", outerDiv.position().top - jQuery(window).scrollTop())";
 			$fadein[] = $this->_t(2) . ".css(\"left\", outerDiv.position().left - jQuery(window).scrollLeft())";
 			$fadein[] = $this->_t(2) . ".css(\"width\", outerDiv.width())";
@@ -7985,15 +8416,15 @@ class Interpretation extends Fields
 			$fadein[] = $this->_t(1) . "jQuery('#loading').show();";
 			$fadein[] = $this->_t(1) . "// when page is ready remove and show";
 			$fadein[] = $this->_t(1) . "jQuery(window).load(function() {";
-			$fadein[] = $this->_t(2) . "jQuery('#" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_loader').fadeIn('fast');";
+			$fadein[] = $this->_t(2) . "jQuery('#" . $this->componentCodeName . "_loader').fadeIn('fast');";
 			$fadein[] = $this->_t(2) . "jQuery('#loading').hide();";
 			$fadein[] = $this->_t(1) . "});";
 			$fadein[] = "</script>";
-			$fadein[] = "<div id=\"" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_loader\" style=\"display: none;\">";
+			$fadein[] = "<div id=\"" . $this->componentCodeName . "_loader\" style=\"display: none;\">";
 
 			return implode(PHP_EOL, $fadein);
 		}
-		return "<div id=\"" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_loader\">";
+		return "<div id=\"" . $this->componentCodeName . "_loader\">";
 	}
 
 	/**
@@ -8032,7 +8463,7 @@ class Interpretation extends Fields
 	{
 		/**
 		 * @var $viewId
-		 * @var $viewName_single
+		 * @var $view_name_single
 		 * @var $codeName
 		 * @var $layoutCodeName
 		 * @var $key
@@ -8053,46 +8484,54 @@ class Interpretation extends Fields
 		}
 		if (ComponentbuilderHelper::checkString($single) && ComponentbuilderHelper::checkString($list))
 		{
-			$head = $this->setListHeadLinked($single, $list, $addNewButon, $viewName_single);
-			$body = $this->setListBodyLinked($single, $list, $viewName_single);
+			$head = $this->setListHeadLinked($single, $list, $addNewButon, $view_name_single);
+			$body = $this->setListBodyLinked($single, $list, $view_name_single);
 			$functionName = ComponentbuilderHelper::safeString($codeName, 'F');
 			// LAYOUTITEMSTABLE <<<DYNAMIC>>>
-			$this->fileContentDynamic[$viewName_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSTABLE' . $this->hhh] = $head . $body;
+			$this->fileContentDynamic[$view_name_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSTABLE' . $this->hhh] = $head . $body;
 			// LAYOUTITEMSHEADER <<<DYNAMIC>>>
 			$headerscript = '//' . $this->setLine(__LINE__) . ' set the edit URL';
-			$headerscript .= PHP_EOL . '$edit = "index.php?option=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '&view=' . $list . '&task=' . $single . '.edit";';
+			$headerscript .= PHP_EOL . '$edit = "index.php?option=com_' . $this->componentCodeName . '&view=' . $list . '&task=' . $single . '.edit";';
 			$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' set a return value';
-			$headerscript .= PHP_EOL . '$return = ($id) ? "index.php?option=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '&view=' . $viewName_single . '&layout=edit&id=" . $id : "";';
+			$headerscript .= PHP_EOL . '$return = ($id) ? "index.php?option=com_' . $this->componentCodeName . '&view=' . $view_name_single . '&layout=edit&id=" . $id : "";';
 			$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' check for a return value';
 			$headerscript .= PHP_EOL . '$jinput = JFactory::getApplication()->input;';
 			$headerscript .= PHP_EOL . "if (\$_return = \$jinput->get('return', null, 'base64'))";
 			$headerscript .= PHP_EOL . '{';
 			$headerscript .= PHP_EOL . $this->_t(1) . '$return .= "&return=" . $_return;';
 			$headerscript .= PHP_EOL . '}';
-			$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' set the referral values';
-			$headerscript .= PHP_EOL . '$ref = ($id) ? "&ref=' . $viewName_single . '&refid=" . $id . "&return=" . urlencode(base64_encode($return)) : "";';
+			$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' check if return value was set';
+			$headerscript .= PHP_EOL . 'if (' . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . 'Helper::checkString($return))';
+			$headerscript .= PHP_EOL . '{';
+			$headerscript .= PHP_EOL . $this->_t(1) . '//' . $this->setLine(__LINE__) . ' set the referral values';
+			$headerscript .= PHP_EOL . $this->_t(1) . '$ref = ($id) ? "&ref=' . $view_name_single . '&refid=" . $id . "&return=" . urlencode(base64_encode($return)) : "&return=" . urlencode(base64_encode($return));';
+			$headerscript .= PHP_EOL . '}';
+			$headerscript .= PHP_EOL . 'else';
+			$headerscript .= PHP_EOL . '{';
+			$headerscript .= PHP_EOL . $this->_t(1) . '$ref = ($id) ? "&ref=' . $view_name_single . '&refid=" . $id : "";';
+			$headerscript .= PHP_EOL . '}';
 			if ($addNewButon > 0)
 			{
 				// add the link for new
 				if ($addNewButon == 1 || $addNewButon == 2)
 				{
 					$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' set the create new URL';
-					$headerscript .= PHP_EOL . '$new = "index.php?option=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '&view=' . $single . '&layout=edit".$ref;';
+					$headerscript .= PHP_EOL . '$new = "index.php?option=com_' . $this->componentCodeName . '&view=' . $list . '&task=' . $single . '.edit" . $ref;';
 				}
 				// and the link for close and new
 				if ($addNewButon == 2 || $addNewButon == 3)
 				{
 					$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' set the create new and close URL';
-					$headerscript .= PHP_EOL . '$close_new = "index.php?option=com_' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '&view=' . $single . '&layout=edit";';
+					$headerscript .= PHP_EOL . '$close_new = "index.php?option=com_' . $this->componentCodeName . '&view=' . $list . '&task=' . $single . '.edit";';
 				}
 				$headerscript .= PHP_EOL . '//' . $this->setLine(__LINE__) . ' load the action object';
 				$headerscript .= PHP_EOL . '$can = ' . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . 'Helper::getActions(' . "'" . $single . "'" . ');';
 			}
-			$this->fileContentDynamic[$viewName_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSHEADER' . $this->hhh] = $headerscript;
+			$this->fileContentDynamic[$view_name_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSHEADER' . $this->hhh] = $headerscript;
 			// LINKEDVIEWITEMS <<<DYNAMIC>>>
-			$this->fileContentDynamic[$viewName_single][$this->hhh . 'LINKEDVIEWITEMS' . $this->hhh] .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get Linked view data" . PHP_EOL . $this->_t(2) . "\$this->" . $codeName . " = \$this->get('" . $functionName . "');";
+			$this->fileContentDynamic[$view_name_single][$this->hhh . 'LINKEDVIEWITEMS' . $this->hhh] .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get Linked view data" . PHP_EOL . $this->_t(2) . "\$this->" . $codeName . " = \$this->get('" . $functionName . "');";
 			// LINKEDVIEWTABLESCRIPTS <<<DYNAMIC>>>
-			$this->fileContentDynamic[$viewName_single][$this->hhh . 'LINKEDVIEWTABLESCRIPTS' . $this->hhh] = $this->setFootableScripts();
+			$this->fileContentDynamic[$view_name_single][$this->hhh . 'LINKEDVIEWTABLESCRIPTS' . $this->hhh] = $this->setFootableScripts();
 			if (strpos($parentKey, '-R>') !== false || strpos($parentKey, '-A>') !== false)
 			{
 				list($parent_key) = explode('-', $parentKey);
@@ -8126,22 +8565,22 @@ class Interpretation extends Fields
 				foreach ($parent_keys as $parent_key)
 				{
 					$globalKey[$parent_key] = ComponentbuilderHelper::safeString($_key . $this->uniquekey(4));
-					$this->fileContentDynamic[$viewName_single][$this->hhh . 'LINKEDVIEWGLOBAL' . $this->hhh] .= PHP_EOL . $this->_t(2) . "\$this->" . $globalKey[$parent_key] . " = \$item->" . $parent_key . ";";
+					$this->fileContentDynamic[$view_name_single][$this->hhh . 'LINKEDVIEWGLOBAL' . $this->hhh] .= PHP_EOL . $this->_t(2) . "\$this->" . $globalKey[$parent_key] . " = \$item->" . $parent_key . ";";
 				}
 			}
 			else
 			{
 				// set the global key
 				$globalKey = ComponentbuilderHelper::safeString($_key . $this->uniquekey(4));
-				$this->fileContentDynamic[$viewName_single][$this->hhh . 'LINKEDVIEWGLOBAL' . $this->hhh] .= PHP_EOL . $this->_t(2) . "\$this->" . $globalKey . " = \$item->" . $parent_key . ";";
+				$this->fileContentDynamic[$view_name_single][$this->hhh . 'LINKEDVIEWGLOBAL' . $this->hhh] .= PHP_EOL . $this->_t(2) . "\$this->" . $globalKey . " = \$item->" . $parent_key . ";";
 			}
 			// LINKEDVIEWMETHODS <<<DYNAMIC>>>
-			$this->fileContentDynamic[$viewName_single][$this->hhh . 'LINKEDVIEWMETHODS' . $this->hhh] .= $this->setListQueryLinked($single, $list, $functionName, $key, $_key, $parentKey, $parent_key, $globalKey);
+			$this->fileContentDynamic[$view_name_single][$this->hhh . 'LINKEDVIEWMETHODS' . $this->hhh] .= $this->setListQueryLinked($single, $list, $functionName, $key, $_key, $parentKey, $parent_key, $globalKey);
 		}
 		else
 		{
-			$this->fileContentDynamic[$viewName_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSTABLE' . $this->hhh] = 'oops! error.....';
-			$this->fileContentDynamic[$viewName_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSHEADER' . $this->hhh] = '';
+			$this->fileContentDynamic[$view_name_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSTABLE' . $this->hhh] = 'oops! error.....';
+			$this->fileContentDynamic[$view_name_single . '_' . $layoutCodeName][$this->hhh . 'LAYOUTITEMSHEADER' . $this->hhh] = '';
 		}
 	}
 
@@ -8154,22 +8593,22 @@ class Interpretation extends Fields
 		if (!isset($this->footableVersion) || 2 == $this->footableVersion) // loading version 2
 		{
 			$foo = PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Add the CSS for Footable.";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/css/footable.core.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/css/footable.core.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$foo .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Use the Metro Style";
 			$foo .= PHP_EOL . $this->_t(2) . "if (!isset(\$this->fooTableStyle) || 0 == \$this->fooTableStyle)";
 			$foo .= PHP_EOL . $this->_t(2) . "{";
-			$foo .= PHP_EOL . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/css/footable.metro.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$foo .= PHP_EOL . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/css/footable.metro.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$foo .= PHP_EOL . $this->_t(2) . "}";
 			$foo .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Use the Legacy Style.";
 			$foo .= PHP_EOL . $this->_t(2) . "elseif (isset(\$this->fooTableStyle) && 1 == \$this->fooTableStyle)";
 			$foo .= PHP_EOL . $this->_t(2) . "{";
-			$foo .= PHP_EOL . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/css/footable.standalone.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$foo .= PHP_EOL . $this->_t(3) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/css/footable.standalone.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$foo .= PHP_EOL . $this->_t(2) . "}";
 			$foo .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Add the JavaScript for Footable";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/js/footable.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/js/footable.sort.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/js/footable.filter.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v2/js/footable.paginate.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/js/footable.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/js/footable.sort.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/js/footable.filter.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v2/js/footable.paginate.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			if ($init)
 			{
 				$foo .= PHP_EOL . PHP_EOL . $this->_t(2) . '$footable = "jQuery(document).ready(function() { jQuery(function () { jQuery(' . "'.footable'" . ').footable(); }); jQuery(' . "'.nav-tabs'" . ').on(' . "'click'" . ', ' . "'li'" . ', function() { setTimeout(tableFix, 10); }); }); function tableFix() { jQuery(' . "'.footable'" . ').trigger(' . "'footable_resize'" . '); }";';
@@ -8181,9 +8620,9 @@ class Interpretation extends Fields
 
 			$foo = PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Add the CSS for Footable";
 			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addStyleSheet('https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css');";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v3/css/footable.standalone.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addStyleSheet(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v3/css/footable.standalone.min.css', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/css');";
 			$foo .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Add the JavaScript for Footable (adding all funtions)";
-			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/footable-v3/js/footable.min.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
+			$foo .= PHP_EOL . $this->_t(2) . "\$this->document->addScript(JURI::root() .'media/com_" . $this->componentCodeName . "/footable-v3/js/footable.min.js', (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::jVersion()->isCompatible('3.8.0')) ? array('version' => 'auto') : 'text/javascript');";
 			if ($init)
 			{
 				$foo .= PHP_EOL . PHP_EOL . $this->_t(2) . '$footable = "jQuery(document).ready(function() { jQuery(function () { jQuery(' . "'.footable'" . ').footable();});});";';
@@ -8411,15 +8850,9 @@ class Interpretation extends Fields
 			// make sure only first link is used as togeler
 			$firstLink = true;
 			// add to lang array
-			if (!isset($this->langContent[$this->lang][$statusLangName]))
-			{
-				$this->langContent[$this->lang][$statusLangName] = 'Status';
-			}
+			$this->setLangContent($this->lang, $statusLangName, 'Status');
 			// add to lang array
-			if (!isset($this->langContent[$this->lang][$idLangName]))
-			{
-				$this->langContent[$this->lang][$idLangName] = 'Id';
-			}
+			$this->setLangContent($this->lang, $idLangName, 'Id');
 			$head .= PHP_EOL . $this->_t(1) . "<tr>";
 			// set controller for data hiding options
 			$controller = 1;
@@ -8517,8 +8950,8 @@ class Interpretation extends Fields
 		{
 			$query .= PHP_EOL . $this->_t(2) . "\$query->select(\$db->quoteName('c.title','category_title'));";
 		}
-		$query .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " From the " . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_" . $viewName_single . " table";
-		$query .= PHP_EOL . $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_" . $viewName_single . "', 'a'));";
+		$query .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " From the " . $this->componentCodeName . "_" . $viewName_single . " table";
+		$query .= PHP_EOL . $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $this->componentCodeName . "_" . $viewName_single . "', 'a'));";
 		// add the category
 		if ($addCategory)
 		{
@@ -8600,7 +9033,7 @@ class Interpretation extends Fields
 			$query .= PHP_EOL . $this->_t(3) . "\$query->where('a.access = ' . (int) \$access);";
 			$query .= PHP_EOL . $this->_t(2) . "}";
 			$query .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Implement View Level Access";
-			$query .= PHP_EOL . $this->_t(2) . "if (!\$user->authorise('core.options', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+			$query .= PHP_EOL . $this->_t(2) . "if (!\$user->authorise('core.options', 'com_" . $this->componentCodeName . "'))";
 			$query .= PHP_EOL . $this->_t(2) . "{";
 			$query .= PHP_EOL . $this->_t(3) . "\$groups = implode(',', \$user->getAuthorisedViewLevels());";
 			$query .= PHP_EOL . $this->_t(3) . "\$query->where('a.access IN (' . \$groups . ')');";
@@ -8795,7 +9228,7 @@ class Interpretation extends Fields
 			{
 				// Load to lang
 				$keyLang = $this->langPrefix . '_' . $custom_button['NAME'];
-				$this->langContent[$this->lang][$keyLang] = ComponentbuilderHelper::safeString($custom_button['name'], 'Ww');
+				$this->setLangContent($this->lang, $keyLang, ComponentbuilderHelper::safeString($custom_button['name'], 'Ww'));
 				// add cpanel button
 				$buttons[] = $this->_t(2) . "if (\$this->canDo->get('" . $custom_button['link'] . ".access'))";
 				$buttons[] = $this->_t(2) . "{";
@@ -8830,7 +9263,7 @@ class Interpretation extends Fields
 				$method[] = $this->_t(2) . "JSession::checkToken() or die(JText:" . ":_('JINVALID_TOKEN'));";
 				$method[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if export is allowed for this user.";
 				$method[] = $this->_t(2) . "\$user = JFactory::getUser();";
-				$method[] = $this->_t(2) . "if (\$user->authorise('" . $custom_button['link'] . ".access', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+				$method[] = $this->_t(2) . "if (\$user->authorise('" . $custom_button['link'] . ".access', 'com_" . $this->componentCodeName . "'))";
 				$method[] = $this->_t(2) . "{";
 				$method[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the input";
 				$method[] = $this->_t(3) . "\$input = JFactory::getApplication()->input;";
@@ -8839,20 +9272,17 @@ class Interpretation extends Fields
 				$method[] = $this->_t(3) . "JArrayHelper::toInteger(\$pks);";
 				$method[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " convert to string";
 				$method[] = $this->_t(3) . "\$ids = implode('_', \$pks);";
-				$method[] = $this->_t(3) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $custom_button['link'] . "&cid='.\$ids, false));";
+				$method[] = $this->_t(3) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=" . $custom_button['link'] . "&cid='.\$ids, false));";
 				$method[] = $this->_t(3) . "return;";
 				$method[] = $this->_t(2) . "}";
 				$method[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Redirect to the list screen with error.";
 				$method[] = $this->_t(2) . "\$message = JText:" . ":_('" . $this->langPrefix . "_ACCESS_TO_" . $custom_button['NAME'] . "_FAILED');";
-				$method[] = $this->_t(2) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $viewName_list . "', false), \$message, 'error');";
+				$method[] = $this->_t(2) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=" . $viewName_list . "', false), \$message, 'error');";
 				$method[] = $this->_t(2) . "return;";
 				$method[] = $this->_t(1) . "}";
 				// add to lang array
 				$lankey = $this->langPrefix . "_ACCESS_TO_" . $custom_button['NAME'] . "_FAILED";
-				if (!isset($this->langContent[$this->lang][$lankey]))
-				{
-					$this->langContent[$this->lang][$lankey] = 'Access to ' . $custom_button['link'] . ' was denied.';
-				}
+				$this->setLangContent($this->lang, $lankey, 'Access to ' . $custom_button['link'] . ' was denied.');
 			}
 
 			return implode(PHP_EOL, $method);
@@ -8861,44 +9291,77 @@ class Interpretation extends Fields
 	}
 
 	/**
-	 * @param $viewName_single
-	 * @param $viewName_list
+	 * A function that builds get Items Method for model
+	 *
+	 * @param   string   $viewName_single  The single view name
+	 * @param   string   $viewName_list    The list view name
+	 * @param   array    $config           The config details to adapt the method being build
+	 *
 	 * @return string
 	 */
-	public function setModelExportMethod($viewName_single, $viewName_list)
+	public function setGetItemsModelMethod($viewName_single, $viewName_list, $config = array('functionName' => 'getExportData', 'docDesc' => 'Method to get list export data.', 'type' => 'export'))
 	{
+		// start the query string
 		$query = '';
-		if ($this->eximportView[$viewName_list])
+		// check if this is the export method
+		$isExport = ('export' === $config['type']);
+		// check if this view has export feature, and or if this is not an export method
+		if ((isset($this->eximportView[$viewName_list]) && $this->eximportView[$viewName_list]) || !$isExport)
 		{
 			$query = PHP_EOL . PHP_EOL . $this->_t(1) . "/**";
-			$query .= PHP_EOL . $this->_t(1) . " * Method to get list export data.";
+			$query .= PHP_EOL . $this->_t(1) . " * " . $config['docDesc'];
+			$query .= PHP_EOL . $this->_t(1) . " *";
+			$query .= PHP_EOL . $this->_t(1) . " * @param   array  \$pks  The ids of the items to get";
+			$query .= PHP_EOL . $this->_t(1) . " * @param   JUser  \$user  The user making the request";
 			$query .= PHP_EOL . $this->_t(1) . " *";
 			$query .= PHP_EOL . $this->_t(1) . " * @return mixed  An array of data items on success, false on failure.";
 			$query .= PHP_EOL . $this->_t(1) . " */";
-			$query .= PHP_EOL . $this->_t(1) . "public function getExportData(\$pks)";
+			$query .= PHP_EOL . $this->_t(1) . "public function " . $config['functionName'] . "(\$pks, \$user = null)";
 			$query .= PHP_EOL . $this->_t(1) . "{";
 			$query .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " setup the query";
 			$query .= PHP_EOL . $this->_t(2) . "if (" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkArray(\$pks))";
 			$query .= PHP_EOL . $this->_t(2) . "{";
-			$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set a value to know this is exporting method.";
-			$query .= PHP_EOL . $this->_t(3) . "\$_export = true;";
-			$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the user object.";
-			$query .= PHP_EOL . $this->_t(3) . "\$user = JFactory::getUser();";
+			$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set a value to know this is " . $config['type'] . " method. (USE IN CUSTOM CODE TO ALTER OUTCOME)";
+			$query .= PHP_EOL . $this->_t(3) . "\$_" . $config['type'] . " = true;";
+			$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the user object if not set.";
+			$query .= PHP_EOL . $this->_t(3) . "if (!isset(\$user) || !" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkObject(\$user))";
+			$query .= PHP_EOL . $this->_t(3) . "{";
+			$query .= PHP_EOL . $this->_t(4) . "\$user = JFactory::getUser();";
+			$query .= PHP_EOL . $this->_t(3) . "}";
 			$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Create a new query object.";
 			$query .= PHP_EOL . $this->_t(3) . "\$db = JFactory::getDBO();";
 			$query .= PHP_EOL . $this->_t(3) . "\$query = \$db->getQuery(true);";
 			$query .= PHP_EOL . PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Select some fields";
 			$query .= PHP_EOL . $this->_t(3) . "\$query->select('a.*');";
-			$query .= PHP_EOL . PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " From the " . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_" . $viewName_single . " table";
-			$query .= PHP_EOL . $this->_t(3) . "\$query->from(\$db->quoteName('#__" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_" . $viewName_single . "', 'a'));";
+			$query .= PHP_EOL . PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " From the " . $this->componentCodeName . "_" . $viewName_single . " table";
+			$query .= PHP_EOL . $this->_t(3) . "\$query->from(\$db->quoteName('#__" . $this->componentCodeName . "_" . $viewName_single . "', 'a'));";
 			$query .= PHP_EOL . $this->_t(3) . "\$query->where('a.id IN (' . implode(',',\$pks) . ')');";
 			// add custom filtering php
 			$query .= $this->getCustomScriptBuilder('php_getlistquery', $viewName_single, PHP_EOL . PHP_EOL . $this->_t(1));
-
+			// first check if we export of text only is avalable
+			if ($this->exportTextOnly)
+			{
+				// add switch
+				$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get global switch to activate text only export";
+				$query .= PHP_EOL . $this->_t(3) . "\$export_text_only = JComponentHelper::getParams('com_" . $this->componentCodeName . "')->get('export_text_only', 0);";
+				// first check if we have custom queries
+				$custom_query = $this->setCustomQuery($viewName_list, $viewName_single, $this->_t(2), true);
+			}
+			// if values were returned add the area
+			if (isset($custom_query) && ComponentbuilderHelper::checkString($custom_query))
+			{
+				$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Add these queries only if text only is required";
+				$query .= PHP_EOL . $this->_t(3) . "if (\$export_text_only)";
+				$query .= PHP_EOL . $this->_t(3) . "{";
+				// add the custom fields query
+				$query .= $custom_query;
+				$query .= PHP_EOL . $this->_t(3) . "}";
+			}
+			// add access levels if the view has access set
 			if (isset($this->accessBuilder[$viewName_single]) && ComponentbuilderHelper::checkString($this->accessBuilder[$viewName_single]))
 			{
 				$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Implement View Level Access";
-				$query .= PHP_EOL . $this->_t(3) . "if (!\$user->authorise('core.options', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+				$query .= PHP_EOL . $this->_t(3) . "if (!\$user->authorise('core.options', 'com_" . $this->componentCodeName . "'))";
 				$query .= PHP_EOL . $this->_t(3) . "{";
 				$query .= PHP_EOL . $this->_t(4) . "\$groups = implode(',', \$user->getAuthorisedViewLevels());";
 				$query .= PHP_EOL . $this->_t(4) . "\$query->where('a.access IN (' . \$groups . ')');";
@@ -8912,22 +9375,47 @@ class Interpretation extends Fields
 			$query .= PHP_EOL . $this->_t(3) . "if (\$db->getNumRows())";
 			$query .= PHP_EOL . $this->_t(3) . "{";
 			$query .= PHP_EOL . $this->_t(4) . "\$items = \$db->loadObjectList();";
-			$query .= $this->setGetItemsMethodStringFix($viewName_single, $viewName_list, $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh], $this->_t(2), true);
-			// add custom php to getitems method after all
+			// set the string fixing code
+			$query .= $this->setGetItemsMethodStringFix($viewName_single, $viewName_list, $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh], $this->_t(2), $isExport, true);
+			// first check if we export of text only is avalable
+			if ($this->exportTextOnly)
+			{
+				$query_translations = $this->setSelectionTranslationFix($viewName_list, $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh], $this->_t(3));
+			}
+			// add translations
+			if (isset($query_translations) && ComponentbuilderHelper::checkString($query_translations))
+			{
+				$query .= PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Add these translation only if text only is required";
+				$query .= PHP_EOL . $this->_t(3) . "if (\$export_text_only)";
+				$query .= PHP_EOL . $this->_t(3) . "{";
+				$query .= $query_translations;
+				$query .= PHP_EOL . $this->_t(3) . "}";
+			}
+			// add custom php to getItems method after all
 			$query .= $this->getCustomScriptBuilder('php_getitems_after_all', $viewName_single, PHP_EOL . PHP_EOL . $this->_t(2));
-			$query .= PHP_EOL . $this->_t(4) . "return \$items;";
+			// in privacy export we must return array of arrays
+			if ('privacy' === $config['type'])
+			{
+				$query .= PHP_EOL . $this->_t(4) . "return json_decode(json_encode(\$items), true);";
+			}
+			else
+			{
+				$query .= PHP_EOL . $this->_t(4) . "return \$items;";
+			}
 			$query .= PHP_EOL . $this->_t(3) . "}";
 			$query .= PHP_EOL . $this->_t(2) . "}";
 			$query .= PHP_EOL . $this->_t(2) . "return false;";
 			$query .= PHP_EOL . $this->_t(1) . "}";
-
 			// get the header script
-			$header = ComponentbuilderHelper::getDynamicScripts('headers');
+			if ($isExport)
+			{
+				$header = ComponentbuilderHelper::getDynamicScripts('headers');
 
-			// add getExImPortHeaders
-			$query .= $this->getCustomScriptBuilder('php_import_headers', 'import_' . $viewName_list, PHP_EOL . PHP_EOL, null, true,
-				// set a default script for those with no custom script
-				PHP_EOL . PHP_EOL . $this->setPlaceholders($header, $this->placeholders));
+				// add getExImPortHeaders
+				$query .= $this->getCustomScriptBuilder('php_import_headers', 'import_' . $viewName_list, PHP_EOL . PHP_EOL, null, true,
+					// set a default script for those with no custom script
+					PHP_EOL . PHP_EOL . $this->setPlaceholders($header, $this->placeholders));
+			}
 		}
 		return $query;
 	}
@@ -8946,7 +9434,7 @@ class Interpretation extends Fields
 			$method[] = $this->_t(2) . "JSession::checkToken() or die(JText:" . ":_('JINVALID_TOKEN'));";
 			$method[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if export is allowed for this user.";
 			$method[] = $this->_t(2) . "\$user = JFactory::getUser();";
-			$method[] = $this->_t(2) . "if (\$user->authorise('" . $viewName_single . ".export', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "') && \$user->authorise('core.export', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+			$method[] = $this->_t(2) . "if (\$user->authorise('" . $viewName_single . ".export', 'com_" . $this->componentCodeName . "') && \$user->authorise('core.export', 'com_" . $this->componentCodeName . "'))";
 			$method[] = $this->_t(2) . "{";
 			$method[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the input";
 			$method[] = $this->_t(3) . "\$input = JFactory::getApplication()->input;";
@@ -8966,7 +9454,7 @@ class Interpretation extends Fields
 			$method[] = $this->_t(2) . "}";
 			$method[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Redirect to the list screen with error.";
 			$method[] = $this->_t(2) . "\$message = JText:" . ":_('" . $this->langPrefix . "_EXPORT_FAILED');";
-			$method[] = $this->_t(2) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $viewName_list . "', false), \$message, 'error');";
+			$method[] = $this->_t(2) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=" . $viewName_list . "', false), \$message, 'error');";
 			$method[] = $this->_t(2) . "return;";
 			$method[] = $this->_t(1) . "}";
 
@@ -8977,7 +9465,7 @@ class Interpretation extends Fields
 			$method[] = $this->_t(2) . "JSession::checkToken() or die(JText:" . ":_('JINVALID_TOKEN'));";
 			$method[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if import is allowed for this user.";
 			$method[] = $this->_t(2) . "\$user = JFactory::getUser();";
-			$method[] = $this->_t(2) . "if (\$user->authorise('" . $viewName_single . ".import', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "') && \$user->authorise('core.import', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+			$method[] = $this->_t(2) . "if (\$user->authorise('" . $viewName_single . ".import', 'com_" . $this->componentCodeName . "') && \$user->authorise('core.import', 'com_" . $this->componentCodeName . "'))";
 			$method[] = $this->_t(2) . "{";
 			$method[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Get the import model";
 			$method[] = $this->_t(3) . "\$model = \$this->getModel('" . ComponentbuilderHelper::safeString($viewName_list, 'F') . "');";
@@ -8994,26 +9482,23 @@ class Interpretation extends Fields
 			$method[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Redirect to import view.";
 			// add to lang array
 			$selectImportFileNote = $this->langPrefix . "_IMPORT_SELECT_FILE_FOR_" . ComponentbuilderHelper::safeString($viewName_list, 'U');
-			if (!isset($this->langContent[$this->lang][$selectImportFileNote]))
-			{
-				$this->langContent[$this->lang][$selectImportFileNote] = 'Select the file to import data to ' . $viewName_list . '.';
-			}
+			$this->setLangContent($this->lang, $selectImportFileNote, 'Select the file to import data to ' . $viewName_list . '.');
 			$method[] = $this->_t(4) . "\$message = JText:" . ":_('" . $selectImportFileNote . "');";
 			// if this view has custom script it must have as custom import (model, veiw, controller)
 			if (isset($this->importCustomScripts[$viewName_list]) && $this->importCustomScripts[$viewName_list])
 			{
-				$method[] = $this->_t(4) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=import_" . $viewName_list . "', false), \$message);";
+				$method[] = $this->_t(4) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=import_" . $viewName_list . "', false), \$message);";
 			}
 			else
 			{
-				$method[] = $this->_t(4) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=import', false), \$message);";
+				$method[] = $this->_t(4) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=import', false), \$message);";
 			}
 			$method[] = $this->_t(4) . "return;";
 			$method[] = $this->_t(3) . "}";
 			$method[] = $this->_t(2) . "}";
 			$method[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Redirect to the list screen with error.";
 			$method[] = $this->_t(2) . "\$message = JText:" . ":_('" . $this->langPrefix . "_IMPORT_FAILED');";
-			$method[] = $this->_t(2) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "&view=" . $viewName_list . "', false), \$message, 'error');";
+			$method[] = $this->_t(2) . "\$this->setRedirect(JRoute::_('index.php?option=com_" . $this->componentCodeName . "&view=" . $viewName_list . "', false), \$message, 'error');";
 			$method[] = $this->_t(2) . "return;";
 			$method[] = $this->_t(1) . "}";
 			return implode(PHP_EOL, $method);
@@ -9029,10 +9514,7 @@ class Interpretation extends Fields
 			// main lang prefix
 			$langExport = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Export Data', 'U');
 			// add to lang array
-			if (!isset($this->langContent[$this->lang][$langExport]))
-			{
-				$this->langContent[$this->lang][$langExport] = 'Export Data';
-			}
+			$this->setLangContent($this->lang, $langExport, 'Export Data');
 			$button = array();
 			$button[] = PHP_EOL . PHP_EOL . $this->_t(3) . "if (\$this->canDo->get('core.export') && \$this->canDo->get('" . $viewName_single . ".export'))";
 			$button[] = $this->_t(3) . "{";
@@ -9051,10 +9533,7 @@ class Interpretation extends Fields
 			// main lang prefix
 			$langImport = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Import Data', 'U');
 			// add to lang array
-			if (!isset($this->langContent[$this->lang][$langImport]))
-			{
-				$this->langContent[$this->lang][$langImport] = 'Import Data';
-			}
+			$this->setLangContent($this->lang, $langImport, 'Import Data');
 			$button = array();
 			$button[] = PHP_EOL . PHP_EOL . $this->_t(2) . "if (\$this->canDo->get('core.import') && \$this->canDo->get('" . $viewName_single . ".import'))";
 			$button[] = $this->_t(2) . "{";
@@ -9118,8 +9597,8 @@ class Interpretation extends Fields
 		{
 			$query .= PHP_EOL . $this->_t(2) . "\$query->select(\$db->quoteName('c.title','category_title'));";
 		}
-		$query .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " From the " . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_item table";
-		$query .= PHP_EOL . $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "_" . $viewName_single . "', 'a'));";
+		$query .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " From the " . $this->componentCodeName . "_item table";
+		$query .= PHP_EOL . $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $this->componentCodeName . "_" . $viewName_single . "', 'a'));";
 		// add the category
 		if ($addCategory)
 		{
@@ -9150,7 +9629,7 @@ class Interpretation extends Fields
 			$query .= PHP_EOL . $this->_t(3) . "\$query->where('a.access = ' . (int) \$access);";
 			$query .= PHP_EOL . $this->_t(2) . "}";
 			$query .= PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Implement View Level Access";
-			$query .= PHP_EOL . $this->_t(2) . "if (!\$user->authorise('core.options', 'com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "'))";
+			$query .= PHP_EOL . $this->_t(2) . "if (!\$user->authorise('core.options', 'com_" . $this->componentCodeName . "'))";
 			$query .= PHP_EOL . $this->_t(2) . "{";
 			$query .= PHP_EOL . $this->_t(3) . "\$groups = implode(',', \$user->getAuthorisedViewLevels());";
 			$query .= PHP_EOL . $this->_t(3) . "\$query->where('a.access IN (' . \$groups . ')');";
@@ -9247,7 +9726,7 @@ class Interpretation extends Fields
 		return '';
 	}
 
-	public function setCustomQuery($viewName_list, $viewName_single)
+	public function setCustomQuery($viewName_list, $viewName_single, $tab = '', $just_text = false)
 	{
 		if (isset($this->customBuilder[$viewName_list]) && ComponentbuilderHelper::checkArray($this->customBuilder[$viewName_list]))
 		{
@@ -9255,11 +9734,20 @@ class Interpretation extends Fields
 			foreach ($this->customBuilder[$viewName_list] as $filter)
 			{
 				// only load this if table is set
-				if (isset($this->customBuilderList[$viewName_list]) && ComponentbuilderHelper::checkArray($this->customBuilderList[$viewName_list]) && in_array($filter['code'], $this->customBuilderList[$viewName_list]) && isset($filter['custom']['table']) && ComponentbuilderHelper::checkString($filter['custom']['table']) && $filter['method'] == 0)
+				if ((isset($this->customBuilderList[$viewName_list]) && ComponentbuilderHelper::checkArray($this->customBuilderList[$viewName_list]) && in_array($filter['code'], $this->customBuilderList[$viewName_list]) && isset($filter['custom']['table']) && ComponentbuilderHelper::checkString($filter['custom']['table']) && $filter['method'] == 0)
+					|| ($just_text && isset($filter['custom']['table']) && ComponentbuilderHelper::checkString($filter['custom']['table']) && $filter['method'] == 0))
 				{
-					$query .= PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " From the " . ComponentbuilderHelper::safeString(ComponentbuilderHelper::safeString($filter['custom']['table'], 'w')) . " table.";
-					$query .= PHP_EOL . $this->_t(2) . "\$query->select(\$db->quoteName('" . $filter['custom']['db'] . "." . $filter['custom']['text'] . "','" . $filter['code'] . "_" . $filter['custom']['text'] . "'));";
-					$query .= PHP_EOL . $this->_t(2) . "\$query->join('LEFT', \$db->quoteName('" . $filter['custom']['table'] . "', '" . $filter['custom']['db'] . "') . ' ON (' . \$db->quoteName('a." . $filter['code'] . "') . ' = ' . \$db->quoteName('" . $filter['custom']['db'] . "." . $filter['custom']['id'] . "') . ')');";
+					$query .= PHP_EOL . PHP_EOL . $this->_t(2) . $tab . "//" . $this->setLine(__LINE__) . " From the " . ComponentbuilderHelper::safeString(ComponentbuilderHelper::safeString($filter['custom']['table'], 'w')) . " table.";
+					// we want to at times just have the words and not the ids as well
+					if ($just_text)
+					{
+						$query .= PHP_EOL . $this->_t(2) . $tab . "\$query->select(\$db->quoteName('" . $filter['custom']['db'] . "." . $filter['custom']['text'] . "','" . $filter['code'] . "'));";
+					}
+					else
+					{
+						$query .= PHP_EOL . $this->_t(2) . $tab . "\$query->select(\$db->quoteName('" . $filter['custom']['db'] . "." . $filter['custom']['text'] . "','" . $filter['code'] . "_" . $filter['custom']['text'] . "'));";
+					}
+					$query .= PHP_EOL . $this->_t(2) . $tab . "\$query->join('LEFT', \$db->quoteName('" . $filter['custom']['table'] . "', '" . $filter['custom']['db'] . "') . ' ON (' . \$db->quoteName('a." . $filter['code'] . "') . ' = ' . \$db->quoteName('" . $filter['custom']['db'] . "." . $filter['custom']['id'] . "') . ')');";
 				}
 				// build the field type file
 				$this->setCustomFieldTypeFile($filter, $viewName_list, $viewName_single);
@@ -9624,15 +10112,12 @@ class Interpretation extends Fields
 			$fileScript = $initial . $func . $validation . $isSet;
 			$footerScript = $listener;
 		}
-		// add custom script to file
-		if (isset($this->customScriptBuilder['view_file'][$viewName]) && ComponentbuilderHelper::checkString($this->customScriptBuilder['view_file'][$viewName]))
+		// add custom script to edit form JS file
+		if (!isset($fileScript))
 		{
-			if (!isset($fileScript))
-			{
-				$fileScript = '';
-			}
-			$fileScript .= PHP_EOL . PHP_EOL . $this->setPlaceholders($this->customScriptBuilder['view_file'][$viewName], $this->placeholders);
+			$fileScript = '';
 		}
+		$fileScript .= $this->getCustomScriptBuilder('view_file', $viewName, PHP_EOL . PHP_EOL, null, true, '');
 		// add custom script to footer
 		if (isset($this->customScriptBuilder['view_footer'][$viewName]) && ComponentbuilderHelper::checkString($this->customScriptBuilder['view_footer'][$viewName]))
 		{
@@ -9647,6 +10132,37 @@ class Interpretation extends Fields
 				$footerScript .= $customFooterScript;
 				unset($customFooterScript);
 			}
+		}
+		// set view listname
+		$viewName_list = ComponentbuilderHelper::safeString($viewArray['settings']->name_list);
+		// add custom script to list view JS file
+		if (($list_fileScript = $this->getCustomScriptBuilder('views_file', $viewName, PHP_EOL . PHP_EOL, null, true, false)) !== false &&
+			ComponentbuilderHelper::checkString($list_fileScript))
+		{
+			// get dates
+			$_created = $this->getCreatedDate($viewArray);
+			$_modified = $this->getLastModifiedDate($viewArray);
+			// add file to view
+			$_target = array($this->target => $viewName_list);
+			$_config = array($this->hhh . 'CREATIONDATE' . $this->hhh => $_created, $this->hhh . 'BUILDDATE' . $this->hhh => $_modified, $this->hhh . 'VERSION' . $this->hhh => $viewArray['settings']->version);
+			$this->buildDynamique($_target, 'javascript_file', false, $_config);
+			// set path
+			$_path = '/administrator/components/com_' . $this->componentCodeName . '/assets/js/' . $viewName_list . '.js';
+			// load the file to the list view
+			$this->fileContentDynamic[$viewName_list][$this->hhh . 'ADMIN_ADD_JAVASCRIPT_FILE' . $this->hhh] = PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Add List View JavaScript File" . PHP_EOL . $this->_t(2) . $this->setIncludeLibScript($_path);
+		}
+		else
+		{
+			$list_fileScript = '';
+			$this->fileContentDynamic[$viewName_list][$this->hhh . 'ADMIN_ADD_JAVASCRIPT_FILE' . $this->hhh] = '';
+		}
+		// minfy the script
+		if ($this->minify && isset($list_fileScript) && ComponentbuilderHelper::checkString($list_fileScript))
+		{
+			// minify the fielScript javscript
+			$minifier = new JS;
+			$minifier->add($list_fileScript);
+			$list_fileScript = $minifier->minify();
 		}
 		// minfy the script
 		if ($this->minify && isset($fileScript) && ComponentbuilderHelper::checkString($fileScript))
@@ -9665,6 +10181,12 @@ class Interpretation extends Fields
 			$footerScript = $minifier->minify();
 		}
 		// make sure there is script to add
+		if (isset($list_fileScript) && ComponentbuilderHelper::checkString($list_fileScript))
+		{
+			// load the script
+			$this->viewScriptBuilder[$viewName]['list_fileScript'] = $list_fileScript;
+		}
+		// make sure there is script to add
 		if (isset($fileScript) && ComponentbuilderHelper::checkString($fileScript))
 		{
 			// add the head script if set
@@ -9673,7 +10195,7 @@ class Interpretation extends Fields
 				$fileScript = "// Some Global Values" . PHP_EOL . $head . PHP_EOL . $fileScript;
 			}
 			// load the script
-			$this->editBodyViewScriptBuilder[$viewName]['fileScript'] = $fileScript;
+			$this->viewScriptBuilder[$viewName]['fileScript'] = $fileScript;
 		}
 		// make sure to add custom footer script if php was found in it, since we canot minfy it with php
 		if (isset($customFooterScript) && ComponentbuilderHelper::checkString($customFooterScript))
@@ -9689,7 +10211,7 @@ class Interpretation extends Fields
 		{
 			// add the needed script tags
 			$footerScript = PHP_EOL . PHP_EOL . '<script type="text/javascript">' . PHP_EOL . $footerScript . PHP_EOL . "</script>";
-			$this->editBodyViewScriptBuilder[$viewName]['footerScript'] = $footerScript;
+			$this->viewScriptBuilder[$viewName]['footerScript'] = $footerScript;
 		}
 	}
 
@@ -10284,20 +10806,11 @@ class Interpretation extends Fields
 		return $clear;
 	}
 
-	public function setViewScript(&$view)
+	public function setViewScript(&$view, $type)
 	{
-		if (isset($this->editBodyViewScriptBuilder[$view]) && isset($this->editBodyViewScriptBuilder[$view]['fileScript']))
+		if (isset($this->viewScriptBuilder[$view]) && isset($this->viewScriptBuilder[$view][$type]))
 		{
-			return $this->editBodyViewScriptBuilder[$view]['fileScript'];
-		}
-		return '';
-	}
-
-	public function setEditBodyScript(&$view)
-	{
-		if (isset($this->editBodyViewScriptBuilder[$view]) && isset($this->editBodyViewScriptBuilder[$view]['footerScript']))
-		{
-			return $this->editBodyViewScriptBuilder[$view]['footerScript'];
+			return $this->viewScriptBuilder[$view][$type];
 		}
 		return '';
 	}
@@ -10388,26 +10901,29 @@ class Interpretation extends Fields
 		{
 			$input = array();
 			$valueArray = array();
+			$ifArray = array();
 			$getModel = array();
 			$userCheck = array();
 			foreach ($this->customScriptBuilder[$target]['ajax_controller'] as $view)
 			{
 				foreach ($view as $task)
 				{
-					$input[$task['task_name']][] = PHP_EOL . $this->_t(6) . "\$" . $task['value_name'] . "Value = \$jinput->get('" . $task['value_name'] . "', " . $task['input_default'] . ", '" . $task['input_filter'] . "');";
+					$input[$task['task_name']][] = "\$" . $task['value_name'] . "Value = \$jinput->get('" . $task['value_name'] . "', " . $task['input_default'] . ", '" . $task['input_filter'] . "');";
 					$valueArray[$task['task_name']][] = "\$" . $task['value_name'] . "Value";
-					$getModel[$task['task_name']] = PHP_EOL . $this->_t(7) . "\$result = \$this->getModel('ajax')->" . $task['method_name'] . "(" . $this->bbb . "valueArray" . $this->ddd . ");";
-
+					$getModel[$task['task_name']] = "\$result = \$this->getModel('ajax')->" . $task['method_name'] . "(" . $this->bbb . "valueArray" . $this->ddd . ");";
+					// check if null or zero is allowed
+					if (!isset($task['allow_zero']) || 1 != $task['allow_zero'])
+					{
+						$ifArray[$task['task_name']][] = "\$" . $task['value_name'] . "Value";
+					}
 					// see user check is needed
-					if (isset($task['user_check']) && 1 == $task['user_check'])
+					if (!isset($userCheck[$task['task_name']]) && isset($task['user_check']) && 1 == $task['user_check'])
 					{
 						// add it since this means it was not set, and in the old method we assumed it was inplace
 						// or it is set and 1 means we still want it inplace
-						$userCheck[$task['task_name']] = ' && $user->id != 0';
-					}
-					else
-					{
-						$userCheck[$task['task_name']] = '';
+						$ifArray[$task['task_name']][] = '$user->id != 0';
+						// add it only once
+						$userCheck[$task['task_name']] = true;
 					}
 				}
 			}
@@ -10421,21 +10937,32 @@ class Interpretation extends Fields
 					$cases .= PHP_EOL . $this->_t(6) . "\$returnRaw = \$jinput->get('raw', false, 'BOOLEAN');";
 					foreach ($input[$task] as $string)
 					{
-						$cases .= $string;
+						$cases .= PHP_EOL . $this->_t(6) . $string;
 					}
 					// set the values
 					$values = implode(', ', $valueArray[$task]);
-					$ifvalues = implode(' && ', $valueArray[$task]);
 					// set the values to method
 					$getMethod = str_replace($this->bbb . 'valueArray' . $this->ddd, $values, $getMethod);
-					$cases .= PHP_EOL . $this->_t(6) . "if(" . $ifvalues . $userCheck[$task] . ")";
-					$cases .= PHP_EOL . $this->_t(6) . "{";
-					$cases .= $getMethod;
-					$cases .= PHP_EOL . $this->_t(6) . "}";
-					$cases .= PHP_EOL . $this->_t(6) . "else";
-					$cases .= PHP_EOL . $this->_t(6) . "{";
-					$cases .= PHP_EOL . $this->_t(7) . "\$result = false;";
-					$cases .= PHP_EOL . $this->_t(6) . "}";
+					// check if we have some values to check
+					if (isset($ifArray[$task]) && ComponentbuilderHelper::checkArray($ifArray[$task]))
+					{
+						// set if string
+						$ifvalues = implode(' && ', $ifArray[$task]);
+						// add to case
+						$cases .= PHP_EOL . $this->_t(6) . "if(" . $ifvalues . ")";
+						$cases .= PHP_EOL . $this->_t(6) . "{";
+						$cases .= PHP_EOL . $this->_t(7) . $getMethod;
+						$cases .= PHP_EOL . $this->_t(6) . "}";
+						$cases .= PHP_EOL . $this->_t(6) . "else";
+						$cases .= PHP_EOL . $this->_t(6) . "{";
+						$cases .= PHP_EOL . $this->_t(7) . "\$result = false;";
+						$cases .= PHP_EOL . $this->_t(6) . "}";
+					}
+					else
+					{
+						$cases .= PHP_EOL . $this->_t(6) . $getMethod;
+					}
+					// continue the build
 					$cases .= PHP_EOL . $this->_t(6) . "if(\$callback = \$jinput->get('callback', null, 'CMD'))";
 					$cases .= PHP_EOL . $this->_t(6) . "{";
 					$cases .= PHP_EOL . $this->_t(7) . "echo \$callback . \"(\".json_encode(\$result).\");\";";
@@ -10487,7 +11014,7 @@ class Interpretation extends Fields
 		{
 			$function = array();
 			// set component name
-			$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+			$component = $this->componentCodeName;
 			foreach ($this->filterBuilder[$viewName_list] as $filter)
 			{
 				if ($filter['type'] != 'category' && ComponentbuilderHelper::checkArray($filter['custom']) && $filter['custom']['extends'] === 'user')
@@ -10503,7 +11030,7 @@ class Interpretation extends Fields
 					$function[] = $this->_t(2) . "\$query->from(\$db->quoteName('" . $filter['custom']['table'] . "', 'a'));";
 					$function[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " get the targeted groups";
 					$function[] = $this->_t(2) . "\$groups= JComponentHelper::getParams('com_" . $component . "')->get('" . $filter['type'] . "');";
-					$function[] = $this->_t(2) . "if (count(\$groups) > 0)";
+					$function[] = $this->_t(2) . "if (!empty(\$groups) && count((array) \$groups) > 0)";
 					$function[] = $this->_t(2) . "{";
 					$function[] = $this->_t(3) . "\$query->join('LEFT', \$db->quoteName('#__user_usergroup_map', 'group') . ' ON (' . \$db->quoteName('group.user_id') . ' = ' . \$db->quoteName('a.id') . ')');";
 					$function[] = $this->_t(3) . "\$query->where('group.group_id IN (' . implode(',', \$groups) . ')');";
@@ -10577,27 +11104,52 @@ class Interpretation extends Fields
 					$function[] = $this->_t(2) . "\$db = JFactory::getDbo();";
 					$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Create a new query object.";
 					$function[] = $this->_t(2) . "\$query = \$db->getQuery(true);";
-					$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Select the text.";
-					$function[] = $this->_t(2) . "\$query->select(\$db->quoteName('" . $filter['code'] . "'));";
-					$function[] = $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $component . "_" . $filter['database'] . "'));";
-					$function[] = $this->_t(2) . "\$query->order(\$db->quoteName('" . $filter['code'] . "') . ' ASC');";
-					$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Reset the query using our newly populated query object.";
-					$function[] = $this->_t(2) . "\$db->setQuery(\$query);";
-					$function[] = PHP_EOL . $this->_t(2) . "\$results = \$db->loadColumn();";
+
+					// check if usergroup as we change to an object query
+					if ($filter['type'] === 'usergroup')
+					{
+						$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Select the text.";
+						$function[] = $this->_t(2) . "\$query->select(\$db->quoteName('g." . $filter['code'] . "', 'id'));";
+						$function[] = $this->_t(2) . "\$query->select(\$db->quoteName('ug.title', 'title'));";
+						$function[] = $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $component . "_" . $filter['database'] . "', 'g'));";
+						$function[] = $this->_t(2) . "\$query->join('LEFT', \$db->quoteName('#__usergroups', 'ug') . ' ON (' . (\$db->quoteName('g." . $filter['code'] . "') . ' = ' . \$db->quoteName('ug.id') . ')'));";
+						$function[] = $this->_t(2) . "\$query->order(\$db->quoteName('title') . ' ASC');";
+						$function[] = $this->_t(2) . "\$query->group(\$db->quoteName('ug.id'));";
+						$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Reset the query using our newly populated query object.";
+						$function[] = $this->_t(2) . "\$db->setQuery(\$query);";
+						$function[] = PHP_EOL . $this->_t(2) . "\$results = \$db->loadObjectList();";
+					}
+					else
+					{
+						$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Select the text.";
+						$function[] = $this->_t(2) . "\$query->select(\$db->quoteName('" . $filter['code'] . "'));";
+						$function[] = $this->_t(2) . "\$query->from(\$db->quoteName('#__" . $component . "_" . $filter['database'] . "'));";
+						$function[] = $this->_t(2) . "\$query->order(\$db->quoteName('" . $filter['code'] . "') . ' ASC');";
+						$function[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Reset the query using our newly populated query object.";
+						$function[] = $this->_t(2) . "\$db->setQuery(\$query);";
+						$function[] = PHP_EOL . $this->_t(2) . "\$results = \$db->loadColumn();";
+					}
+
 					$function[] = PHP_EOL . $this->_t(2) . "if (\$results)";
 					$function[] = $this->_t(2) . "{";
-					// check if translated vlaue is used
+
+					// check if translated value is used
 					if ($translation)
 					{
 						$function[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " get model";
 						$function[] = $this->_t(3) . "\$model = \$this->getModel();";
 					}
-					$function[] = $this->_t(3) . "\$results = array_unique(\$results);";
+					// check if usergroup as we change to an object query
+					if ($filter['type'] !== 'usergroup')
+					{
+						$function[] = $this->_t(3) . "\$results = array_unique(\$results);";
+					}
 					$function[] = $this->_t(3) . "\$_filter = array();";
 					$function[] = $this->_t(3) . "foreach (\$results as \$" . $filter['code'] . ")";
 					$function[] = $this->_t(3) . "{";
 
-					// check if translated vlaue is used
+
+					// check if translated value is used
 					if ($translation)
 					{
 						$function[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Translate the " . $filter['code'] . " selection";
@@ -10609,6 +11161,11 @@ class Interpretation extends Fields
 					{
 						$function[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Now add the " . $filter['code'] . " and its text to the options array";
 						$function[] = $this->_t(4) . "\$_filter[] = JHtml::_('select.option', \$" . $filter['code'] . ", JFactory::getUser(\$" . $filter['code'] . ")->name);";
+					}
+					else if ($filter['type'] === 'usergroup')
+					{
+						$function[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Now add the " . $filter['code'] . " and its text to the options array";
+						$function[] = $this->_t(4) . "\$_filter[] = JHtml::_('select.option', \$" . $filter['code'] . "->id, \$" . $filter['code'] . "->title);";
 					}
 					else
 					{
@@ -10660,6 +11217,8 @@ class Interpretation extends Fields
 	{
 		if (isset($this->filterBuilder[$view]) && ComponentbuilderHelper::checkArray($this->filterBuilder[$view]))
 		{
+			// get component name
+			$Component = $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh];
 			$otherFilter = array();
 			foreach ($this->filterBuilder[$view] as $filter)
 			{
@@ -10670,7 +11229,15 @@ class Interpretation extends Fields
 					$type = ComponentbuilderHelper::safeString($filter['custom']['type'], 'F');
 					$otherFilter[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Set " . $CodeName . " Selection";
 					$otherFilter[] = $this->_t(2) . "\$this->" . $codeName . "Options = JFormHelper::loadFieldType('" . $type . "')->options;";
-					$otherFilter[] = $this->_t(2) . "if (\$this->" . $codeName . "Options)";
+					$otherFilter[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " We do some sanitation for " . $CodeName . " filter";
+					$otherFilter[] = $this->_t(2) . "if (" . $Component . "Helper::checkArray(\$this->" . $codeName . "Options) &&";
+					$otherFilter[] = $this->_t(3) . "isset(\$this->" . $codeName . "Options[0]->value) &&";
+					$otherFilter[] = $this->_t(3) . "!" . $Component . "Helper::checkString(\$this->" . $codeName . "Options[0]->value))";
+					$otherFilter[] = $this->_t(2) . "{";
+					$otherFilter[] = $this->_t(3) . "unset(\$this->" . $codeName . "Options[0]);";
+					$otherFilter[] = $this->_t(2) . "}";
+					$otherFilter[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Only load " . $CodeName . " filter if it has values";
+					$otherFilter[] = $this->_t(2) . "if (" . $Component . "Helper::checkArray(\$this->" . $codeName . "Options))";
 					$otherFilter[] = $this->_t(2) . "{";
 					$otherFilter[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " " . $CodeName . " Filter";
 					$otherFilter[] = $this->_t(3) . "JHtmlSidebar::addFilter(";
@@ -10704,7 +11271,15 @@ class Interpretation extends Fields
 					}
 					$otherFilter[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Set " . $Codename . " Selection";
 					$otherFilter[] = $this->_t(2) . "\$this->" . $filter['code'] . "Options = " . $functionName;
-					$otherFilter[] = $this->_t(2) . "if (\$this->" . $filter['code'] . "Options)";
+					$otherFilter[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " We do some sanitation for " . $Codename . " filter";
+					$otherFilter[] = $this->_t(2) . "if (" . $Component . "Helper::checkArray(\$this->" . $filter['code'] . "Options) &&";
+					$otherFilter[] = $this->_t(3) . "isset(\$this->" . $filter['code'] . "Options[0]->value) &&";
+					$otherFilter[] = $this->_t(3) . "!" . $Component . "Helper::checkString(\$this->" . $filter['code'] . "Options[0]->value))";
+					$otherFilter[] = $this->_t(2) . "{";
+					$otherFilter[] = $this->_t(3) . "unset(\$this->" . $filter['code'] . "Options[0]);";
+					$otherFilter[] = $this->_t(2) . "}";
+					$otherFilter[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Only load " . $Codename . " filter if it has values";
+					$otherFilter[] = $this->_t(2) . "if (" . $Component . "Helper::checkArray(\$this->" . $filter['code'] . "Options))";
 					$otherFilter[] = $this->_t(2) . "{";
 					$otherFilter[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " " . $Codename . " Filter";
 					$otherFilter[] = $this->_t(3) . "JHtmlSidebar::addFilter(";
@@ -10737,27 +11312,19 @@ class Interpretation extends Fields
 
 	public function setCategoryFilter($viewName_list)
 	{
-		if (isset($this->categoryBuilder[$viewName_list]) && ComponentbuilderHelper::checkArray($this->categoryBuilder[$viewName_list]))
+		if (isset($this->categoryBuilder[$viewName_list])
+			&& ComponentbuilderHelper::checkArray($this->categoryBuilder[$viewName_list])
+			&& isset($this->categoryBuilder[$viewName_list]['extension']))
 		{
-			// check if category has another name
-			if (isset($this->catOtherName[$viewName_list]) && ComponentbuilderHelper::checkArray($this->catOtherName[$viewName_list]))
-			{
-				$otherViews = $this->catOtherName[$viewName_list]['views'];
-			}
-			else
-			{
-				$otherViews = $viewName_list;
-			}
 			// set component name
-			$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
-			$COMONENT = ComponentbuilderHelper::safeString($this->componentData->name_code, 'U');
+			$COPMONENT = ComponentbuilderHelper::safeString($this->componentData->name_code, 'U');
 			// set filter
 			$filter = array();
 			$filter[] = PHP_EOL . PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Category Filter.";
 			$filter[] = $this->_t(2) . "JHtmlSidebar::addFilter(";
 			$filter[] = $this->_t(3) . "JText:" . ":_('JOPTION_SELECT_CATEGORY'),";
 			$filter[] = $this->_t(3) . "'filter_category_id',";
-			$filter[] = $this->_t(3) . "JHtml::_('select.options', JHtml::_('category.options', 'com_" . $component . "." . $otherViews . "'), 'value', 'text', \$this->state->get('filter.category_id'))";
+			$filter[] = $this->_t(3) . "JHtml::_('select.options', JHtml::_('category.options', '" . $this->categoryBuilder[$viewName_list]['extension'] . "'), 'value', 'text', \$this->state->get('filter.category_id'))";
 			$filter[] = $this->_t(2) . ");";
 
 
@@ -10765,9 +11332,9 @@ class Interpretation extends Fields
 			$filter[] = $this->_t(2) . "{";
 			$filter[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Category Batch selection.";
 			$filter[] = $this->_t(3) . "JHtmlBatch_::addListSelection(";
-			$filter[] = $this->_t(4) . "JText:" . ":_('COM_" . $COMONENT . "_KEEP_ORIGINAL_CATEGORY'),";
+			$filter[] = $this->_t(4) . "JText:" . ":_('COM_" . $COPMONENT . "_KEEP_ORIGINAL_CATEGORY'),";
 			$filter[] = $this->_t(4) . "'batch[category]',";
-			$filter[] = $this->_t(4) . "JHtml::_('select.options', JHtml::_('category.options', 'com_" . $component . "." . $otherViews . "'), 'value', 'text')";
+			$filter[] = $this->_t(4) . "JHtml::_('select.options', JHtml::_('category.options', '" . $this->categoryBuilder[$viewName_list]['extension'] . "'), 'value', 'text')";
 			$filter[] = $this->_t(3) . ");";
 			$filter[] = $this->_t(2) . "}";
 
@@ -10781,8 +11348,18 @@ class Interpretation extends Fields
 	{
 		if (isset($this->categoryBuilder[$viewName_list]) && ComponentbuilderHelper::checkArray($this->categoryBuilder[$viewName_list]))
 		{
+			// get the actual extention
+			$_extension = $this->categoryBuilder[$viewName_list]['extension'];
+			$_extension = explode('.', $_extension);
 			// set component name
-			$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+			if (ComponentbuilderHelper::checkArray($_extension))
+			{
+				$component = str_replace('com_', '', $_extension[0]);
+			}
+			else
+			{
+				$component = $this->componentCodeName;
+			}
 			// check if category has another name
 			if (isset($this->catOtherName[$viewName_list]) && ComponentbuilderHelper::checkArray($this->catOtherName[$viewName_list]))
 			{
@@ -10808,10 +11385,10 @@ class Interpretation extends Fields
 				// set script to global helper file
 				$includeHelper = array();
 				$includeHelper[] = "\n//" . $this->setLine(__LINE__) . "Insure this view category file is loaded.";
-				$includeHelper[] = "\$classname = '" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . ucfirst($viewName_list) . "Categories';";
+				$includeHelper[] = "\$classname = '" . ucfirst( $component ) . ucfirst($viewName_list) . "Categories';";
 				$includeHelper[] = "if (!class_exists(\$classname))";
 				$includeHelper[] = "{";
-				$includeHelper[] = $this->_t(1) . "\$path = JPATH_SITE . '/components/com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "/helpers/category" . $viewName_list . ".php';";
+				$includeHelper[] = $this->_t(1) . "\$path = JPATH_SITE . '/components/com_" . $component . "/helpers/category" . $viewName_list . ".php';";
 				$includeHelper[] = $this->_t(1) . "if (is_file(\$path))";
 				$includeHelper[] = $this->_t(1) . "{";
 				$includeHelper[] = $this->_t(2) . "include_once \$path;";
@@ -10822,11 +11399,11 @@ class Interpretation extends Fields
 			// return category view string
 			if (isset($this->fileContentStatic[$this->hhh . 'ROUTER_CATEGORY_VIEWS' . $this->hhh]) && ComponentbuilderHelper::checkString($this->fileContentStatic[$this->hhh . 'ROUTER_CATEGORY_VIEWS' . $this->hhh]))
 			{
-				return "," . PHP_EOL . $this->_t(3) . '"com_' . $component . '.' . $otherViews . '" => "' . $otherView . '"';
+				return "," . PHP_EOL . $this->_t(3) . '"' . $this->categoryBuilder[$viewName_list]['extension'] . '" => "' . $otherView . '"';
 			}
 			else
 			{
-				return PHP_EOL . $this->_t(3) . '"com_' . $component . '.' . $otherViews . '" => "' . $otherView . '"';
+				return PHP_EOL . $this->_t(3) . '"' . $this->categoryBuilder[$viewName_list]['extension'] . '" => "' . $otherView . '"';
 			}
 		}
 		return '';
@@ -10836,7 +11413,7 @@ class Interpretation extends Fields
 	{
 		$allow = array();
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// prepare custom permission script
 		$customAllow = $this->getCustomScriptBuilder('php_allowadd', $viewName_single, '', null, true);
 		// setup correct core target
@@ -10938,7 +11515,7 @@ class Interpretation extends Fields
 	{
 		$allow = array();
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// prepare custom permission script
 		$customAllow = $this->getCustomScriptBuilder('php_allowedit', $viewName_single, '', null, true);
 		// setup correct core target
@@ -11148,19 +11725,33 @@ class Interpretation extends Fields
 	public function setJmodelAdminGetForm($viewName_single, $viewName_list)
 	{
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// allways load these
-		$allow = array();
-		$allow[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the form.";
-		$allow[] = $this->_t(2) . "\$form = \$this->loadForm('com_" . $component . "." . $viewName_single . "', '" . $viewName_single . "', \$options);";
-		$allow[] = PHP_EOL . $this->_t(2) . "if (empty(\$form))";
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "return false;";
-		$allow[] = $this->_t(2) . "}";
+		$getForm = array();
+		$getForm[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if xpath was set in options";
+		$getForm[] = $this->_t(2) . "\$xpath = false;";
+		$getForm[] = $this->_t(2) . "if (isset(\$options['xpath']))";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "\$xpath = \$options['xpath'];";
+		$getForm[] = $this->_t(3) . "unset(\$options['xpath']);";
+		$getForm[] = $this->_t(2) . "}";
+		$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " check if clear form was set in options";
+		$getForm[] = $this->_t(2) . "\$clear = false;";
+		$getForm[] = $this->_t(2) . "if (isset(\$options['clear']))";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "\$clear = \$options['clear'];";
+		$getForm[] = $this->_t(3) . "unset(\$options['clear']);";
+		$getForm[] = $this->_t(2) . "}";
+		$getForm[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the form.";
+		$getForm[] = $this->_t(2) . "\$form = \$this->loadForm('com_" . $component . "." . $viewName_single . "', '" . $viewName_single . "', \$options, \$clear, \$xpath);";
+		$getForm[] = PHP_EOL . $this->_t(2) . "if (empty(\$form))";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "return false;";
+		$getForm[] = $this->_t(2) . "}";
 		// load license locker
 		if ($this->componentData->add_license && $this->componentData->license_type == 3 && isset($this->fileContentDynamic[$viewName_single][$this->hhh . 'BOOLMETHOD' . $this->hhh]))
 		{
-			$allow[] = $this->checkStatmentLicenseLocked($this->fileContentDynamic[$viewName_single][$this->hhh . 'BOOLMETHOD' . $this->hhh]);
+			$getForm[] = $this->checkStatmentLicenseLocked($this->fileContentDynamic[$viewName_single][$this->hhh . 'BOOLMETHOD' . $this->hhh]);
 		}
 		// setup correct core target
 		$coreLoad = false;
@@ -11183,152 +11774,152 @@ class Interpretation extends Fields
 				$otherView = $viewName_single;
 			}
 			// setup the category script
-			$allow[] = PHP_EOL . $this->_t(2) . "\$jinput = JFactory::getApplication()->input;";
-			$allow[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The front end calls this model and uses a_id to avoid id clashes so we need to check for that first.";
-			$allow[] = $this->_t(2) . "if (\$jinput->get('a_id'))";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "\$id = \$jinput->get('a_id', 0, 'INT');";
-			$allow[] = $this->_t(2) . "}";
-			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " The back end uses id so we use that the rest of the time and set it to 0 by default.";
-			$allow[] = $this->_t(2) . "else";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "\$id = \$jinput->get('id', 0, 'INT');";
-			$allow[] = $this->_t(2) . "}";
-			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Determine correct permissions to check.";
-			$allow[] = $this->_t(2) . "if (\$this->getState('" . $viewName_single . ".id'))";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "\$id = \$this->getState('" . $viewName_single . ".id');";
-			$allow[] = PHP_EOL . $this->_t(3) . "\$catid = 0;";
-			$allow[] = $this->_t(3) . "if (isset(\$this->getItem(\$id)->catid))";
-			$allow[] = $this->_t(3) . "{";
-			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " set category id";
-			$allow[] = $this->_t(4) . "\$catid = \$this->getItem(\$id)->catid;";
-			$allow[] = PHP_EOL . $this->_t(4) . "//" . $this->setLine(__LINE__) . " Existing record. Can only edit in selected categories.";
-			$allow[] = $this->_t(4) . "\$form->setFieldAttribute('catid', 'action', 'core.edit');";
-			$allow[] = PHP_EOL . $this->_t(4) . "//" . $this->setLine(__LINE__) . " Existing record. Can only edit own items in selected categories.";
-			$allow[] = $this->_t(4) . "\$form->setFieldAttribute('catid', 'action', 'core.edit.own');";
-			$allow[] = $this->_t(3) . "}";
-			$allow[] = $this->_t(2) . "}";
-			$allow[] = $this->_t(2) . "else";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " New record. Can only create in selected categories.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('catid', 'action', 'core.create');";
-			$allow[] = $this->_t(2) . "}";
-			$allow[] = PHP_EOL . $this->_t(2) . "\$user = JFactory::getUser();";
-			$allow[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Check for existing item.";
-			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit State access controls.";
+			$getForm[] = PHP_EOL . $this->_t(2) . "\$jinput = JFactory::getApplication()->input;";
+			$getForm[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The front end calls this model and uses a_id to avoid id clashes so we need to check for that first.";
+			$getForm[] = $this->_t(2) . "if (\$jinput->get('a_id'))";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "\$id = \$jinput->get('a_id', 0, 'INT');";
+			$getForm[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " The back end uses id so we use that the rest of the time and set it to 0 by default.";
+			$getForm[] = $this->_t(2) . "else";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "\$id = \$jinput->get('id', 0, 'INT');";
+			$getForm[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Determine correct permissions to check.";
+			$getForm[] = $this->_t(2) . "if (\$this->getState('" . $viewName_single . ".id'))";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "\$id = \$this->getState('" . $viewName_single . ".id');";
+			$getForm[] = PHP_EOL . $this->_t(3) . "\$catid = 0;";
+			$getForm[] = $this->_t(3) . "if (isset(\$this->getItem(\$id)->catid))";
+			$getForm[] = $this->_t(3) . "{";
+			$getForm[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " set category id";
+			$getForm[] = $this->_t(4) . "\$catid = \$this->getItem(\$id)->catid;";
+			$getForm[] = PHP_EOL . $this->_t(4) . "//" . $this->setLine(__LINE__) . " Existing record. Can only edit in selected categories.";
+			$getForm[] = $this->_t(4) . "\$form->setFieldAttribute('catid', 'action', 'core.edit');";
+			$getForm[] = PHP_EOL . $this->_t(4) . "//" . $this->setLine(__LINE__) . " Existing record. Can only edit own items in selected categories.";
+			$getForm[] = $this->_t(4) . "\$form->setFieldAttribute('catid', 'action', 'core.edit.own');";
+			$getForm[] = $this->_t(3) . "}";
+			$getForm[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "else";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " New record. Can only create in selected categories.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('catid', 'action', 'core.create');";
+			$getForm[] = $this->_t(2) . "}";
+			$getForm[] = PHP_EOL . $this->_t(2) . "\$user = JFactory::getUser();";
+			$getForm[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Check for existing item.";
+			$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit State access controls.";
 			// check if the item has permissions.
 			if ($coreLoad && isset($core['core.edit.state']) && isset($this->permissionBuilder[$core['core.edit.state']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.edit.state']]) && in_array($viewName_single, $this->permissionBuilder[$core['core.edit.state']]))
 			{
-				$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-				$allow[] = $this->_t(3) . "|| (isset(\$catid) && \$catid != 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_list . ".category.' . (int) \$catid))";
-				$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "')))";
+				$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+				$getForm[] = $this->_t(3) . "|| (isset(\$catid) && \$catid != 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_list . ".category.' . (int) \$catid))";
+				$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "')))";
 			}
 			else
 			{
-				$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-				$allow[] = $this->_t(3) . "|| (isset(\$catid) && \$catid != 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_list . ".category.' . (int) \$catid))";
-				$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "')))";
+				$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+				$getForm[] = $this->_t(3) . "|| (isset(\$catid) && \$catid != 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_list . ".category.' . (int) \$catid))";
+				$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "')))";
 			}
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'disabled', 'true');";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'disabled', 'true');";
-			$allow[] = PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'filter', 'unset');";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'filter', 'unset');";
-			$allow[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'disabled', 'true');";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'disabled', 'true');";
+			$getForm[] = PHP_EOL . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'filter', 'unset');";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'filter', 'unset');";
+			$getForm[] = $this->_t(2) . "}";
 		}
 		else
 		{
-			$allow[] = PHP_EOL . $this->_t(2) . "\$jinput = JFactory::getApplication()->input;";
-			$allow[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The front end calls this model and uses a_id to avoid id clashes so we need to check for that first.";
-			$allow[] = $this->_t(2) . "if (\$jinput->get('a_id'))";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "\$id = \$jinput->get('a_id', 0, 'INT');";
-			$allow[] = $this->_t(2) . "}";
-			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " The back end uses id so we use that the rest of the time and set it to 0 by default.";
-			$allow[] = $this->_t(2) . "else";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "\$id = \$jinput->get('id', 0, 'INT');";
-			$allow[] = $this->_t(2) . "}";
-			$allow[] = PHP_EOL . $this->_t(2) . "\$user = JFactory::getUser();";
-			$allow[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Check for existing item.";
-			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit State access controls.";
+			$getForm[] = PHP_EOL . $this->_t(2) . "\$jinput = JFactory::getApplication()->input;";
+			$getForm[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " The front end calls this model and uses a_id to avoid id clashes so we need to check for that first.";
+			$getForm[] = $this->_t(2) . "if (\$jinput->get('a_id'))";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "\$id = \$jinput->get('a_id', 0, 'INT');";
+			$getForm[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " The back end uses id so we use that the rest of the time and set it to 0 by default.";
+			$getForm[] = $this->_t(2) . "else";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "\$id = \$jinput->get('id', 0, 'INT');";
+			$getForm[] = $this->_t(2) . "}";
+			$getForm[] = PHP_EOL . $this->_t(2) . "\$user = JFactory::getUser();";
+			$getForm[] = PHP_EOL . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Check for existing item.";
+			$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit State access controls.";
 			// check if the item has permissions.
 			if ($coreLoad && isset($core['core.edit.state']) && isset($this->permissionBuilder[$core['core.edit.state']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.edit.state']]) && in_array($viewName_single, $this->permissionBuilder[$core['core.edit.state']]))
 			{
-				$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-				$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "')))";
+				$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+				$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.state'] . "', 'com_" . $component . "')))";
 			}
 			else
 			{
-				$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-				$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "')))";
+				$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('core.edit.state', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+				$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('core.edit.state', 'com_" . $component . "')))";
 			}
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'disabled', 'true');";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'disabled', 'true');";
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'filter', 'unset');";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'filter', 'unset');";
-			$allow[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'disabled', 'true');";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'disabled', 'true');";
+			$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('ordering', 'filter', 'unset');";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('published', 'filter', 'unset');";
+			$getForm[] = $this->_t(2) . "}";
 		}
-		$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " If this is a new item insure the greated by is set.";
-		$allow[] = $this->_t(2) . "if (0 == \$id)";
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set the created_by to this user";
-		$allow[] = $this->_t(3) . "\$form->setValue('created_by', null, \$user->id);";
-		$allow[] = $this->_t(2) . "}";
-		$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit Creaded By access controls.";
+		$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " If this is a new item insure the greated by is set.";
+		$getForm[] = $this->_t(2) . "if (0 == \$id)";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set the created_by to this user";
+		$getForm[] = $this->_t(3) . "\$form->setValue('created_by', null, \$user->id);";
+		$getForm[] = $this->_t(2) . "}";
+		$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit Creaded By access controls.";
 		// check if the item has permissions.
 		if ($coreLoad && isset($core['core.edit.created_by']) && isset($this->permissionBuilder[$core['core.edit.created_by']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.edit.created_by']]) && in_array($viewName_single, $this->permissionBuilder[$core['core.edit.created_by']]))
 		{
-			$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.created_by'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-			$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.created_by'] . "', 'com_" . $component . "')))";
+			$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.created_by'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+			$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.created_by'] . "', 'com_" . $component . "')))";
 		}
 		else
 		{
-			$allow[] = $this->_t(2) . "if (!\$user->authorise('core.edit.created_by', 'com_" . $component . "'))";
+			$getForm[] = $this->_t(2) . "if (!\$user->authorise('core.edit.created_by', 'com_" . $component . "'))";
 		}
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('created_by', 'disabled', 'true');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('created_by', 'readonly', 'true');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('created_by', 'filter', 'unset');";
-		$allow[] = $this->_t(2) . "}";
-		$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit Creaded Date access controls.";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+		$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('created_by', 'disabled', 'true');";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+		$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('created_by', 'readonly', 'true');";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+		$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('created_by', 'filter', 'unset');";
+		$getForm[] = $this->_t(2) . "}";
+		$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit Creaded Date access controls.";
 		// check if the item has permissions.
 		if ($coreLoad && isset($core['core.edit.created']) && isset($this->permissionBuilder[$core['core.edit.created']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.edit.created']]) && in_array($viewName_single, $this->permissionBuilder[$core['core.edit.created']]))
 		{
-			$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.created'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-			$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.created'] . "', 'com_" . $component . "')))";
+			$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.created'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+			$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.created'] . "', 'com_" . $component . "')))";
 		}
 		else
 		{
-			$allow[] = $this->_t(2) . "if (!\$user->authorise('core.edit.created', 'com_" . $component . "'))";
+			$getForm[] = $this->_t(2) . "if (!\$user->authorise('core.edit.created', 'com_" . $component . "'))";
 		}
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('created', 'disabled', 'true');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('created', 'filter', 'unset');";
-		$allow[] = $this->_t(2) . "}";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+		$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('created', 'disabled', 'true');";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+		$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('created', 'filter', 'unset');";
+		$getForm[] = $this->_t(2) . "}";
 		// check if the item has access permissions.
 		if ($coreLoad && isset($core['core.edit.access']) && isset($this->permissionBuilder[$core['core.edit.access']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.edit.access']]) && in_array($viewName_single, $this->permissionBuilder[$core['core.edit.access']]))
 		{
-			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit Access 'access' controls.";
-			$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.access'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-			$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.access'] . "', 'com_" . $component . "')))";
-			$allow[] = $this->_t(2) . "{";
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('access', 'disabled', 'true');";
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('access', 'filter', 'unset');";
-			$allow[] = $this->_t(2) . "}";
+			$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit Access 'access' controls.";
+			$getForm[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $core['core.edit.access'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+			$getForm[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $core['core.edit.access'] . "', 'com_" . $component . "')))";
+			$getForm[] = $this->_t(2) . "{";
+			$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('access', 'disabled', 'true');";
+			$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$getForm[] = $this->_t(3) . "\$form->setFieldAttribute('access', 'filter', 'unset');";
+			$getForm[] = $this->_t(2) . "}";
 		}
 		// handel the fields permissions
 		if (isset($this->permissionFields[$viewName_single]) && ComponentbuilderHelper::checkArray($this->permissionFields[$viewName_single]))
@@ -11340,13 +11931,13 @@ class Interpretation extends Fields
 					switch ($permission_option)
 					{
 						case 'edit':
-							$this->setPermissionEditFields($allow, $viewName_single, $fieldName, $fieldType, $component);
+							$this->setPermissionEditFields($getForm, $viewName_single, $fieldName, $fieldType, $component);
 						break;
 						case 'access':
-							$this->setPermissionAccessFields($allow, $viewName_single, $fieldName, $fieldType, $component);
+							$this->setPermissionAccessFields($getForm, $viewName_single, $fieldName, $fieldType, $component);
 						break;
 						case 'view':
-							$this->setPermissionViewFields($allow, $viewName_single, $fieldName, $fieldType, $component);
+							$this->setPermissionViewFields($getForm, $viewName_single, $fieldName, $fieldType, $component);
 						break;
 						case 'edit.own':
 						case 'access.own':
@@ -11357,55 +11948,59 @@ class Interpretation extends Fields
 			}
 		}
 		// add the redirect trick to set the field of origin
-		$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Only load these values if no id is found";
-		$allow[] = $this->_t(2) . "if (0 == \$id)";
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set redirected view name";
-		$allow[] = $this->_t(3) . "\$redirectedView = \$jinput->get('ref', null, 'STRING');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set field name (or fall back to view name)";
-		$allow[] = $this->_t(3) . "\$redirectedField = \$jinput->get('field', \$redirectedView, 'STRING');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set redirected view id";
-		$allow[] = $this->_t(3) . "\$redirectedId = \$jinput->get('refid', 0, 'INT');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set field id (or fall back to redirected view id)";
-		$allow[] = $this->_t(3) . "\$redirectedValue = \$jinput->get('field_id', \$redirectedId, 'INT');";
-		$allow[] = $this->_t(3) . "if (0 != \$redirectedValue && \$redirectedField)";
-		$allow[] = $this->_t(3) . "{";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Now set the local-redirected field default value";
-		$allow[] = $this->_t(4) . "\$form->setValue(\$redirectedField, null, \$redirectedValue);";
-		$allow[] = $this->_t(3) . "}";
+		$getForm[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Only load these values if no id is found";
+		$getForm[] = $this->_t(2) . "if (0 == \$id)";
+		$getForm[] = $this->_t(2) . "{";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set redirected view name";
+		$getForm[] = $this->_t(3) . "\$redirectedView = \$jinput->get('ref', null, 'STRING');";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set field name (or fall back to view name)";
+		$getForm[] = $this->_t(3) . "\$redirectedField = \$jinput->get('field', \$redirectedView, 'STRING');";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set redirected view id";
+		$getForm[] = $this->_t(3) . "\$redirectedId = \$jinput->get('refid', 0, 'INT');";
+		$getForm[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Set field id (or fall back to redirected view id)";
+		$getForm[] = $this->_t(3) . "\$redirectedValue = \$jinput->get('field_id', \$redirectedId, 'INT');";
+		$getForm[] = $this->_t(3) . "if (0 != \$redirectedValue && \$redirectedField)";
+		$getForm[] = $this->_t(3) . "{";
+		$getForm[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Now set the local-redirected field default value";
+		$getForm[] = $this->_t(4) . "\$form->setValue(\$redirectedField, null, \$redirectedValue);";
+		$getForm[] = $this->_t(3) . "}";
 		// load custom script if found
-		$allow[] = $this->_t(2) . "}" . $this->getCustomScriptBuilder('php_getform', $viewName_single, PHP_EOL);
+		$getForm[] = $this->_t(2) . "}" . $this->getCustomScriptBuilder('php_getform', $viewName_single, PHP_EOL);
 		// setup the default script
-		$allow[] = $this->_t(2) . "return \$form;";
+		$getForm[] = $this->_t(2) . "return \$form;";
 
-		return implode(PHP_EOL, $allow);
+		return implode(PHP_EOL, $getForm);
 	}
 	
 	protected function setPermissionEditFields(&$allow, $viewName_single, $fieldName, $fieldType, $component)
 	{
-		$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit " . ComponentbuilderHelper::safeString($fieldName, 'W') . " access controls.";
-		$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $viewName_single . ".edit." . $fieldName . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-		$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $viewName_single . ".edit." . $fieldName . "', 'com_" . $component . "')))";
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'disabled', 'true');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'readonly', 'true');";
-		if ('radio' === $fieldType || 'repeatable' === $fieldType)
+		// only for fields that can be edited
+		if (!ComponentbuilderHelper::fieldCheck($fieldType, 'spacer'))
 		{
-			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable radio button for display.";
-			$allow[] = $this->_t(3) . "\$class = \$form->getFieldAttribute('" . $fieldName . "', 'class', '');";
-			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'class', \$class.' disabled no-click');";
+			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on Edit " . ComponentbuilderHelper::safeString($fieldName, 'W') . " access controls.";
+			$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $viewName_single . ".edit." . $fieldName . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+			$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $viewName_single . ".edit." . $fieldName . "', 'com_" . $component . "')))";
+			$allow[] = $this->_t(2) . "{";
+			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'disabled', 'true');";
+			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable fields for display.";
+			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'readonly', 'true');";
+			if ('radio' === $fieldType || 'repeatable' === $fieldType)
+			{
+				$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Disable radio button for display.";
+				$allow[] = $this->_t(3) . "\$class = \$form->getFieldAttribute('" . $fieldName . "', 'class', '');";
+				$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'class', \$class.' disabled no-click');";
+			}
+			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " If there is no value continue.";
+			$allow[] = $this->_t(3) . "if (!\$form->getValue('" . $fieldName . "'))";
+			$allow[] = $this->_t(3) . "{";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'filter', 'unset');";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'required', 'false');";
+			$allow[] = $this->_t(3) . "}";
+			$allow[] = $this->_t(2) . "}";
 		}
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " If there is no value continue.";
-		$allow[] = $this->_t(3) . "if (!\$form->getValue('" . $fieldName . "'))";
-		$allow[] = $this->_t(3) . "{";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-		$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'filter', 'unset');";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-		$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'required', 'false');";
-		$allow[] = $this->_t(3) . "}";
-		$allow[] = $this->_t(2) . "}";
 	}
 	
 	protected function setPermissionAccessFields(&$allow, $viewName_single, $fieldName, $fieldType, $component)
@@ -11421,37 +12016,50 @@ class Interpretation extends Fields
 	
 	protected function setPermissionViewFields(&$allow, $viewName_single, $fieldName, $fieldType, $component)
 	{
-		$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on View " . ComponentbuilderHelper::safeString($fieldName, 'W') . " access controls.";
-		$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $viewName_single . ".view." . $fieldName . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
-		$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $viewName_single . ".view." . $fieldName . "', 'com_" . $component . "')))";
-		$allow[] = $this->_t(2) . "{";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Make the field hidded.";
-		$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'type', 'hidden');";
-		$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " If there is no value continue.";
-		$allow[] = $this->_t(3) . "if (!(\$val = \$form->getValue('" . $fieldName . "')))";
-		$allow[] = $this->_t(3) . "{";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-		$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'filter', 'unset');";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
-		$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'required', 'false');";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Make sure";
-		$allow[] = $this->_t(4) . "\$form->setValue('" . $fieldName . "', null, '');";
-		$allow[] = $this->_t(3) . "}";
-		$allow[] = $this->_t(3) . "elseif (" . ucfirst($component) . "Helper::checkArray(\$val))";
-		$allow[] = $this->_t(3) . "{";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " We have to unset then (TODO)";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Hiddend field can not handel array value";
-		$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Even if we conver to json we get an error";
-		$allow[] = $this->_t(4) . "\$form->removeField('" . $fieldName . "');";
-		$allow[] = $this->_t(3) . "}";
-		$allow[] = $this->_t(2) . "}";
+		if (ComponentbuilderHelper::fieldCheck($fieldType, 'spacer'))
+		{
+			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on View " . ComponentbuilderHelper::safeString($fieldName, 'W') . " access controls.";
+			$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $viewName_single . ".view." . $fieldName . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+			$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $viewName_single . ".view." . $fieldName . "', 'com_" . $component . "')))";
+			$allow[] = $this->_t(2) . "{";
+			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Remove the field";
+			$allow[] = $this->_t(3) . "\$form->removeField('" . $fieldName . "');";
+			$allow[] = $this->_t(2) . "}";
+		}
+		else
+		{
+			$allow[] = $this->_t(2) . "//" . $this->setLine(__LINE__) . " Modify the form based on View " . ComponentbuilderHelper::safeString($fieldName, 'W') . " access controls.";
+			$allow[] = $this->_t(2) . "if (\$id != 0 && (!\$user->authorise('" . $viewName_single . ".view." . $fieldName . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$id))";
+			$allow[] = $this->_t(3) . "|| (\$id == 0 && !\$user->authorise('" . $viewName_single . ".view." . $fieldName . "', 'com_" . $component . "')))";
+			$allow[] = $this->_t(2) . "{";
+			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " Make the field hidded.";
+			$allow[] = $this->_t(3) . "\$form->setFieldAttribute('" . $fieldName . "', 'type', 'hidden');";
+			$allow[] = $this->_t(3) . "//" . $this->setLine(__LINE__) . " If there is no value continue.";
+			$allow[] = $this->_t(3) . "if (!(\$val = \$form->getValue('" . $fieldName . "')))";
+			$allow[] = $this->_t(3) . "{";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'filter', 'unset');";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Disable fields while saving.";
+			$allow[] = $this->_t(4) . "\$form->setFieldAttribute('" . $fieldName . "', 'required', 'false');";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Make sure";
+			$allow[] = $this->_t(4) . "\$form->setValue('" . $fieldName . "', null, '');";
+			$allow[] = $this->_t(3) . "}";
+			$allow[] = $this->_t(3) . "elseif (" . ucfirst($component) . "Helper::checkArray(\$val))";
+			$allow[] = $this->_t(3) . "{";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " We have to unset then (TODO)";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Hiddend field can not handel array value";
+			$allow[] = $this->_t(4) . "//" . $this->setLine(__LINE__) . " Even if we convert to json we get an error";
+			$allow[] = $this->_t(4) . "\$form->removeField('" . $fieldName . "');";
+			$allow[] = $this->_t(3) . "}";
+			$allow[] = $this->_t(2) . "}";
+		}
 	}
 
 	public function setJmodelAdminAllowEdit($viewName_single, $viewName_list)
 	{
 		$allow = array();
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// prepare custom permission script
 		$customAllow = $this->getCustomScriptBuilder('php_allowedit', $viewName_single, $this->_t(2) . "\$recordId = (int) isset(\$data[\$key]) ? \$data[\$key] : 0;" . PHP_EOL);
 		// setup correct core target
@@ -11489,7 +12097,7 @@ class Interpretation extends Fields
 	{
 		$allow = array();
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// setup correct core target
 		$coreLoad = false;
 		if (isset($this->permissionCore[$viewName_single]))
@@ -11573,7 +12181,7 @@ class Interpretation extends Fields
 	{
 		$allow = array();
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// setup correct core target
 		$coreLoad = false;
 		if (isset($this->permissionCore[$viewName_single]))
@@ -11674,7 +12282,7 @@ class Interpretation extends Fields
 	{
 		$allow = array();
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 		// setup correct core target
 		$coreLoad = false;
 		if (isset($this->permissionCore[$viewName_single]))
@@ -11737,7 +12345,7 @@ class Interpretation extends Fields
 		if ($view != 'component')
 		{
 			// set component name
-			$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+			$component = $this->componentCodeName;
 			// set label
 			$label = 'Permissions in relation to this ' . $view;
 			// set the access fieldset
@@ -11802,9 +12410,9 @@ class Interpretation extends Fields
 					{
 						// check if custom field is set
 						/* if (ComponentbuilderHelper::checkArray($filter['custom']))
-						  {
-						  $fields .= ",".PHP_EOL.$this->_t(4) . "'".$filter['custom']['db'].".".$filter['custom']['text']."','".$filter['code']."_".$filter['custom']['text']."'";
-						  } */
+						{
+							$fields .= ",".PHP_EOL.$this->_t(4) . "'".$filter['custom']['db'].".".$filter['custom']['text']."','".$filter['code']."_".$filter['custom']['text']."'";
+						} */
 						$fields .= "," . PHP_EOL . $this->_t(4) . "'a." . $filter['code'] . "','" . $filter['code'] . "'";
 					}
 					$donelist[] = $filter['code'];
@@ -11831,9 +12439,9 @@ class Interpretation extends Fields
 					{
 						// check if custom field is set
 						/* if (ComponentbuilderHelper::checkArray($filter['custom']))
-						  {
-						  $fields .= ",".PHP_EOL.$this->_t(4) . "'".$filter['custom']['db'].".".$filter['custom']['text']."','".$filter['code']."_".$filter['custom']['text']."'";
-						  } */
+						{
+							$fields .= ",".PHP_EOL.$this->_t(4) . "'".$filter['custom']['db'].".".$filter['custom']['text']."','".$filter['code']."_".$filter['custom']['text']."'";
+						} */
 						$fields .= "," . PHP_EOL . $this->_t(4) . "'a." . $filter['code'] . "','" . $filter['code'] . "'";
 					}
 					$donelist[] = $filter['code'];
@@ -11879,9 +12487,9 @@ class Interpretation extends Fields
 					{
 						// check if custom field is set
 						/* if (ComponentbuilderHelper::checkArray($filter['custom']))
-						  {
-						  $stored .= PHP_EOL.$this->_t(2) . "\$id .= ':' . \$this->getState('filter.".$filter['code']."_".$filter['custom']['text']."');";
-						  } */
+						{
+							$stored .= PHP_EOL.$this->_t(2) . "\$id .= ':' . \$this->getState('filter.".$filter['code']."_".$filter['custom']['text']."');";
+						} */
 						$stored .= PHP_EOL . $this->_t(2) . "\$id .= ':' . \$this->getState('filter." . $filter['code'] . "');";
 					}
 					$donelist[] = $filter['code'];
@@ -11908,9 +12516,9 @@ class Interpretation extends Fields
 					{
 						// check if custom field is set
 						/* if (ComponentbuilderHelper::checkArray($filter['custom']))
-						  {
-						  $stored .= PHP_EOL.$this->_t(2) . "\$id .= ':' . \$this->getState('filter.".$filter['code']."_".$filter['custom']['text']."');";
-						  } */
+						{
+							$stored .= PHP_EOL . $this->_t(2) . "\$id .= ':' . \$this->getState('filter.".$filter['code']."_".$filter['custom']['text']."');";
+						} */
 						$stored .= PHP_EOL . $this->_t(2) . "\$id .= ':' . \$this->getState('filter." . $filter['code'] . "');";
 					}
 					$donelist[] = $filter['code'];
@@ -11937,7 +12545,7 @@ class Interpretation extends Fields
 			// set lang strings
 			$viewNameLang_readonly = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($view['settings']->name_single . ' readonly', 'U');
 			// load to lang
-			$this->langContent[$this->lang][$viewNameLang_readonly] = $view['settings']->name_single . ' :: Readonly';
+			$this->setLangContent($this->lang, $viewNameLang_readonly, $view['settings']->name_single . ' :: Readonly');
 
 			// build toolbar
 			$toolBar = "JFactory::getApplication()->input->set('hidemainmenu', true);";
@@ -11950,8 +12558,8 @@ class Interpretation extends Fields
 			$viewNameLang_new = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($view['settings']->name_single . ' New', 'U');
 			$viewNameLang_edit = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($view['settings']->name_single . ' Edit', 'U');
 			// load to lang
-			$this->langContent[$this->lang][$viewNameLang_new] = 'A New ' . $view['settings']->name_single;
-			$this->langContent[$this->lang][$viewNameLang_edit] = 'Editing the ' . $view['settings']->name_single;
+			$this->setLangContent($this->lang, $viewNameLang_new, 'A New ' . $view['settings']->name_single);
+			$this->setLangContent($this->lang, $viewNameLang_edit, 'Editing the ' . $view['settings']->name_single);
 			// build toolbar
 			$toolBar = "JFactory::getApplication()->input->set('hidemainmenu', true);";
 			$toolBar .= PHP_EOL . $this->_t(2) . "\$user = JFactory::getUser();";
@@ -12051,7 +12659,7 @@ class Interpretation extends Fields
 					$toolBar .= PHP_EOL . $this->_t(4) . "\$canVersion = (\$this->canDo->get('core.version') && \$this->canDo->get('" . $core['core.version'] . "'));";
 					$toolBar .= PHP_EOL . $this->_t(4) . "if (\$this->state->params->get('save_history', 1) && \$this->canDo->get('" . $core['core.edit'] . "') && \$canVersion)";
 					$toolBar .= PHP_EOL . $this->_t(4) . "{";
-					$toolBar .= PHP_EOL . $this->_t(5) . "JToolbarHelper::versions('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $viewName . "', \$this->item->id);";
+					$toolBar .= PHP_EOL . $this->_t(5) . "JToolbarHelper::versions('com_" . $this->componentCodeName . "." . $viewName . "', \$this->item->id);";
 					$toolBar .= PHP_EOL . $this->_t(4) . "}";
 				}
 			}
@@ -12062,7 +12670,7 @@ class Interpretation extends Fields
 					$toolBar .= PHP_EOL . $this->_t(4) . "\$canVersion = (\$this->canDo->get('core.version') && \$this->canDo->get('" . $core['core.version'] . "'));";
 					$toolBar .= PHP_EOL . $this->_t(4) . "if (\$this->state->params->get('save_history', 1) && \$this->canDo->get('core.edit') && \$canVersion)";
 					$toolBar .= PHP_EOL . $this->_t(4) . "{";
-					$toolBar .= PHP_EOL . $this->_t(5) . "JToolbarHelper::versions('com_" . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . "." . $viewName . "', \$this->item->id);";
+					$toolBar .= PHP_EOL . $this->_t(5) . "JToolbarHelper::versions('com_" . $this->componentCodeName . "." . $viewName . "', \$this->item->id);";
 					$toolBar .= PHP_EOL . $this->_t(4) . "}";
 				}
 			}
@@ -12095,7 +12703,7 @@ class Interpretation extends Fields
 
 	public function setPopulateState(&$view)
 	{
-		// rest buket
+		// reset buket
 		$state = '';
 		// keep track of all fields already added
 		$donelist = array();
@@ -12139,11 +12747,11 @@ class Interpretation extends Fields
 						}
 						// check if custom field is set
 						/* if (ComponentbuilderHelper::checkArray($filter['custom']))
-						  {
-						  $state .= $spacer."\$".$filter['code']."_".$filter['custom']['text']." = \$this->getUserStateFromRequest(\$this->context . '.filter.".$filter['code']."_".$filter['custom']['text']."', 'filter_".$filter['code']."_".$filter['custom']['text']."');";
-						  $state .= PHP_EOL.$this->_t(2) . "\$this->setState('filter.".$filter['code']."_".$filter['custom']['text']."', \$".$filter['code']."_".$filter['custom']['text'].");";
-						  $spacer = PHP_EOL.PHP_EOL.$this->_t(2);
-						  } */
+						{
+							$state .= $spacer."\$".$filter['code']."_".$filter['custom']['text']." = \$this->getUserStateFromRequest(\$this->context . '.filter.".$filter['code']."_".$filter['custom']['text']."', 'filter_".$filter['code']."_".$filter['custom']['text']."');";
+							$state .= PHP_EOL.$this->_t(2) . "\$this->setState('filter.".$filter['code']."_".$filter['custom']['text']."', \$".$filter['code']."_".$filter['custom']['text'].");";
+							$spacer = PHP_EOL.PHP_EOL.$this->_t(2);
+						} */
 						$state .= $spacer . "\$" . $filter['code'] . " = \$this->getUserStateFromRequest(\$this->context . '.filter." . $filter['code'] . "', 'filter_" . $filter['code'] . "');";
 						$state .= PHP_EOL . $this->_t(2) . "\$this->setState('filter." . $filter['code'] . "', \$" . $filter['code'] . ");";
 					}
@@ -12190,13 +12798,13 @@ class Interpretation extends Fields
 						}
 						// check if custom field is set
 						/* if (ComponentbuilderHelper::checkArray($filter['custom']))
-						  {
-						  $state .= $spacer."\$".$filter['custom']['text']." = \$this->getUserStateFromRequest(\$this->context . '.filter.".$filter['custom']['text']."', 'filter_".$filter['custom']['text']."');";
-						  $state .= PHP_EOL.$this->_t(2) . "\$this->setState('filter.".$filter['custom']['text']."', \$".$filter['custom']['text'].");";
-						  $state .= PHP_EOL.$this->_t(2) . "\$".$filter['code']."_".$filter['custom']['text']." = \$this->getUserStateFromRequest(\$this->context . '.filter.".$filter['code']."_".$filter['custom']['text']."', 'filter_".$filter['code']."_".$filter['custom']['text']."');";
-						  $state .= PHP_EOL.$this->_t(2) . "\$this->setState('filter.".$filter['code']."_".$filter['custom']['text']."', \$".$filter['code']."_".$filter['custom']['text'].");";
-						  $spacer = PHP_EOL.PHP_EOL.$this->_t(2);
-						  } */
+						{
+							$state .= $spacer."\$".$filter['custom']['text']." = \$this->getUserStateFromRequest(\$this->context . '.filter.".$filter['custom']['text']."', 'filter_".$filter['custom']['text']."');";
+							$state .= PHP_EOL.$this->_t(2) . "\$this->setState('filter.".$filter['custom']['text']."', \$".$filter['custom']['text'].");";
+							$state .= PHP_EOL.$this->_t(2) . "\$".$filter['code']."_".$filter['custom']['text']." = \$this->getUserStateFromRequest(\$this->context . '.filter.".$filter['code']."_".$filter['custom']['text']."', 'filter_".$filter['code']."_".$filter['custom']['text']."');";
+							$state .= PHP_EOL.$this->_t(2) . "\$this->setState('filter.".$filter['code']."_".$filter['custom']['text']."', \$".$filter['code']."_".$filter['custom']['text'].");";
+							$spacer = PHP_EOL.PHP_EOL.$this->_t(2);
+						} */
 						$state .= $spacer . "\$" . $filter['code'] . " = \$this->getUserStateFromRequest(\$this->context . '.filter." . $filter['code'] . "', 'filter_" . $filter['code'] . "');";
 						$state .= PHP_EOL . $this->_t(2) . "\$this->setState('filter." . $filter['code'] . "', \$" . $filter['code'] . ");";
 					}
@@ -12302,11 +12910,12 @@ class Interpretation extends Fields
 		return $checkin;
 	}
 
-	public function setGetItemsMethodStringFix($view, $viewName_list, $Component, $tab = '', $export = false)
+	public function setGetItemsMethodStringFix($viewName_single, $viewName_list, $Component, $tab = '', $export = false, $all = false)
 	{
 		// add the fix if this view has the need for it
 		$fix = '';
 		$forEachStart = '';
+		$fix_access = '';
 		// encryption switches
 		foreach ($this->cryptionTypes as $cryptionType)
 		{
@@ -12314,29 +12923,31 @@ class Interpretation extends Fields
 		}
 		// setup correct core target
 		$coreLoad = false;
-		if (isset($this->permissionCore[$view]))
+		if (isset($this->permissionCore[$viewName_single]))
 		{
-			$core = $this->permissionCore[$view];
+			$core = $this->permissionCore[$viewName_single];
 			$coreLoad = true;
 		}
 		$component = ComponentbuilderHelper::safeString($Component);
 		// check if the item has permissions.
-		if ($coreLoad && isset($core['core.access']) && isset($this->permissionBuilder[$core['core.access']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.access']]) && in_array($view, $this->permissionBuilder[$core['core.access']]))
+		if ($coreLoad && isset($core['core.access']) && isset($this->permissionBuilder[$core['core.access']]) && ComponentbuilderHelper::checkArray($this->permissionBuilder[$core['core.access']]) && in_array($viewName_single, $this->permissionBuilder[$core['core.access']]))
 		{
-			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$access = (JFactory::getUser()->authorise('" . $core['core.access'] . "', 'com_" . $component . "." . $view . ".' . (int) \$item->id) && JFactory::getUser()->authorise('" . $core['core.access'] . "', 'com_" . $component . "'));";
-			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (!\$access)";
-			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
-			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "unset(\$items[\$nr]);";
-			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "continue;";
-			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}" . PHP_EOL;
+			$fix_access = PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " Remove items the user can't access.";
+			$fix_access .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$access = (\$user->authorise('" . $core['core.access'] . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$item->id) && \$user->authorise('" . $core['core.access'] . "', 'com_" . $component . "'));";
+			$fix_access .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (!\$access)";
+			$fix_access .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
+			$fix_access .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "unset(\$items[\$nr]);";
+			$fix_access .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "continue;";
+			$fix_access .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}" . PHP_EOL;
 		}
-		if (!$export)
+		// get the correct array
+		if ($export || $all)
 		{
-			$methodName = 'getItemsMethodListStringFixBuilder';
+			$methodName = 'getItemsMethodEximportStringFixBuilder';
 		}
 		else
 		{
-			$methodName = 'getItemsMethodEximportStringFixBuilder';
+			$methodName = 'getItemsMethodListStringFixBuilder';
 		}
 		// load the relations before modeling
 		if (isset($this->fieldRelations[$viewName_list]) && ComponentbuilderHelper::checkArray($this->fieldRelations[$viewName_list]))
@@ -12353,9 +12964,9 @@ class Interpretation extends Fields
 			}
 		}
 		// open the values
-		if (isset($this->{$methodName}[$view]) && ComponentbuilderHelper::checkArray($this->{$methodName}[$view]))
+		if (isset($this->{$methodName}[$viewName_single]) && ComponentbuilderHelper::checkArray($this->{$methodName}[$viewName_single]))
 		{
-			foreach ($this->{$methodName}[$view] as $item)
+			foreach ($this->{$methodName}[$viewName_single] as $item)
 			{
 				switch ($item['method'])
 				{
@@ -12387,6 +12998,10 @@ class Interpretation extends Fields
 						$mediumCrypt = true;
 						$suffix_decode = '';
 						break;
+					case 6:
+						// EXPERT_ENCRYPTION
+						$expertCrypt = true;
+						break;
 					default:
 						// JSON_ARRAY_ENCODE
 						$decode = 'json_decode';
@@ -12396,97 +13011,88 @@ class Interpretation extends Fields
 						break;
 				}
 
-				if ($item['type'] === 'usergroup' && !$export)
+				if ($item['type'] === 'usergroup' && !$export && $item['method'] != 6)
 				{
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " decode " . $item['name'];
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$" . $item['name'] . "Array = " . $decode . "(\$item->" . $item['name'] . $suffix_decode . ");";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (" . $Component . "Helper::checkArray(\$" . $item['name'] . "Array))";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$" . $item['name'] . "Names = '';";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$counter = 0;";
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$" . $item['name'] . "Names = array();";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "foreach (\$" . $item['name'] . "Array as \$" . $item['name'] . ")";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "if (\$counter == 0)";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(6) . "\$" . $item['name'] . "Names .= " . $Component . "Helper::getGroupName(\$" . $item['name'] . ");";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "}";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "else";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(6) . "\$" . $item['name'] . "Names .= ', '." . $Component . "Helper::getGroupName(\$" . $item['name'] . ");";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "}";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "\$counter++;";
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "\$" . $item['name'] . "Names[] = " . $Component . "Helper::getGroupName(\$" . $item['name'] . ");";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "}";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$item->" . $item['name'] . " = \$" . $item['name'] . "Names;";
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$item->" . $item['name'] . " =  implode(', ', \$" . $item['name'] . "Names);";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}";
 				}
 				/* elseif ($item['type'] === 'usergroup' && $export)
-				  {
-				  $fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "//".$this->setLine(__LINE__)." decode ".$item['name'];
-				  $fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "\$".$item['name']."Array = ".$decode."(\$item->".$item['name'].$suffix_decode.");";
-				  $fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "if (".$Component."Helper::checkArray(\$".$item['name']."Array))";
-				  $fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "{";
-				  $fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(4) . "\$item->".$item['name']." = implode('|',\$".$item['name']."Array);";
-				  $fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "}";
-				  } */
-				elseif ($item['translation'] && !$export)
 				{
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " convert " . $item['name'];
+					$fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "//".$this->setLine(__LINE__)." decode ".$item['name'];
+					$fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "\$".$item['name']."Array = ".$decode."(\$item->".$item['name'].$suffix_decode.");";
+					$fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "if (".$Component."Helper::checkArray(\$".$item['name']."Array))";
+					$fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "{";
+					$fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(4) . "\$item->".$item['name']." = implode('|',\$".$item['name']."Array);";
+					$fix .= PHP_EOL.$this->_t(1).$tab.$this->_t(3) . "}";
+				} */
+				elseif ($item['translation'] && !$export && $item['method'] != 6)
+				{
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " decode " . $item['name'];
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$" . $item['name'] . "Array = " . $decode . "(\$item->" . $item['name'] . $suffix_decode . ");";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (" . $Component . "Helper::checkArray(\$" . $item['name'] . "Array))";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$" . $item['name'] . "Names = '';";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$counter = 0;";
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$" . $item['name'] . "Names = array();";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "foreach (\$" . $item['name'] . "Array as \$" . $item['name'] . ")";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "if (\$counter == 0)";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(6) . "\$" . $item['name'] . "Names .= JText:" . ":_(\$this->selectionTranslation(\$" . $item['name'] . ", '" . $item['name'] . "'));";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "}";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "else";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "{";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(6) . "\$" . $item['name'] . "Names .= ', '.JText:" . ":_(\$this->selectionTranslation(\$" . $item['name'] . ", '" . $item['name'] . "'));";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "}";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "\$counter++;";
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "\$" . $item['name'] . "Names[] = JText:" . ":_(\$this->selectionTranslation(\$" . $item['name'] . ", '" . $item['name'] . "'));";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "}";
-					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$item->" . $item['name'] . " = \$" . $item['name'] . "Names;";
+					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "\$item->" . $item['name'] . " = implode(', ', \$" . $item['name'] . "Names);";
 					$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}";
 				}
 				else
 				{
-					if ($item['method'] == 2 || $item['method'] == 3 || $item['method'] == 4 || $item['method'] == 5)
+					if ($item['method'] == 2 || $item['method'] == 3 || $item['method'] == 4 || $item['method'] == 5 || $item['method'] == 6)
 					{
-						$taber = '';
-						if ($item['method'] == 3)
+						// expert mode (dev must do it all)
+						if ($item['method'] == 6)
 						{
-							$taber = $this->_t(1);
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$basickey && !is_numeric(\$item->" . $item['name'] . ") && \$item->" . $item['name'] . " === base64_encode(base64_decode(\$item->" . $item['name'] . ", true)))";
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
-						}
-						elseif ($item['method'] == 5)
-						{
-							$taber = $this->_t(1);
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$mediumkey && !is_numeric(\$item->" . $item['name'] . ") && \$item->" . $item['name'] . " === base64_encode(base64_decode(\$item->" . $item['name'] . ", true)))";
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
-						}
-						elseif ($item['method'] == 4)
-						{
-							$taber = $this->_t(1);
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$whmcskey && !is_numeric(\$item->" . $item['name'] . ") && \$item->" . $item['name'] . " === base64_encode(base64_decode(\$item->" . $item['name'] . ", true)))";
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
-						}
-						if ($item['method'] == 3 || $item['method'] == 4 || $item['method'] == 5)
-						{
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "//" . $this->setLine(__LINE__) . " decrypt " . $item['name'];
+							$_placeholder_for_field = array('[[[field]]]' => "\$item->" . $item['name']);
+							$fix .= $this->setPlaceholders(PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . implode(PHP_EOL . $this->_t(1) . $tab . $this->_t(3), $this->expertFieldModeling[$viewName_single][$item['name']]['get']), $_placeholder_for_field);
 						}
 						else
 						{
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $taber . $this->_t(3) . "//" . $this->setLine(__LINE__) . " decode " . $item['name'];
-						}
-						$fix .= PHP_EOL . $this->_t(1) . $tab . $taber . $this->_t(3) . "\$item->" . $item['name'] . " = " . $decode . "(\$item->" . $item['name'] . ");";
+							$taber = '';
+							if ($item['method'] == 3)
+							{
+								$taber = $this->_t(1);
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$basickey && !is_numeric(\$item->" . $item['name'] . ") && \$item->" . $item['name'] . " === base64_encode(base64_decode(\$item->" . $item['name'] . ", true)))";
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
+							}
+							elseif ($item['method'] == 5)
+							{
+								$taber = $this->_t(1);
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$mediumkey && !is_numeric(\$item->" . $item['name'] . ") && \$item->" . $item['name'] . " === base64_encode(base64_decode(\$item->" . $item['name'] . ", true)))";
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
+							}
+							elseif ($item['method'] == 4)
+							{
+								$taber = $this->_t(1);
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$whmcskey && !is_numeric(\$item->" . $item['name'] . ") && \$item->" . $item['name'] . " === base64_encode(base64_decode(\$item->" . $item['name'] . ", true)))";
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
+							}
+							if ($item['method'] == 3 || $item['method'] == 4 || $item['method'] == 5)
+							{
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "//" . $this->setLine(__LINE__) . " decrypt " . $item['name'];
+							}
+							else
+							{
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $taber . $this->_t(3) . "//" . $this->setLine(__LINE__) . " decode " . $item['name'];
+							}
+							$fix .= PHP_EOL . $this->_t(1) . $tab . $taber . $this->_t(3) . "\$item->" . $item['name'] . " = " . $decode . "(\$item->" . $item['name'] . ");";
 
-						if ($item['method'] == 3 || $item['method'] == 4 || $item['method'] == 5)
-						{
-							$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}";
+							if ($item['method'] == 3 || $item['method'] == 4 || $item['method'] == 5)
+							{
+								$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}";
+							}
 						}
 					}
 					else
@@ -12524,9 +13130,9 @@ class Interpretation extends Fields
 							if (isset($item['custom']['table']))
 							{
 								// check if this is a local table
-								if (strpos($item['custom']['table'], '#__' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '_') !== false)
+								if (strpos($item['custom']['table'], '#__' . $this->componentCodeName . '_') !== false)
 								{
-									$keyTableNAme = str_replace('#__' . $this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '_', '', $item['custom']['table']);
+									$keyTableNAme = str_replace('#__' . $this->componentCodeName . '_', '', $item['custom']['table']);
 								}
 								else
 								{
@@ -12552,15 +13158,15 @@ class Interpretation extends Fields
 				}
 			}
 		}
-		// set translation (TODO) would be nice to cut down on double loops..
-//		if (!$export && isset($this->selectionTranslationFixBuilder[$viewName_list]) && ComponentbuilderHelper::checkArray($this->selectionTranslationFixBuilder[$viewName_list]))
-//		{
-//			foreach ($this->selectionTranslationFixBuilder[$viewName_list] as $name => $values)
-//			{
-//				$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " convert " . $name;
-//				$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$item->" . $name . " = \$this->selectionTranslation(\$item->" . $name . ", '" . $name . "');";
-//			}
-//		}
+		/* // set translation (TODO) would be nice to cut down on double loops..
+		if (!$export && isset($this->selectionTranslationFixBuilder[$viewName_list]) && ComponentbuilderHelper::checkArray($this->selectionTranslationFixBuilder[$viewName_list]))
+		{
+			foreach ($this->selectionTranslationFixBuilder[$viewName_list] as $name => $values)
+			{
+				$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " convert " . $name;
+				$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$item->" . $name . " = \$this->selectionTranslation(\$item->" . $name . ", '" . $name . "');";
+			}
+		} */
 		// load the relations after modeling
 		if (isset($this->fieldRelations[$viewName_list]) && ComponentbuilderHelper::checkArray($this->fieldRelations[$viewName_list]))
 		{
@@ -12576,14 +13182,83 @@ class Interpretation extends Fields
 			}
 		}
 		// close the foreach if needed
-		if (ComponentbuilderHelper::checkString($fix) || $export)
+		if (ComponentbuilderHelper::checkString($fix) || ComponentbuilderHelper::checkString($fix_access) || $export || $all)
 		{
 			// start the loop
-			$forEachStart = PHP_EOL . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " set values to display correctly.";
+			$forEachStart = PHP_EOL . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Set values to display correctly.";
 			$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "if (" . $Component . "Helper::checkArray(\$items))";
 			$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "{";
+			// do not add to export since it is already done
+			if (!$export)
+			{
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get the user object if not set.";
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "if (!isset(\$user) || !" . $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . "Helper::checkObject(\$user))";
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "{";
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "\$user = JFactory::getUser();";
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "}";
+			}
+			// the permissional acttion switch
+			$hasPermissional = false;
+			// add the permissional removal of values the user has not right to view or access
+			if ($this->strictFieldExportPermissions && isset($this->permissionFields[$viewName_single]) && ComponentbuilderHelper::checkArray($this->permissionFields[$viewName_single]))
+			{
+				foreach ($this->permissionFields[$viewName_single] as $fieldName => $permission_options)
+				{
+					if (!$hasPermissional)
+					{
+						foreach($permission_options as $permission_option => $fieldType)
+						{
+							if (!$hasPermissional)
+							{
+								switch ($permission_option)
+								{
+									case 'access':
+									case 'view':
+										$hasPermissional = true;
+									break;
+								}
+							}
+						}
+					}
+				}
+				// add the notes and get the global switch
+				if ($hasPermissional)
+				{
+					$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "//" . $this->setLine(__LINE__) . " Get global permissional control activation. (default is inactive)";
+					$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "\$strict_permission_per_field = JComponentHelper::getParams('com_" . $component . "')->get('strict_permission_per_field', 0);" . PHP_EOL;
+				}
+			}
 			$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "foreach (\$items as \$nr => &\$item)";
 			$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "{";
+			// add the access options
+			$forEachStart .= $fix_access;
+			// add the permissional removal of values the user has not right to view or access
+			if ($hasPermissional)
+			{
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "//" . $this->setLine(__LINE__) . " use permissional control if globaly set.";
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "if (\$strict_permission_per_field)";
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "{";
+				foreach ($this->permissionFields[$viewName_single] as $fieldName => $permission_options)
+				{
+					foreach($permission_options as $permission_option => $fieldType)
+					{
+						switch ($permission_option)
+						{
+							case 'access':
+							case 'view':
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "//" . $this->setLine(__LINE__) . " set " . $permission_option . " permissional control for " . $fieldName . " value.";
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "if (isset(\$item->"  . $fieldName . ") && (!\$user->authorise('" . $viewName_single . "." . $permission_option . "." . $fieldName . "', 'com_" . $component . "." . $viewName_single . ".' . (int) \$item->id)";
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "|| !\$user->authorise('" . $viewName_single .  "." . $permission_option . "."  . $fieldName . "', 'com_" . $component . "')))";
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "{";
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "//" . $this->setLine(__LINE__) . " We JUST empty the value (do you have a better idea)";
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(5) . "\$item->"  . $fieldName . " = '';";
+								$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(4) . "}";
+							break;
+						}
+					}
+				}
+				$forEachStart .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "}";
+			}
 			// remove these values if export
 			if ($export)
 			{
@@ -12592,6 +13267,7 @@ class Interpretation extends Fields
 				$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "unset(\$item->checked_out);";
 				$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(3) . "unset(\$item->checked_out_time);";
 			}
+
 			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(2) . "}";
 			$fix .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "}";
 			if ($export)
@@ -12606,7 +13282,7 @@ class Interpretation extends Fields
 		}
 
 		// add custom php to getitems method
-		$fix .= $this->getCustomScriptBuilder('php_getitems', $view, PHP_EOL . PHP_EOL . $tab);
+		$fix .= $this->getCustomScriptBuilder('php_getitems', $viewName_single, PHP_EOL . PHP_EOL . $tab);
 
 		// load the encryption object if needed
 		$script = '';
@@ -12614,10 +13290,21 @@ class Interpretation extends Fields
 		{
 			if (${$cryptionType . 'Crypt'})
 			{
-				$script .= PHP_EOL . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption key.";
-				$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
-				$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
-				$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+				if ('expert' !== $cryptionType)
+				{
+					$script .= PHP_EOL . PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the " . $cryptionType . " encryption key.";
+					$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . "key = " . $Component . "Helper::getCryptKey('" . $cryptionType . "');";
+					$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "//" . $this->setLine(__LINE__) . " Get the encryption object.";
+					$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . "\$" . $cryptionType . " = new FOFEncryptAes(\$" . $cryptionType . "key);";
+				}
+				elseif (isset($this->{$cryptionType . 'FieldModelInitiator'}[$viewName_single]) 
+					&& isset($this->{$cryptionType . 'FieldModelInitiator'}[$viewName_single]['get']))
+				{
+					foreach ($this->{$cryptionType . 'FieldModelInitiator'}[$viewName_single]['get'] as $block)
+					{
+						$script .= PHP_EOL . $this->_t(1) . $tab . $this->_t(1) . implode(PHP_EOL . $this->_t(1) . $tab . $this->_t(1), $block);
+					}
+				}
 			}
 		}
 		// add the encryption script
@@ -12819,7 +13506,7 @@ class Interpretation extends Fields
 					$langName = 'Add&nbsp;' . ComponentbuilderHelper::safeString($view['settings']->name_single, 'W') . '<br /><br />';
 					$langKey = $this->langPrefix . '_DASHBOARD_' . ComponentbuilderHelper::safeString($view['settings']->name_single, 'U') . '_ADD';
 					// add to lang
-					$this->langContent[$this->lang][$langKey] = $langName;
+					$this->setLangContent($this->lang, $langKey, $langName);
 					$counter++;
 				}
 				if (isset($view['dashboard_list']) && $view['dashboard_list'] == 1)
@@ -12847,7 +13534,7 @@ class Interpretation extends Fields
 					$langName = ComponentbuilderHelper::safeString($view['settings']->name_list, 'W') . '<br /><br />';
 					$langKey = $this->langPrefix . '_DASHBOARD_' . ComponentbuilderHelper::safeString($view['settings']->name_list, 'U');
 					// add to lang
-					$this->langContent[$this->lang][$langKey] = $langName;
+					$this->setLangContent($this->lang, $langKey, $langName);
 					$counter++;
 				}
 				if (isset($this->categoryBuilder[$name_list]) && ComponentbuilderHelper::checkArray($this->categoryBuilder[$name_list]))
@@ -12866,13 +13553,13 @@ class Interpretation extends Fields
 					{
 						$otherViews = $name_list;
 						// build lang
-						$langName = 'Category &nbsp;For<br />' . ComponentbuilderHelper::safeString($otherViews, 'W');
+						$langName = 'Categories&nbsp;For<br />' . ComponentbuilderHelper::safeString($otherViews, 'W');
 					}
 					if (!in_array($otherViews, $catArray))
 					{
 						// add to lang
 						$langKey = $this->langPrefix . '_DASHBOARD_' . ComponentbuilderHelper::safeString($otherViews, 'U') . '_' . ComponentbuilderHelper::safeString($catCode, 'U');
-						$this->langContent[$this->lang][$langKey] = $langName;
+						$this->setLangContent($this->lang, $langKey, $langName);
 						// get image type
 						$type = ComponentbuilderHelper::imageInfo($view['settings']->icon_category);
 						if ($type)
@@ -12913,7 +13600,7 @@ class Interpretation extends Fields
 				foreach ($this->iconBuilder as $icon => $path)
 				{
 					$array_buket = explode('.', $icon);
-					if (count($array_buket) == 3)
+					if (count((array) $array_buket) == 3)
 					{
 						list($type, $name, $action) = $array_buket;
 					}
@@ -13042,14 +13729,14 @@ class Interpretation extends Fields
 					$display[] = $tab . $this->_t(2) . "<?php  echo JHtml::_('bootstrap.endSlide'); ?>";
 					$slidecounter++;
 					// build the template file
-					$target = array('custom_admin' => $this->fileContentStatic[$this->hhh . 'component' . $this->hhh]);
+					$target = array('custom_admin' => $this->componentCodeName);
 					$this->buildDynamique($target, 'template', $tempName);
 					// set the file data
 					$TARGET = ComponentbuilderHelper::safeString($this->target, 'U');
 					// SITE_TEMPLATE_BODY <<<DYNAMIC>>>
-					$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '_' . $tempName][$this->hhh . 'CUSTOM_ADMIN_TEMPLATE_BODY' . $this->hhh] = PHP_EOL . $html;
+					$this->fileContentDynamic[$this->componentCodeName . '_' . $tempName][$this->hhh . 'CUSTOM_ADMIN_TEMPLATE_BODY' . $this->hhh] = PHP_EOL . $html;
 					// SITE_TEMPLATE_CODE_BODY <<<DYNAMIC>>>
-					$this->fileContentDynamic[$this->fileContentStatic[$this->hhh . 'component' . $this->hhh] . '_' . $tempName][$this->hhh . 'CUSTOM_ADMIN_TEMPLATE_CODE_BODY' . $this->hhh] = '';
+					$this->fileContentDynamic[$this->componentCodeName . '_' . $tempName][$this->hhh . 'CUSTOM_ADMIN_TEMPLATE_CODE_BODY' . $this->hhh] = '';
 				}
 				$display[] = $tab . $this->_t(1) . "<?php  echo JHtml::_('bootstrap.endAccordion'); ?>";
 				$display[] = $tab . "</div>";
@@ -13089,7 +13776,7 @@ class Interpretation extends Fields
 					$langName = $menu['settings']->name . '<br /><br />';
 					$langKey = $this->langPrefix . '_DASHBOARD_' . $menu['settings']->CODE;
 					// add to lang
-					$this->langContent[$this->lang][$langKey] = $langName;
+					$this->setLangContent($this->lang, $langKey, $langName);
 					// set icon
 					if ($counter == 0)
 					{
@@ -13119,7 +13806,7 @@ class Interpretation extends Fields
 					$langName = $menu['settings']->name . '<br /><br />';
 					$langKey = $this->langPrefix . '_DASHBOARD_' . $menu['settings']->CODE;
 					// add to lang
-					$this->langContent[$this->lang][$langKey] = $langName;
+					$this->setLangContent($this->lang, $langKey, $langName);
 					// set icon
 					$this->lastCustomDashboardIcon[$nr] = ", '" . $type . $menu['settings']->code . "'";
 				}
@@ -13149,7 +13836,7 @@ class Interpretation extends Fields
 					$langName = $menu['name'] . '<br /><br />';
 					$langKey = $this->langPrefix . '_DASHBOARD_' . $nameUpper;
 					// add to lang
-					$this->langContent[$this->lang][$langKey] = $langName;
+					$this->setLangContent($this->lang, $langKey, $langName);
 
 					// if this is a link build the icon values with pipe
 					if (isset($menu['link']) && ComponentbuilderHelper::checkString($menu['link']))
@@ -13197,7 +13884,7 @@ class Interpretation extends Fields
 					$langName = $menu['name'] . '<br /><br />';
 					$langKey = $this->langPrefix . '_DASHBOARD_' . $nameUpper;
 					// add to lang
-					$this->langContent[$this->lang][$langKey] = $langName;
+					$this->setLangContent($this->lang, $langKey, $langName);
 
 					// if this is a link build the icon values with pipe
 					if (isset($menu['link']) && ComponentbuilderHelper::checkString($menu['link']))
@@ -13224,12 +13911,12 @@ class Interpretation extends Fields
 			// main lang prefix
 			$lang = $this->langPrefix . '_SUBMENU';
 			// set the code name
-			$codeName = ComponentbuilderHelper::safeString($this->componentData->name_code);
+			$codeName = $this->componentCodeName;
 			// set default dashboard
 			if (!ComponentbuilderHelper::checkString($this->dynamicDashboard))
 			{
 				$menus .= "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_DASHBOARD'), 'index.php?option=com_" . $codeName . "&view=" . $codeName . "', \$submenu === '" . $codeName . "');";
-				$this->langContent[$this->lang][$lang . '_DASHBOARD'] = 'Dashboard';
+				$this->setLangContent($this->lang, $lang . '_DASHBOARD', 'Dashboard');
 			}
 			$catArray = array();
 			foreach ($this->componentData->admin_views as $view)
@@ -13258,7 +13945,7 @@ class Interpretation extends Fields
 						$tab = $this->_t(1);
 					}
 					$menus .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "'), 'index.php?option=com_" . $codeName . "&view=" . $nameList . "', \$submenu === '" . $nameList . "');";
-					$this->langContent[$this->lang][$lang . "_" . $nameUpper] = $view['settings']->name_list;
+					$this->setLangContent($this->lang, $lang . "_" . $nameUpper, $view['settings']->name_list);
 					// check if category has another name
 					if (isset($this->catOtherName[$nameList]) && ComponentbuilderHelper::checkArray($this->catOtherName[$nameList]))
 					{
@@ -13270,7 +13957,19 @@ class Interpretation extends Fields
 					}
 					if (isset($this->categoryBuilder[$nameList]) && ComponentbuilderHelper::checkArray($this->categoryBuilder[$nameList]) && !in_array($otherViews, $catArray))
 					{
-						$menus .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $this->categoryBuilder[$nameList]['name'] . "'), 'index.php?option=com_categories&view=categories&extension=com_" . $codeName . "." . $otherViews . "', \$submenu === 'categories." . $otherViews . "');";
+						// get the extention array
+						$_extetion_array = (array) explode('.', $this->categoryBuilder[$nameList]['extension']);
+						// set the meny selection
+						if (isset($_extetion_array[1]))
+						{
+							$_menu = "categories." . trim($_extetion_array[1]);
+						}
+						else
+						{
+							$_menu = "categories";
+						}
+						// now load the menus
+						$menus .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $this->categoryBuilder[$nameList]['name'] . "'), 'index.php?option=com_categories&view=categories&extension=" . $this->categoryBuilder[$nameList]['extension'] . "', \$submenu === '" . $_menu ."');";
 						// make sure we add a category only once
 						$catArray[] = $otherViews;
 					}
@@ -13288,8 +13987,8 @@ class Interpretation extends Fields
 					$menus .= PHP_EOL . $this->_t(3) . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "_FIELDS'), 'index.php?option=com_fields&context=com_" . $codeName . "." . $nameSingle . "', \$submenu === 'fields.fields');";
 					$menus .= PHP_EOL . $this->_t(3) . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "_FIELDS_GROUPS'), 'index.php?option=com_fields&view=groups&context=com_" . $codeName . "." . $nameSingle . "', \$submenu === 'fields.groups');";
 					$menus .= PHP_EOL . $this->_t(2) . "}";
-					$this->langContent[$this->lang][$lang . "_" . $nameUpper . "_FIELDS"] = $view['settings']->name_list . ' Fields';
-					$this->langContent[$this->lang][$lang . "_" . $nameUpper . "_FIELDS_GROUPS"] = $view['settings']->name_list . ' Field Groups';
+					$this->setLangContent($this->lang, $lang . "_" . $nameUpper . "_FIELDS", $view['settings']->name_list . ' Fields');
+					$this->setLangContent($this->lang, $lang . "_" . $nameUpper . "_FIELDS_GROUPS", $view['settings']->name_list . ' Field Groups');
 					// build uninstall script for fields
 					$this->uninstallScriptBuilder[$nameSingle] = 'com_' . $codeName . '.' . $nameSingle;
 					$this->uninstallScriptFields[$nameSingle] = $nameSingle;
@@ -13318,9 +14017,9 @@ class Interpretation extends Fields
 			{
 				if (!isset($this->customAdminAdded[$menu['settings']->code]))
 				{
-					if ($custom = $this->setCustomAdminSubMenu($view, $codeName, $lang, $nr, $menu, 'customView'))
+					if (($_custom = $this->setCustomAdminSubMenu($view, $codeName, $lang, $nr, $menu, 'customView')) !== false)
 					{
-						break;
+						$custom .= $_custom;
 					}
 				}
 			}
@@ -13329,10 +14028,9 @@ class Interpretation extends Fields
 		{
 			foreach ($this->componentData->custommenus as $nr => $menu)
 			{
-				if ($custom2 = $this->setCustomAdminSubMenu($view, $codeName, $lang, $nr, $menu, 'customMenu'))
+				if (($_custom = $this->setCustomAdminSubMenu($view, $codeName, $lang, $nr, $menu, 'customMenu')) !== false)
 				{
-					$custom = $custom . $custom2;
-					break;
+					$custom .= $_custom;
 				}
 			}
 		}
@@ -13355,7 +14053,6 @@ class Interpretation extends Fields
 			$nameList = $menu['settings']->code;
 			$nameUpper = $menu['settings']->CODE;
 		}
-
 		if (isset($menu['submenu']) && $menu['submenu'] == 1 && $view['adminview'] == $menu['before'])
 		{
 			// setup access defaults
@@ -13388,13 +14085,13 @@ class Interpretation extends Fields
 			if (isset($menu['link']) && ComponentbuilderHelper::checkString($menu['link']))
 			{
 
-				$this->langContent[$this->lang][$lang . '_' . $nameUpper] = $name;
+				$this->setLangContent($this->lang, $lang . '_' . $nameUpper, $name);
 				// add custom menu
 				$custom .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "'), '" . $menu['link'] . "', \$submenu === '" . $nameList . "');";
 			}
 			else
 			{
-				$this->langContent[$this->lang][$lang . '_' . $nameUpper] = $name;
+				$this->setLangContent($this->lang, $lang . '_' . $nameUpper, $name);
 				// add custom menu
 				$custom .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "'), 'index.php?option=com_" . $codeName . "&view=" . $nameList . "', \$submenu === '" . $nameList . "');";
 			}
@@ -13432,13 +14129,13 @@ class Interpretation extends Fields
 			}
 			if (isset($menu['link']) && ComponentbuilderHelper::checkString($menu['link']))
 			{
-				$this->langContent[$this->lang][$lang . '_' . $nameUpper] = $name;
+				$this->setLangContent($this->lang, $lang . '_' . $nameUpper, $name);
 				// add custom menu
 				$this->lastCustomSubMenu[$nr] .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "'), '" . $menu['link'] . "', \$submenu === '" . $nameList . "');";
 			}
 			else
 			{
-				$this->langContent[$this->lang][$lang . '_' . $nameUpper] = $name;
+				$this->setLangContent($this->lang, $lang . '_' . $nameUpper, $name);
 				// add custom menu
 				$this->lastCustomSubMenu[$nr] .= PHP_EOL . $this->_t(2) . $tab . "JHtmlSidebar::addEntry(JText:" . ":_('" . $lang . "_" . $nameUpper . "'), 'index.php?option=com_" . $codeName . "&view=" . $nameList . "', \$submenu === '" . $nameList . "');";
 			}
@@ -13456,7 +14153,7 @@ class Interpretation extends Fields
 			// main lang prefix
 			$lang = $this->langPrefix . '_MENU';
 			// set the code name
-			$codeName = ComponentbuilderHelper::safeString($this->componentData->name_code);
+			$codeName = $this->componentCodeName;
 			// default prefix is none
 			$prefix = '';
 			// check if local is set
@@ -13481,11 +14178,11 @@ class Interpretation extends Fields
 			// add the prefix
 			if ($addPrefix == 1)
 			{
-				$this->langContent['adminsys'][$lang] = $prefix . $this->componentData->name;
+				$this->setLangContent('adminsys', $lang, $prefix . $this->componentData->name);
 			}
 			else
 			{
-				$this->langContent['adminsys'][$lang] = $this->componentData->name;
+				$this->setLangContent('adminsys', $lang, $this->componentData->name);
 			}
 			// loop over the admin views
 			foreach ($this->componentData->admin_views as $view)
@@ -13497,7 +14194,7 @@ class Interpretation extends Fields
 					$nameList = ComponentbuilderHelper::safeString($view['settings']->name_list);
 					$nameUpper = ComponentbuilderHelper::safeString($view['settings']->name_list, 'U');
 					$menus .= PHP_EOL . $this->_t(3) . '<menu option="com_' . $codeName . '" view="' . $nameList . '">' . $lang . '_' . $nameUpper . '</menu>';
-					$this->langContent['adminsys'][$lang . '_' . $nameUpper] = $view['settings']->name_list;
+					$this->setLangContent('adminsys', $lang . '_' . $nameUpper, $view['settings']->name_list);
 				}
 			}
 			if (isset($this->lastCustomMainMenu) && ComponentbuilderHelper::checkArray($this->lastCustomMainMenu))
@@ -13525,13 +14222,13 @@ class Interpretation extends Fields
 				{
 					if (isset($menu['mainmenu']) && $menu['mainmenu'] == 1 && $view['adminview'] == $menu['before'])
 					{
-						$this->langContent['adminsys'][$lang . '_' . $menu['settings']->CODE] = $menu['settings']->name;
+						$this->setLangContent('adminsys', $lang . '_' . $menu['settings']->CODE, $menu['settings']->name);
 						// add custom menu
 						$customMenu .= PHP_EOL . $this->_t(3) . '<menu option="com_' . $codeName . '" view="' . $menu['settings']->code . '">' . $lang . '_' . $menu['settings']->CODE . '</menu>';
 					}
 					elseif (isset($menu['mainmenu']) && $menu['mainmenu'] == 1 && empty($menu['before']))
 					{
-						$this->langContent['adminsys'][$lang . '_' . $menu['settings']->CODE] = $menu['settings']->name;
+						$this->setLangContent('adminsys', $lang . '_' . $menu['settings']->CODE, $menu['settings']->name);
 						// add custom menu
 						$this->lastCustomMainMenu[$nr] = PHP_EOL . $this->_t(3) . '<menu option="com_' . $codeName . '" view="' . $menu['settings']->code . '">' . $lang . '_' . $menu['settings']->CODE . '</menu>';
 					}
@@ -13550,7 +14247,7 @@ class Interpretation extends Fields
 					{
 						$nameList = ComponentbuilderHelper::safeString($menu['name']);
 						$nameUpper = ComponentbuilderHelper::safeString($menu['name'], 'U');
-						$this->langContent['adminsys'][$lang . '_' . $nameUpper] = $menu['name'];
+						$this->setLangContent('adminsys', $lang . '_' . $nameUpper, $menu['name']);
 						// sanitize url
 						if (strpos($menu['link'], 'http') === false)
 						{
@@ -13572,7 +14269,7 @@ class Interpretation extends Fields
 					{
 						$nameList = ComponentbuilderHelper::safeString($menu['name_code']);
 						$nameUpper = ComponentbuilderHelper::safeString($menu['name_code'], 'U');
-						$this->langContent['adminsys'][$lang . '_' . $nameUpper] = $menu['name'];
+						$this->setLangContent('adminsys', $lang . '_' . $nameUpper, $menu['name']);
 						// add custom menu
 						$customMenu .= PHP_EOL . $this->_t(3) . '<menu option="com_' . $codeName . '" view="' . $nameList . '">' . $lang . '_' . $nameUpper . '</menu>';
 					}
@@ -13583,7 +14280,7 @@ class Interpretation extends Fields
 					{
 						$nameList = ComponentbuilderHelper::safeString($menu['name']);
 						$nameUpper = ComponentbuilderHelper::safeString($menu['name'], 'U');
-						$this->langContent['adminsys'][$lang . '_' . $nameUpper] = $menu['name'];
+						$this->setLangContent('adminsys', $lang . '_' . $nameUpper, $menu['name']);
 						// sanitize url
 						if (strpos($menu['link'], 'http') === false)
 						{
@@ -13605,7 +14302,7 @@ class Interpretation extends Fields
 					{
 						$nameList = ComponentbuilderHelper::safeString($menu['name_code']);
 						$nameUpper = ComponentbuilderHelper::safeString($menu['name_code'], 'U');
-						$this->langContent['adminsys'][$lang . '_' . $nameUpper] = $menu['name'];
+						$this->setLangContent('adminsys', $lang . '_' . $nameUpper, $menu['name']);
 						// add custom menu
 						$this->lastCustomMainMenu[$nr] = PHP_EOL . $this->_t(3) . '<menu option="com_' . $codeName . '" view="' . $nameList . '">' . $lang . '_' . $nameUpper . '</menu>';
 					}
@@ -13628,17 +14325,37 @@ class Interpretation extends Fields
 			// set the custom fields
 			if (isset($this->componentData->config) && ComponentbuilderHelper::checkArray($this->componentData->config))
 			{
-				$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+				// set component code name
+				$component = $this->componentCodeName;
 				$viewName = 'config';
 				$listViewName = 'configs';
-				$placeholders = array(
-					$this->hhh . 'component' . $this->hhh => $component,
-					$this->hhh . 'view' . $this->hhh => $viewName,
-					$this->hhh . 'views' . $this->hhh => $listViewName);
+				// set place holders
+				$placeholders = array();
+				$placeholders[$this->hhh . 'component' . $this->hhh] = $this->componentCodeName;
+				$placeholders[$this->hhh . 'Component' . $this->hhh] = ComponentbuilderHelper::safeString($this->componentData->name_code, 'F');
+				$placeholders[$this->hhh . 'COMPONENT' . $this->hhh] = ComponentbuilderHelper::safeString($this->componentData->name_code, 'U');
+				$placeholders[$this->hhh . 'view' . $this->hhh] = $viewName;
+				$placeholders[$this->hhh . 'views' . $this->hhh] = $listViewName;
+				$placeholders[$this->bbb . 'component' . $this->ddd] = $this->componentCodeName;
+				$placeholders[$this->bbb . 'Component' . $this->ddd] = $placeholders[$this->hhh . 'Component' . $this->hhh];
+				$placeholders[$this->bbb . 'COMPONENT' . $this->ddd] = $placeholders[$this->hhh . 'COMPONENT' . $this->hhh];
+				$placeholders[$this->bbb . 'view' . $this->ddd] = $viewName;
+				$placeholders[$this->bbb . 'views' . $this->ddd] = $listViewName;
+				// load the global placeholders
+				if (ComponentbuilderHelper::checkArray($this->globalPlaceholders))
+				{
+					foreach ($this->globalPlaceholders as $globalPlaceholder => $gloabalValue)
+					{
+						$placeholders[$globalPlaceholder] = $gloabalValue;
+					}
+				}
 				$view = '';
 				$viewType = 0;
 				// set the custom table key
 				$dbkey = 'g';
+				// Trigger Event: jcb_ce_onBeforeSetConfigFieldsets
+				$this->triggerEvent('jcb_ce_onBeforeSetConfigFieldsets', array(&$this->componentContext, &$timer, &$this->configFieldSets, &$this->configFieldSetsCustomField, &$this->componentData->config, &$this->extensionsParams, &$placeholders));
+				// build the config fields
 				foreach ($this->componentData->config as $field)
 				{
 					// check the field builder type
@@ -13654,7 +14371,7 @@ class Interpretation extends Fields
 						if (isset($newxmlField->fieldXML))
 						{
 							$xmlField = dom_import_simplexml($newxmlField->fieldXML);
-							$xmlField = PHP_EOL . $this->_t(1) . "<!-- " . $newxmlField->comment . ' -->' . PHP_EOL . $this->_t(1) . $this->xmlPrettyPrint($xmlField, 'field');
+							$xmlField = PHP_EOL . $this->_t(1) . "<!--" . $this->setLine(__LINE__) . " " . $newxmlField->comment . ' -->' . PHP_EOL . $this->_t(1) . $this->xmlPrettyPrint($xmlField, 'field');
 						}
 					}
 					// make sure the xml is set and a string
@@ -13662,8 +14379,8 @@ class Interpretation extends Fields
 					{
 						$this->configFieldSetsCustomField[$field['tabname']][] = $xmlField;
 						// set global params to db on install
-						$fieldName = ComponentbuilderHelper::safeString(ComponentbuilderHelper::getBetween($xmlField, 'name="', '"'));
-						$fieldDefault = ComponentbuilderHelper::getBetween($xmlField, 'default="', '"');
+						$fieldName = ComponentbuilderHelper::safeString($this->setPlaceholders(ComponentbuilderHelper::getBetween($xmlField, 'name="', '"'), $placeholders));
+						$fieldDefault = $this->setPlaceholders(ComponentbuilderHelper::getBetween($xmlField, 'default="', '"'), $placeholders);
 						if (isset($field['custom_value']) && ComponentbuilderHelper::checkString($field['custom_value']))
 						{
 							// add array if found
@@ -13692,6 +14409,8 @@ class Interpretation extends Fields
 		}
 		elseif (2 == $timer) // this is after the admin views are build
 		{
+			// Trigger Event: jcb_ce_onBeforeSetConfigFieldsets
+			$this->triggerEvent('jcb_ce_onBeforeSetConfigFieldsets', array(&$this->componentContext, &$timer, &$this->configFieldSets, &$this->configFieldSetsCustomField, &$this->componentData->config, &$this->extensionsParams, &$this->placeholders));
 			// these field sets can only be added after admin view is build
 			$this->setGroupControlConfigFieldsets($lang);
 			// these can be added anytime really (but looks best after groups
@@ -13702,7 +14421,8 @@ class Interpretation extends Fields
 			// these are the coustom settings
 			$this->setCustomControlConfigFieldsets($lang);
 		}
-		// we can add more event (timers as we need)
+		// Trigger Event: jcb_ce_onAfterSetConfigFieldsets
+		$this->triggerEvent('jcb_ce_onAfterSetConfigFieldsets', array(&$this->componentContext, &$timer, &$this->configFieldSets, &$this->configFieldSetsCustomField, &$this->extensionsParams, &$this->frontEndParams, &$this->placeholders));
 	}
 
 	public function setSiteControlConfigFieldsets($lang)
@@ -13843,7 +14563,7 @@ class Interpretation extends Fields
 				if (ComponentbuilderHelper::checkArray($bucket))
 				{
 					// setup lang
-					$this->langContent[$this->lang][$lang . '_' . $tabUpper] = $tab;
+					$this->setLangContent($this->lang, $lang . '_' . $tabUpper, $tab);
 					// start field set
 					$this->configFieldSets[] = $this->_t(1) . "<fieldset";
 					$this->configFieldSets[] = $this->_t(2) . 'name="' . $tabCode . '"';
@@ -13870,9 +14590,9 @@ class Interpretation extends Fields
 			$this->configFieldSets[] = $this->_t(2) . 'label="' . $lang . '_GROUPS_LABEL"';
 			$this->configFieldSets[] = $this->_t(2) . 'description="' . $lang . '_GROUPS_DESC">';
 			// setup lang
-			$this->langContent[$this->lang][$lang . '_GROUPS_LABEL'] = "Target Groups";
-			$this->langContent[$this->lang][$lang . '_GROUPS_DESC'] = "The Parameters for the targeted groups are set here.";
-			$this->langContent[$this->lang][$lang . '_TARGET_GROUP_DESC'] = "Set the group/s being targeted by this user type.";
+			$this->setLangContent($this->lang, $lang . '_GROUPS_LABEL', "Target Groups");
+			$this->setLangContent($this->lang, $lang . '_GROUPS_DESC', "The Parameters for the targeted groups are set here.");
+			$this->setLangContent($this->lang, $lang . '_TARGET_GROUP_DESC', "Set the group/s being targeted by this user type.");
 
 			foreach ($this->setGroupControl as $selector => $label)
 			{
@@ -13904,7 +14624,7 @@ class Interpretation extends Fields
 	public function setGlobalConfigFieldsets($lang, $autorName, $autorEmail)
 	{
 		// set component name
-		$component = ComponentbuilderHelper::safeString($this->componentData->name_code);
+		$component = $this->componentCodeName;
 
 		// start building field set for config
 		$this->configFieldSets[] = '<fieldset';
@@ -13914,8 +14634,8 @@ class Interpretation extends Fields
 		$this->configFieldSets[] = $this->_t(2) . 'label="' . $lang . '_GLOBAL_LABEL"';
 		$this->configFieldSets[] = $this->_t(2) . 'description="' . $lang . '_GLOBAL_DESC">';
 		// setup lang
-		$this->langContent[$this->lang][$lang . '_GLOBAL_LABEL'] = "Global";
-		$this->langContent[$this->lang][$lang . '_GLOBAL_DESC'] = "The Global Parameters";
+		$this->setLangContent($this->lang, $lang . '_GLOBAL_LABEL', "Global");
+		$this->setLangContent($this->lang, $lang . '_GLOBAL_DESC', "The Global Parameters");
 		// add auto checin if required
 		if ($this->addCheckin)
 		{
@@ -13940,14 +14660,14 @@ class Interpretation extends Fields
 			$this->configFieldSets[] = $this->_t(2) . "</field>";
 			$this->configFieldSets[] = $this->_t(2) . '<field type="spacer" name="spacerAuthor" hr="true" />';
 			// setup lang
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_LABEL'] = "Check in timer";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_DESC'] = "Set the intervals for the auto checkin fuction of tables that checks out the items to an user.";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_OPTION_ONE'] = "Every five hours";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_OPTION_TWO'] = "Every twelve hours";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_OPTION_THREE'] = "Once a day";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_OPTION_FOUR'] = "Every second day";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_OPTION_FIVE'] = "Once a week";
-			$this->langContent[$this->lang][$lang . '_CHECK_TIMER_OPTION_SIX'] = "Never";
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_LABEL', "Check in timer");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_DESC', "Set the intervals for the auto checkin fuction of tables that checks out the items to an user.");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_OPTION_ONE', "Every five hours");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_OPTION_TWO', "Every twelve hours");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_OPTION_THREE', "Once a day");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_OPTION_FOUR', "Every second day");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_OPTION_FIVE', "Once a week");
+			$this->setLangContent($this->lang, $lang . '_CHECK_TIMER_OPTION_SIX', "Never");
 			// load the Global checkin defautls
 			$this->extensionsParams[] = '"check_in":"-1 day"';
 		}
@@ -14007,11 +14727,11 @@ class Interpretation extends Fields
 		$this->configFieldSets[] = $this->_t(3) . 'class="readonly"';
 		$this->configFieldSets[] = $this->_t(2) . "/>";
 		// setup lang
-		$this->langContent[$this->lang][$lang . '_AUTHOR'] = "Author Info";
-		$this->langContent[$this->lang][$lang . '_AUTHOR_NAME_LABEL'] = "Author Name";
-		$this->langContent[$this->lang][$lang . '_AUTHOR_NAME_DESC'] = "The name of the author of this component.";
-		$this->langContent[$this->lang][$lang . '_AUTHOR_EMAIL_LABEL'] = "Author Email";
-		$this->langContent[$this->lang][$lang . '_AUTHOR_EMAIL_DESC'] = "The email address of the author of this component.";
+		$this->setLangContent($this->lang, $lang . '_AUTHOR', "Author Info");
+		$this->setLangContent($this->lang, $lang . '_AUTHOR_NAME_LABEL', "Author Name");
+		$this->setLangContent($this->lang, $lang . '_AUTHOR_NAME_DESC', "The name of the author of this component.");
+		$this->setLangContent($this->lang, $lang . '_AUTHOR_EMAIL_LABEL', "Author Email");
+		$this->setLangContent($this->lang, $lang . '_AUTHOR_EMAIL_DESC', "The email address of the author of this component.");
 		// set if contributors were added
 		$langCont = $lang . '_CONTRIBUTOR';
 		if (isset($this->addContributors) && $this->addContributors && isset($this->componentData->contributors) && ComponentbuilderHelper::checkArray($this->componentData->contributors))
@@ -14085,7 +14805,7 @@ class Interpretation extends Fields
 				$this->theContributors .= PHP_EOL . $this->_t(1) . "@" . strtolower($contributor['title']) . $this->_t(2) . $contributor['name'] . ' <' . $contributor['website'] . '>';
 				// setup lang
 				$Counter = ComponentbuilderHelper::safeString($counter, 'Ww');
-				$this->langContent[$this->lang][$langCont . '_' . $COUNTER] = "Contributor " . $Counter;
+				$this->setLangContent($this->lang, $langCont . '_' . $COUNTER, "Contributor " . $Counter);
 				// load the Global checkin defautls
 				$this->extensionsParams[] = '"titleContributor' . $counter . '":"' . $cbTitle . '"';
 				$this->extensionsParams[] = '"nameContributor' . $counter . '":"' . $cbName . '"';
@@ -14168,31 +14888,31 @@ class Interpretation extends Fields
 				$this->configFieldSets[] = $this->_t(2) . "</field>";
 				// setup lang
 				$Counter = ComponentbuilderHelper::safeString($counter, 'Ww');
-				$this->langContent[$this->lang][$langCont . '_' . $COUNTER] = "Contributor " . $Counter;
+				$this->setLangContent($this->lang, $langCont . '_' . $COUNTER, "Contributor " . $Counter);
 			}
 		}
 		if ($this->addContributors || $this->componentData->emptycontributors == 1)
 		{
 			// setup lang
-			$this->langContent[$this->lang][$langCont . '_TITLE_LABEL'] = "Contributor Job Title";
-			$this->langContent[$this->lang][$langCont . '_TITLE_DESC'] = "The job title that best describes the contributor's relationship to this component.";
-			$this->langContent[$this->lang][$langCont . '_NAME_LABEL'] = "Contributor Name";
-			$this->langContent[$this->lang][$langCont . '_NAME_DESC'] = "The name of this contributor.";
-			$this->langContent[$this->lang][$langCont . '_EMAIL_LABEL'] = "Contributor Email";
-			$this->langContent[$this->lang][$langCont . '_EMAIL_DESC'] = "The email of this contributor.";
-			$this->langContent[$this->lang][$langCont . '_LINK_LABEL'] = "Contributor Website";
-			$this->langContent[$this->lang][$langCont . '_LINK_DESC'] = "The link to this contributor's website.";
-			$this->langContent[$this->lang][$langCont . '_USE_LABEL'] = "Use";
-			$this->langContent[$this->lang][$langCont . '_USE_DESC'] = "How should we link to this contributor.";
-			$this->langContent[$this->lang][$langCont . '_USE_NONE'] = "None";
-			$this->langContent[$this->lang][$langCont . '_USE_EMAIL'] = "Email";
-			$this->langContent[$this->lang][$langCont . '_USE_WWW'] = "Website";
-			$this->langContent[$this->lang][$langCont . '_SHOW_LABEL'] = "Show";
-			$this->langContent[$this->lang][$langCont . '_SHOW_DESC'] = "Select where you want this contributor's details to show in the component.";
-			$this->langContent[$this->lang][$langCont . '_SHOW_NONE'] = "Hide";
-			$this->langContent[$this->lang][$langCont . '_SHOW_BACK'] = "Back-end";
-			$this->langContent[$this->lang][$langCont . '_SHOW_FRONT'] = "Front-end";
-			$this->langContent[$this->lang][$langCont . '_SHOW_ALL'] = "Both Front & Back-end";
+			$this->setLangContent($this->lang, $langCont . '_TITLE_LABEL', "Contributor Job Title");
+			$this->setLangContent($this->lang, $langCont . '_TITLE_DESC', "The job title that best describes the contributor's relationship to this component.");
+			$this->setLangContent($this->lang, $langCont . '_NAME_LABEL', "Contributor Name");
+			$this->setLangContent($this->lang, $langCont . '_NAME_DESC', "The name of this contributor.");
+			$this->setLangContent($this->lang, $langCont . '_EMAIL_LABEL', "Contributor Email");
+			$this->setLangContent($this->lang, $langCont . '_EMAIL_DESC', "The email of this contributor.");
+			$this->setLangContent($this->lang, $langCont . '_LINK_LABEL', "Contributor Website");
+			$this->setLangContent($this->lang, $langCont . '_LINK_DESC', "The link to this contributor's website.");
+			$this->setLangContent($this->lang, $langCont . '_USE_LABEL', "Use");
+			$this->setLangContent($this->lang, $langCont . '_USE_DESC', "How should we link to this contributor.");
+			$this->setLangContent($this->lang, $langCont . '_USE_NONE', "None");
+			$this->setLangContent($this->lang, $langCont . '_USE_EMAIL', "Email");
+			$this->setLangContent($this->lang, $langCont . '_USE_WWW', "Website");
+			$this->setLangContent($this->lang, $langCont . '_SHOW_LABEL', "Show");
+			$this->setLangContent($this->lang, $langCont . '_SHOW_DESC', "Select where you want this contributor's details to show in the component.");
+			$this->setLangContent($this->lang, $langCont . '_SHOW_NONE', "Hide");
+			$this->setLangContent($this->lang, $langCont . '_SHOW_BACK', "Back-end");
+			$this->setLangContent($this->lang, $langCont . '_SHOW_FRONT', "Front-end");
+			$this->setLangContent($this->lang, $langCont . '_SHOW_ALL', "Both Front & Back-end");
 		}
 		// close that fieldset
 		$this->configFieldSets[] = $this->_t(1) . "</fieldset>";
@@ -14212,31 +14932,31 @@ class Interpretation extends Fields
 			// set tab lang
 			if (1 == $this->uikit)
 			{
-				$this->langContent[$this->lang][$lang . '_UIKIT_LABEL'] = "Uikit2 Settings";
-				$this->langContent[$this->lang][$lang . '_UIKIT_DESC'] = "<b>The Parameters for the uikit are set here.</b><br />Uikit is a lightweight and modular front-end framework
-for developing fast and powerful web interfaces. For more info visit <a href=\"https://getuikit.com/v2/\" target=\"_blank\">https://getuikit.com/v2/</a>";
+				$this->setLangContent($this->lang, $lang . '_UIKIT_LABEL', "Uikit2 Settings");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_DESC', "<b>The Parameters for the uikit are set here.</b><br />Uikit is a lightweight and modular front-end framework
+for developing fast and powerful web interfaces. For more info visit <a href=\"https://getuikit.com/v2/\" target=\"_blank\">https://getuikit.com/v2/</a>");
 			}
 			elseif (2 == $this->uikit)
 			{
-				$this->langContent[$this->lang][$lang . '_UIKIT_LABEL'] = "Uikit2 and Uikit3 Settings";
-				$this->langContent[$this->lang][$lang . '_UIKIT_DESC'] = "<b>The Parameters for the uikit are set here.</b><br />Uikit is a lightweight and modular front-end framework
-for developing fast and powerful web interfaces. For more info visit <a href=\"https://getuikit.com/v2/\" target=\"_blank\">version 2</a> or <a href=\"https://getuikit.com/\" target=\"_blank\">version 3</a>";
+				$this->setLangContent($this->lang, $lang . '_UIKIT_LABEL', "Uikit2 and Uikit3 Settings");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_DESC', "<b>The Parameters for the uikit are set here.</b><br />Uikit is a lightweight and modular front-end framework
+for developing fast and powerful web interfaces. For more info visit <a href=\"https://getuikit.com/v2/\" target=\"_blank\">version 2</a> or <a href=\"https://getuikit.com/\" target=\"_blank\">version 3</a>");
 			}
 			elseif (3 == $this->uikit)
 			{
-				$this->langContent[$this->lang][$lang . '_UIKIT_LABEL'] = "Uikit3 Settings";
-				$this->langContent[$this->lang][$lang . '_UIKIT_DESC'] = "<b>The Parameters for the uikit are set here.</b><br />Uikit is a lightweight and modular front-end framework
-for developing fast and powerful web interfaces. For more info visit <a href=\"https://getuikit.com/\" target=\"_blank\">https://getuikit.com/</a>";
+				$this->setLangContent($this->lang, $lang . '_UIKIT_LABEL', "Uikit3 Settings");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_DESC', "<b>The Parameters for the uikit are set here.</b><br />Uikit is a lightweight and modular front-end framework
+for developing fast and powerful web interfaces. For more info visit <a href=\"https://getuikit.com/\" target=\"_blank\">https://getuikit.com/</a>");
 			}
 
 			// add version selection
 			if (2 == $this->uikit)
 			{
 				// set field lang
-				$this->langContent[$this->lang][$lang . '_UIKIT_VERSION_LABEL'] = "Uikit Versions";
-				$this->langContent[$this->lang][$lang . '_UIKIT_VERSION_DESC'] = "Select what version you would like to use";
-				$this->langContent[$this->lang][$lang . '_UIKIT_V2'] = "Version 2";
-				$this->langContent[$this->lang][$lang . '_UIKIT_V3'] = "Version 3";
+				$this->setLangContent($this->lang, $lang . '_UIKIT_VERSION_LABEL', "Uikit Versions");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_VERSION_DESC', "Select what version you would like to use");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_V2', "Version 2");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_V3', "Version 3");
 				// set the field
 				$this->configFieldSets[] = $this->_t(2) . '<field name="uikit_version"';
 				$this->configFieldSets[] = $this->_t(3) . 'type="radio"';
@@ -14255,12 +14975,12 @@ for developing fast and powerful web interfaces. For more info visit <a href=\"h
 			}
 
 			// set field lang
-			$this->langContent[$this->lang][$lang . '_UIKIT_LOAD_LABEL'] = "Loading Options";
-			$this->langContent[$this->lang][$lang . '_UIKIT_LOAD_DESC'] = "Set the uikit loading option.";
-			$this->langContent[$this->lang][$lang . '_AUTO_LOAD'] = "Auto";
-			$this->langContent[$this->lang][$lang . '_FORCE_LOAD'] = "Force";
-			$this->langContent[$this->lang][$lang . '_DONT_LOAD'] = "Not";
-			$this->langContent[$this->lang][$lang . '_ONLY_EXTRA'] = "Only Extra";
+			$this->setLangContent($this->lang, $lang . '_UIKIT_LOAD_LABEL', "Loading Options");
+			$this->setLangContent($this->lang, $lang . '_UIKIT_LOAD_DESC', "Set the uikit loading option.");
+			$this->setLangContent($this->lang, $lang . '_AUTO_LOAD', "Auto");
+			$this->setLangContent($this->lang, $lang . '_FORCE_LOAD', "Force");
+			$this->setLangContent($this->lang, $lang . '_DONT_LOAD', "Not");
+			$this->setLangContent($this->lang, $lang . '_ONLY_EXTRA', "Only Extra");
 			// set the field
 			$this->configFieldSets[] = $this->_t(2) . '<field name="uikit_load"';
 			$this->configFieldSets[] = $this->_t(3) . 'type="radio"';
@@ -14285,10 +15005,10 @@ for developing fast and powerful web interfaces. For more info visit <a href=\"h
 			$this->extensionsParams[] = '"uikit_load":"1"';
 
 			// set field lang
-			$this->langContent[$this->lang][$lang . '_UIKIT_MIN_LABEL'] = "Load Minified";
-			$this->langContent[$this->lang][$lang . '_UIKIT_MIN_DESC'] = "Should the minified version of uikit files be loaded?";
-			$this->langContent[$this->lang][$lang . '_YES'] = "Yes";
-			$this->langContent[$this->lang][$lang . '_NO'] = "No";
+			$this->setLangContent($this->lang, $lang . '_UIKIT_MIN_LABEL', "Load Minified");
+			$this->setLangContent($this->lang, $lang . '_UIKIT_MIN_DESC', "Should the minified version of uikit files be loaded?");
+			$this->setLangContent($this->lang, $lang . '_YES', "Yes");
+			$this->setLangContent($this->lang, $lang . '_NO', "No");
 			// set the field
 			$this->configFieldSets[] = $this->_t(2) . '<field name="uikit_min"';
 			$this->configFieldSets[] = $this->_t(3) . 'type="radio"';
@@ -14308,11 +15028,11 @@ for developing fast and powerful web interfaces. For more info visit <a href=\"h
 			if (2 == $this->uikit || 1 == $this->uikit)
 			{
 				// set field lang
-				$this->langContent[$this->lang][$lang . '_UIKIT_STYLE_LABEL'] = "css Style";
-				$this->langContent[$this->lang][$lang . '_UIKIT_STYLE_DESC'] = "Set the css style that should be used.";
-				$this->langContent[$this->lang][$lang . '_FLAT_LOAD'] = "Flat";
-				$this->langContent[$this->lang][$lang . '_ALMOST_FLAT_LOAD'] = "Almost Flat";
-				$this->langContent[$this->lang][$lang . '_GRADIANT_LOAD'] = "Gradient";
+				$this->setLangContent($this->lang, $lang . '_UIKIT_STYLE_LABEL', "css Style");
+				$this->setLangContent($this->lang, $lang . '_UIKIT_STYLE_DESC', "Set the css style that should be used.");
+				$this->setLangContent($this->lang, $lang . '_FLAT_LOAD', "Flat");
+				$this->setLangContent($this->lang, $lang . '_ALMOST_FLAT_LOAD', "Almost Flat");
+				$this->setLangContent($this->lang, $lang . '_GRADIANT_LOAD', "Gradient");
 				// set the field
 				$this->configFieldSets[] = $this->_t(2) . '<field name="uikit_style"';
 				$this->configFieldSets[] = $this->_t(3) . 'type="radio"';
@@ -14353,8 +15073,8 @@ for developing fast and powerful web interfaces. For more info visit <a href=\"h
 			// main lang prefix
 			$lang = $lang . '';
 			// set main lang string
-			$this->langContent[$this->lang][$lang . '_MAIL_CONFIGURATION'] = "Mail Configuration";
-			$this->langContent[$this->lang][$lang . '_DKIM'] = "DKIM";
+			$this->setLangContent($this->lang, $lang . '_MAIL_CONFIGURATION', "Mail Configuration");
+			$this->setLangContent($this->lang, $lang . '_DKIM', "DKIM");
 			// start building field set for email helper functions
 			$this->configFieldSets[] = PHP_EOL . $this->_t(1) . "<fieldset";
 			$this->configFieldSets[] = $this->_t(2) . "name=\"mail_configuration_custom_config\"";
@@ -14368,51 +15088,51 @@ for developing fast and powerful web interfaces. For more info visit <a href=\"h
 			else
 			{
 				// set all the laguage strings
-				$this->langContent[$this->lang][$lang . '_MAILONLINE_LABEL'] = "Mailer Status";
-				$this->langContent[$this->lang][$lang . '_MAILONLINE_DESCRIPTION'] = "Warning this will stop all emails from going out.";
-				$this->langContent[$this->lang][$lang . '_ON'] = "On";
-				$this->langContent[$this->lang][$lang . '_OFF'] = "Off";
-				$this->langContent[$this->lang][$lang . '_MAILER_LABEL'] = "Mailer";
-				$this->langContent[$this->lang][$lang . '_MAILER_DESCRIPTION'] = "Select what mailer you would like to use to send emails.";
-				$this->langContent[$this->lang][$lang . '_GLOBAL'] = "Global";
-				$this->langContent[$this->lang][$lang . '_PHP_MAIL'] = "PHP Mail";
-				$this->langContent[$this->lang][$lang . '_SENDMAIL'] = "Sendmail";
-				$this->langContent[$this->lang][$lang . '_SMTP'] = "SMTP";
-				$this->langContent[$this->lang][$lang . '_EMAILFROM_LABEL'] = " From Email";
-				$this->langContent[$this->lang][$lang . '_EMAILFROM_DESCRIPTION'] = "The global email address that will be used to send system email.";
-				$this->langContent[$this->lang][$lang . '_EMAILFROM_HINT'] = "Email Address Here";
-				$this->langContent[$this->lang][$lang . '_FROMNAME_LABEL'] = "From Name";
-				$this->langContent[$this->lang][$lang . '_FROMNAME_DESCRIPTION'] = "Text displayed in the header &quot;From:&quot; field when sending a site email. Usually the site name.";
-				$this->langContent[$this->lang][$lang . '_FROMNAME_HINT'] = "From Name Here";
-				$this->langContent[$this->lang][$lang . '_EMAILREPLY_LABEL'] = " Reply to Email";
-				$this->langContent[$this->lang][$lang . '_EMAILREPLY_DESCRIPTION'] = "The global email address that will be used to set as the reply email. (leave blank for none)";
-				$this->langContent[$this->lang][$lang . '_EMAILREPLY_HINT'] = "Email Address Here";
-				$this->langContent[$this->lang][$lang . '_REPLYNAME_LABEL'] = "Reply to Name";
-				$this->langContent[$this->lang][$lang . '_REPLYNAME_DESCRIPTION'] = "Text displayed in the header &quot;Reply To:&quot; field when replying to the site email. Usually the the person that receives the response. (leave blank for none)";
-				$this->langContent[$this->lang][$lang . '_REPLYNAME_HINT'] = "Reply Name Here";
-				$this->langContent[$this->lang][$lang . '_SENDMAIL_LABEL'] = "Sendmail Path";
-				$this->langContent[$this->lang][$lang . '_SENDMAIL_DESCRIPTION'] = "Enter the path to the sendmail program directory on your host server.";
-				$this->langContent[$this->lang][$lang . '_SENDMAIL_HINT'] = "/usr/sbin/sendmail";
-				$this->langContent[$this->lang][$lang . '_SMTPAUTH_LABEL'] = "SMTP Authentication";
-				$this->langContent[$this->lang][$lang . '_SMTPAUTH_DESCRIPTION'] = "Select yes if your SMTP host requires SMTP Authentication.";
-				$this->langContent[$this->lang][$lang . '_YES'] = "Yes";
-				$this->langContent[$this->lang][$lang . '_NO'] = "No";
-				$this->langContent[$this->lang][$lang . '_SMTPSECURE_LABEL'] = "SMTP Security";
-				$this->langContent[$this->lang][$lang . '_SMTPSECURE_DESCRIPTION'] = "Select the security model that your SMTP server uses.";
-				$this->langContent[$this->lang][$lang . '_NONE'] = "None";
-				$this->langContent[$this->lang][$lang . '_SSL'] = "SSL";
-				$this->langContent[$this->lang][$lang . '_TLS'] = "TLS";
-				$this->langContent[$this->lang][$lang . '_SMTPPORT_LABEL'] = "SMTP Port";
-				$this->langContent[$this->lang][$lang . '_SMTPPORT_DESCRIPTION'] = "Enter the port number of your SMTP server. Use 25 for most unsecured servers and 465 for most secure servers.";
-				$this->langContent[$this->lang][$lang . '_SMTPPORT_HINT'] = "25";
-				$this->langContent[$this->lang][$lang . '_SMTPUSER_LABEL'] = "SMTP Username";
-				$this->langContent[$this->lang][$lang . '_SMTPUSER_DESCRIPTION'] = "Enter the username for access to the SMTP host.";
-				$this->langContent[$this->lang][$lang . '_SMTPUSER_HINT'] = "email@demo.com";
-				$this->langContent[$this->lang][$lang . '_SMTPPASS_LABEL'] = "SMTP Password";
-				$this->langContent[$this->lang][$lang . '_SMTPPASS_DESCRIPTION'] = "Enter the password for access to the SMTP host.";
-				$this->langContent[$this->lang][$lang . '_SMTPHOST_LABEL'] = "SMTP Host";
-				$this->langContent[$this->lang][$lang . '_SMTPHOST_DESCRIPTION'] = "Enter the name of the SMTP host.";
-				$this->langContent[$this->lang][$lang . '_SMTPHOST_HINT'] = "localhost";
+				$this->setLangContent($this->lang, $lang . '_MAILONLINE_LABEL', "Mailer Status");
+				$this->setLangContent($this->lang, $lang . '_MAILONLINE_DESCRIPTION', "Warning this will stop all emails from going out.");
+				$this->setLangContent($this->lang, $lang . '_ON', "On");
+				$this->setLangContent($this->lang, $lang . '_OFF', "Off");
+				$this->setLangContent($this->lang, $lang . '_MAILER_LABEL', "Mailer");
+				$this->setLangContent($this->lang, $lang . '_MAILER_DESCRIPTION', "Select what mailer you would like to use to send emails.");
+				$this->setLangContent($this->lang, $lang . '_GLOBAL', "Global");
+				$this->setLangContent($this->lang, $lang . '_PHP_MAIL', "PHP Mail");
+				$this->setLangContent($this->lang, $lang . '_SENDMAIL', "Sendmail");
+				$this->setLangContent($this->lang, $lang . '_SMTP', "SMTP");
+				$this->setLangContent($this->lang, $lang . '_EMAILFROM_LABEL', " From Email");
+				$this->setLangContent($this->lang, $lang . '_EMAILFROM_DESCRIPTION', "The global email address that will be used to send system email.");
+				$this->setLangContent($this->lang, $lang . '_EMAILFROM_HINT', "Email Address Here");
+				$this->setLangContent($this->lang, $lang . '_FROMNAME_LABEL', "From Name");
+				$this->setLangContent($this->lang, $lang . '_FROMNAME_DESCRIPTION', "Text displayed in the header &quot;From:&quot; field when sending a site email. Usually the site name."); 
+				$this->setLangContent($this->lang, $lang . '_FROMNAME_HINT', "From Name Here"); 
+				$this->setLangContent($this->lang, $lang . '_EMAILREPLY_LABEL', " Reply to Email"); 
+				$this->setLangContent($this->lang, $lang . '_EMAILREPLY_DESCRIPTION', "The global email address that will be used to set as the reply email. (leave blank for none)"); 
+				$this->setLangContent($this->lang, $lang . '_EMAILREPLY_HINT', "Email Address Here"); 
+				$this->setLangContent($this->lang, $lang . '_REPLYNAME_LABEL', "Reply to Name"); 
+				$this->setLangContent($this->lang, $lang . '_REPLYNAME_DESCRIPTION', "Text displayed in the header &quot;Reply To:&quot; field when replying to the site email. Usually the the person that receives the response. (leave blank for none)"); 
+				$this->setLangContent($this->lang, $lang . '_REPLYNAME_HINT', "Reply Name Here"); 
+				$this->setLangContent($this->lang, $lang . '_SENDMAIL_LABEL', "Sendmail Path"); 
+				$this->setLangContent($this->lang, $lang . '_SENDMAIL_DESCRIPTION', "Enter the path to the sendmail program directory on your host server."); 
+				$this->setLangContent($this->lang, $lang . '_SENDMAIL_HINT', "/usr/sbin/sendmail"); 
+				$this->setLangContent($this->lang, $lang . '_SMTPAUTH_LABEL', "SMTP Authentication");
+				$this->setLangContent($this->lang, $lang . '_SMTPAUTH_DESCRIPTION', "Select yes if your SMTP host requires SMTP Authentication.");
+				$this->setLangContent($this->lang, $lang . '_YES', "Yes");
+				$this->setLangContent($this->lang, $lang . '_NO', "No");
+				$this->setLangContent($this->lang, $lang . '_SMTPSECURE_LABEL', "SMTP Security");
+				$this->setLangContent($this->lang, $lang . '_SMTPSECURE_DESCRIPTION', "Select the security model that your SMTP server uses.");
+				$this->setLangContent($this->lang, $lang . '_NONE', "None");
+				$this->setLangContent($this->lang, $lang . '_SSL', "SSL");
+				$this->setLangContent($this->lang, $lang . '_TLS', "TLS");
+				$this->setLangContent($this->lang, $lang . '_SMTPPORT_LABEL', "SMTP Port");
+				$this->setLangContent($this->lang, $lang . '_SMTPPORT_DESCRIPTION', "Enter the port number of your SMTP server. Use 25 for most unsecured servers and 465 for most secure servers.");
+				$this->setLangContent($this->lang, $lang . '_SMTPPORT_HINT', "25");
+				$this->setLangContent($this->lang, $lang . '_SMTPUSER_LABEL', "SMTP Username");
+				$this->setLangContent($this->lang, $lang . '_SMTPUSER_DESCRIPTION', "Enter the username for access to the SMTP host.");
+				$this->setLangContent($this->lang, $lang . '_SMTPUSER_HINT', "email@demo.com");
+				$this->setLangContent($this->lang, $lang . '_SMTPPASS_LABEL', "SMTP Password");
+				$this->setLangContent($this->lang, $lang . '_SMTPPASS_DESCRIPTION', "Enter the password for access to the SMTP host.");
+				$this->setLangContent($this->lang, $lang . '_SMTPHOST_LABEL', "SMTP Host");
+				$this->setLangContent($this->lang, $lang . '_SMTPHOST_DESCRIPTION', "Enter the name of the SMTP host.");
+				$this->setLangContent($this->lang, $lang . '_SMTPHOST_HINT', "localhost");
 
 				// set the mailer fields
 				$this->configFieldSets[] = PHP_EOL . $this->_t(2) . "<!--" . $this->setLine(__LINE__) . " Mailonline Field. Type: Radio. (joomla) -->";
@@ -14629,27 +15349,27 @@ for developing fast and powerful web interfaces. For more info visit <a href=\"h
 			}
 			else
 			{
-				$this->langContent[$this->lang][$lang . '_DKIM_LABEL'] = "Enable DKIM";
-				$this->langContent[$this->lang][$lang . '_DKIM_DESCRIPTION'] = "Set this option to Yes if you want to sign your emails using DKIM.";
-				$this->langContent[$this->lang][$lang . '_YES'] = "Yes";
-				$this->langContent[$this->lang][$lang . '_NO'] = "No";
-				$this->langContent[$this->lang][$lang . '_DKIM_DOMAIN_LABEL'] = "Domain";
-				$this->langContent[$this->lang][$lang . '_DKIM_DOMAIN_DESCRIPTION'] = "Set the domain. Eg. domain.com";
-				$this->langContent[$this->lang][$lang . '_DKIM_DOMAIN_HINT'] = "domain.com";
-				$this->langContent[$this->lang][$lang . '_DKIM_SELECTOR_LABEL'] = "Selector";
-				$this->langContent[$this->lang][$lang . '_DKIM_SELECTOR_DESCRIPTION'] = "Set your DKIM/DNS selector.";
-				$this->langContent[$this->lang][$lang . '_DKIM_SELECTOR_HINT'] = "vdm";
-				$this->langContent[$this->lang][$lang . '_DKIM_PASSPHRASE_LABEL'] = "Passphrase";
-				$this->langContent[$this->lang][$lang . '_DKIM_PASSPHRASE_DESCRIPTION'] = "Enter your passphrase here.";
-				$this->langContent[$this->lang][$lang . '_DKIM_IDENTITY_LABEL'] = "Identity";
-				$this->langContent[$this->lang][$lang . '_DKIM_IDENTITY_DESCRIPTION'] = "Set DKIM identity. This can be in the format of an email address 'you@yourdomain.com' typically used as the source of the email.";
-				$this->langContent[$this->lang][$lang . '_DKIM_IDENTITY_HINT'] = "you@yourdomain.com";
-				$this->langContent[$this->lang][$lang . '_DKIM_PRIVATE_KEY_LABEL'] = "Private key";
-				$this->langContent[$this->lang][$lang . '_DKIM_PRIVATE_KEY_DESCRIPTION'] = "set private key";
-				$this->langContent[$this->lang][$lang . '_DKIM_PUBLIC_KEY_LABEL'] = "Public key";
-				$this->langContent[$this->lang][$lang . '_DKIM_PUBLIC_KEY_DESCRIPTION'] = "set public key";
-				$this->langContent[$this->lang][$lang . '_NOTE_DKIM_USE_LABEL'] = "Server Configuration";
-				$this->langContent[$this->lang][$lang . '_NOTE_DKIM_USE_DESCRIPTION'] = "<p>Using the below details, you need to configure your DNS by adding a TXT record on your domain: <b><span id='a_dkim_domain'></span></b></p>
+				$this->setLangContent($this->lang, $lang . '_DKIM_LABEL', "Enable DKIM");
+				$this->setLangContent($this->lang, $lang . '_DKIM_DESCRIPTION', "Set this option to Yes if you want to sign your emails using DKIM.");
+				$this->setLangContent($this->lang, $lang . '_YES', "Yes");
+				$this->setLangContent($this->lang, $lang . '_NO', "No");
+				$this->setLangContent($this->lang, $lang . '_DKIM_DOMAIN_LABEL', "Domain");
+				$this->setLangContent($this->lang, $lang . '_DKIM_DOMAIN_DESCRIPTION', "Set the domain. Eg. domain.com");
+				$this->setLangContent($this->lang, $lang . '_DKIM_DOMAIN_HINT', "domain.com");
+				$this->setLangContent($this->lang, $lang . '_DKIM_SELECTOR_LABEL', "Selector");
+				$this->setLangContent($this->lang, $lang . '_DKIM_SELECTOR_DESCRIPTION', "Set your DKIM/DNS selector.");
+				$this->setLangContent($this->lang, $lang . '_DKIM_SELECTOR_HINT', "vdm");
+				$this->setLangContent($this->lang, $lang . '_DKIM_PASSPHRASE_LABEL', "Passphrase");
+				$this->setLangContent($this->lang, $lang . '_DKIM_PASSPHRASE_DESCRIPTION', "Enter your passphrase here.");
+				$this->setLangContent($this->lang, $lang . '_DKIM_IDENTITY_LABEL', "Identity");
+				$this->setLangContent($this->lang, $lang . '_DKIM_IDENTITY_DESCRIPTION', "Set DKIM identity. This can be in the format of an email address 'you@yourdomain.com' typically used as the source of the email.");
+				$this->setLangContent($this->lang, $lang . '_DKIM_IDENTITY_HINT', "you@yourdomain.com");
+				$this->setLangContent($this->lang, $lang . '_DKIM_PRIVATE_KEY_LABEL', "Private key");
+				$this->setLangContent($this->lang, $lang . '_DKIM_PRIVATE_KEY_DESCRIPTION', "set private key");
+				$this->setLangContent($this->lang, $lang . '_DKIM_PUBLIC_KEY_LABEL', "Public key");
+				$this->setLangContent($this->lang, $lang . '_DKIM_PUBLIC_KEY_DESCRIPTION', "set public key");
+				$this->setLangContent($this->lang, $lang . '_NOTE_DKIM_USE_LABEL', "Server Configuration");
+				$this->setLangContent($this->lang, $lang . '_NOTE_DKIM_USE_DESCRIPTION', "<p>Using the below details, you need to configure your DNS by adding a TXT record on your domain: <b><span id='a_dkim_domain'></span></b></p>
 <script>
 jQuery(document).ready(function()
 {
@@ -14675,13 +15395,13 @@ function vdm_dkim() {
 	        jQuery('#jform_dkim_value').val('v=DKIM1;k=rsa;g=*;s=email;h=sha1;t=s;p=' + jQuery('#jform_dkim_public_key').val());
         }
 }
-</script>";
-				$this->langContent[$this->lang][$lang . '_DKIM_KEY_LABEL'] = "Key";
-				$this->langContent[$this->lang][$lang . '_DKIM_KEY_DESCRIPTION'] = "This is the KEY to use in the DNS record.";
-				$this->langContent[$this->lang][$lang . '_DKIM_KEY_HINT'] = "vdm._domainkey";
-				$this->langContent[$this->lang][$lang . '_DKIM_VALUE_LABEL'] = "Value";
-				$this->langContent[$this->lang][$lang . '_DKIM_VALUE_DESCRIPTION'] = "This is the TXT value to use in the DNS. Replace the PUBLICKEY with your public key.";
-				$this->langContent[$this->lang][$lang . '_DKIM_VALUE_HINT'] = "v=DKIM1;k=rsa;g=*;s=email;h=sha1;t=s;p=PUBLICKEY";
+</script>");
+				$this->setLangContent($this->lang, $lang . '_DKIM_KEY_LABEL', "Key");
+				$this->setLangContent($this->lang, $lang . '_DKIM_KEY_DESCRIPTION', "This is the KEY to use in the DNS record.");
+				$this->setLangContent($this->lang, $lang . '_DKIM_KEY_HINT', "vdm._domainkey");
+				$this->setLangContent($this->lang, $lang . '_DKIM_VALUE_LABEL', "Value");
+				$this->setLangContent($this->lang, $lang . '_DKIM_VALUE_DESCRIPTION', "This is the TXT value to use in the DNS. Replace the PUBLICKEY with your public key.");
+				$this->setLangContent($this->lang, $lang . '_DKIM_VALUE_HINT', "v=DKIM1;k=rsa;g=*;s=email;h=sha1;t=s;p=PUBLICKEY");
 
 
 				$this->configFieldSets[] = PHP_EOL . $this->_t(2) . "<!--" . $this->setLine(__LINE__) . " Dkim Field. Type: Radio. (joomla) -->";
@@ -15068,38 +15788,38 @@ function vdm_dkim() {
 			$this->extensionsParams[] = '"admin_chartbackground":"#F7F7FA","admin_mainwidth":"1000","admin_chartareatop":"20","admin_chartarealeft":"20","admin_chartareawidth":"170","admin_legendtextstylefontcolor":"10","admin_legendtextstylefontsize":"20","admin_vaxistextstylefontcolor":"#63B1F2","admin_haxistextstylefontcolor":"#63B1F2","admin_haxistitletextstylefontcolor":"#63B1F2","site_chartbackground":"#F7F7FA","site_mainwidth":"1000","site_chartareatop":"20","site_chartarealeft":"20","site_chartareawidth":"170","site_legendtextstylefontcolor":"10","site_legendtextstylefontsize":"20","site_vaxistextstylefontcolor":"#63B1F2","site_haxistextstylefontcolor":"#63B1F2","site_haxistitletextstylefontcolor":"#63B1F2"';
 
 			// set field lang
-			$this->langContent[$this->lang][$lang . '_CHART_SETTINGS_LABEL'] = "Chart Settings";
-			$this->langContent[$this->lang][$lang . '_CHART_SETTINGS_DESC'] = "The Google Chart Display Settings Are Made Here.";
-			$this->langContent[$this->lang][$lang . '_ADMIN_CHART_NOTE_LABEL'] = "Admin Settings";
-			$this->langContent[$this->lang][$lang . '_ADMIN_CHART_NOTE_DESC'] = "The following settings are used on the back-end of the site called (admin).";
-			$this->langContent[$this->lang][$lang . '_SITE_CHART_NOTE_LABEL'] = "Site Settings";
-			$this->langContent[$this->lang][$lang . '_SITE_CHART_NOTE_DESC'] = "The following settings are used on the front-end of the site called (site).";
+			$this->setLangContent($this->lang, $lang . '_CHART_SETTINGS_LABEL', "Chart Settings");
+			$this->setLangContent($this->lang, $lang . '_CHART_SETTINGS_DESC', "The Google Chart Display Settings Are Made Here.");
+			$this->setLangContent($this->lang, $lang . '_ADMIN_CHART_NOTE_LABEL', "Admin Settings");
+			$this->setLangContent($this->lang, $lang . '_ADMIN_CHART_NOTE_DESC', "The following settings are used on the back-end of the site called (admin).");
+			$this->setLangContent($this->lang, $lang . '_SITE_CHART_NOTE_LABEL', "Site Settings");
+			$this->setLangContent($this->lang, $lang . '_SITE_CHART_NOTE_DESC', "The following settings are used on the front-end of the site called (site).");
 
-			$this->langContent[$this->lang][$lang . '_CHARTAREALEFT_DESC'] = "Set in pixels the spacing from the left of the chart area to the beginning of the chart it self. Please don't add the px sign";
-			$this->langContent[$this->lang][$lang . '_CHARTAREALEFT_HINT'] = "170";
-			$this->langContent[$this->lang][$lang . '_CHARTAREALEFT_LABEL'] = "Left Spacing";
-			$this->langContent[$this->lang][$lang . '_CHARTAREATOP_DESC'] = "Set in pixels the spacing from the top of the chart area to the beginning of the chart it self. Please don't add the px sign";
-			$this->langContent[$this->lang][$lang . '_CHARTAREATOP_HINT'] = "20";
-			$this->langContent[$this->lang][$lang . '_CHARTAREATOP_LABEL'] = "Top Spacing";
-			$this->langContent[$this->lang][$lang . '_CHARTAREAWIDTH_DESC'] = "Set in % the width of the chart it self inside the chart area. Please don't add the % sign";
-			$this->langContent[$this->lang][$lang . '_CHARTAREAWIDTH_HINT'] = "60";
-			$this->langContent[$this->lang][$lang . '_CHARTAREAWIDTH_LABEL'] = "Chart Width";
-			$this->langContent[$this->lang][$lang . '_CHARTBACKGROUND_DESC'] = "Select the chart background color here.";
-			$this->langContent[$this->lang][$lang . '_CHARTBACKGROUND_LABEL'] = "Chart Background";
-			$this->langContent[$this->lang][$lang . '_HAXISTEXTSTYLEFONTCOLOR_DESC'] = "Select the horizontal axis font color.";
-			$this->langContent[$this->lang][$lang . '_HAXISTEXTSTYLEFONTCOLOR_LABEL'] = "hAxis Font Color";
-			$this->langContent[$this->lang][$lang . '_HAXISTITLETEXTSTYLEFONTCOLOR_DESC'] = "Select the horizontal axis title's font color.";
-			$this->langContent[$this->lang][$lang . '_HAXISTITLETEXTSTYLEFONTCOLOR_LABEL'] = "hAxis Title Font Color";
-			$this->langContent[$this->lang][$lang . '_LEGENDTEXTSTYLEFONTCOLOR_DESC'] = "Select the legend font color.";
-			$this->langContent[$this->lang][$lang . '_LEGENDTEXTSTYLEFONTCOLOR_LABEL'] = "Legend Font Color";
-			$this->langContent[$this->lang][$lang . '_LEGENDTEXTSTYLEFONTSIZE_DESC'] = "Set in pixels the font size of the legend";
-			$this->langContent[$this->lang][$lang . '_LEGENDTEXTSTYLEFONTSIZE_HINT'] = "10";
-			$this->langContent[$this->lang][$lang . '_LEGENDTEXTSTYLEFONTSIZE_LABEL'] = "Legend Font Size";
-			$this->langContent[$this->lang][$lang . '_MAINWIDTH_DESC'] = "Set the width of the entire chart area";
-			$this->langContent[$this->lang][$lang . '_MAINWIDTH_HINT'] = "1000";
-			$this->langContent[$this->lang][$lang . '_MAINWIDTH_LABEL'] = "Chart Area Width";
-			$this->langContent[$this->lang][$lang . '_VAXISTEXTSTYLEFONTCOLOR_DESC'] = "Select the vertical axis font color.";
-			$this->langContent[$this->lang][$lang . '_VAXISTEXTSTYLEFONTCOLOR_LABEL'] = "vAxis Font Color";
+			$this->setLangContent($this->lang, $lang . '_CHARTAREALEFT_DESC', "Set in pixels the spacing from the left of the chart area to the beginning of the chart it self. Please don't add the px sign");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREALEFT_HINT', "170");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREALEFT_LABEL', "Left Spacing");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREATOP_DESC', "Set in pixels the spacing from the top of the chart area to the beginning of the chart it self. Please don't add the px sign");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREATOP_HINT', "20");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREATOP_LABEL', "Top Spacing");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREAWIDTH_DESC', "Set in % the width of the chart it self inside the chart area. Please don't add the % sign");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREAWIDTH_HINT', "60");
+			$this->setLangContent($this->lang, $lang . '_CHARTAREAWIDTH_LABEL', "Chart Width");
+			$this->setLangContent($this->lang, $lang . '_CHARTBACKGROUND_DESC', "Select the chart background color here.");
+			$this->setLangContent($this->lang, $lang . '_CHARTBACKGROUND_LABEL', "Chart Background");
+			$this->setLangContent($this->lang, $lang . '_HAXISTEXTSTYLEFONTCOLOR_DESC', "Select the horizontal axis font color.");
+			$this->setLangContent($this->lang, $lang . '_HAXISTEXTSTYLEFONTCOLOR_LABEL', "hAxis Font Color");
+			$this->setLangContent($this->lang, $lang . '_HAXISTITLETEXTSTYLEFONTCOLOR_DESC', "Select the horizontal axis title's font color.");
+			$this->setLangContent($this->lang, $lang . '_HAXISTITLETEXTSTYLEFONTCOLOR_LABEL', "hAxis Title Font Color");
+			$this->setLangContent($this->lang, $lang . '_LEGENDTEXTSTYLEFONTCOLOR_DESC', "Select the legend font color.");
+			$this->setLangContent($this->lang, $lang . '_LEGENDTEXTSTYLEFONTCOLOR_LABEL', "Legend Font Color");
+			$this->setLangContent($this->lang, $lang . '_LEGENDTEXTSTYLEFONTSIZE_DESC', "Set in pixels the font size of the legend");
+			$this->setLangContent($this->lang, $lang . '_LEGENDTEXTSTYLEFONTSIZE_HINT', "10");
+			$this->setLangContent($this->lang, $lang . '_LEGENDTEXTSTYLEFONTSIZE_LABEL', "Legend Font Size");
+			$this->setLangContent($this->lang, $lang . '_MAINWIDTH_DESC', "Set the width of the entire chart area");
+			$this->setLangContent($this->lang, $lang . '_MAINWIDTH_HINT', "1000");
+			$this->setLangContent($this->lang, $lang . '_MAINWIDTH_LABEL', "Chart Area Width");
+			$this->setLangContent($this->lang, $lang . '_VAXISTEXTSTYLEFONTCOLOR_DESC', "Select the vertical axis font color.");
+			$this->setLangContent($this->lang, $lang . '_VAXISTEXTSTYLEFONTCOLOR_LABEL', "vAxis Font Color");
 		}
 	}
 
@@ -15130,8 +15850,8 @@ function vdm_dkim() {
 				(isset($this->whmcsEncryption) && $this->whmcsEncryption)) &&
 				$this->componentData->add_license && $this->componentData->license_type == 3)
 			{
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_LABEL'] = "License & Encryption Settings";
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_DESC'] = "The license & encryption keys are set here.";
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_LABEL', "License & Encryption Settings");
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_DESC', "The license & encryption keys are set here.");
 				// add the next dynamic option
 				$dynamicAddFields[] = "License & Encryption Settings";
 			}
@@ -15140,38 +15860,38 @@ function vdm_dkim() {
 				(isset($this->whmcsEncryption) && $this->whmcsEncryption)) &&
 				$this->componentData->add_license && $this->componentData->license_type == 2)
 			{
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_LABEL'] = "Update & Encryption Settings";
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_DESC'] = "The update & encryption keys are set here.";
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_LABEL', "Update & Encryption Settings");
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_DESC', "The update & encryption keys are set here.");
 				// add the next dynamic option
 				$dynamicAddFields[] = "Update & Encryption Settings";
 			}
 			elseif ($this->componentData->add_license && $this->componentData->license_type == 3)
 			{
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_LABEL'] = "License Settings";
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_DESC'] = "The license key is set here.";
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_LABEL',  "License Settings");
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_DESC',  "The license key is set here.");
 				// add the next dynamic option
 				$dynamicAddFields[] = "License Settings";
 			}
 			elseif ($this->componentData->add_license && $this->componentData->license_type == 2)
 			{
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_LABEL'] = "Update Settings";
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_DESC'] = "The update key is set here.";
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_LABEL', "Update Settings");
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_DESC', "The update key is set here.");
 				// add the next dynamic option
 				$dynamicAddFields[] = "Update Settings";
 			}
 			else
 			{
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_LABEL'] = "Encryption Settings";
-				$this->langContent[$this->lang][$lang . '_ENCRYPTION_DESC'] = "The encryption key for the field encryption is set here.";
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_LABEL', "Encryption Settings");
+				$this->setLangContent($this->lang, $lang . '_ENCRYPTION_DESC', "The encryption key for the field encryption is set here.");
 			}
 
 			if (isset($this->basicEncryption) && $this->basicEncryption)
 			{
 				// set field lang
-				$this->langContent[$this->lang][$lang . '_BASIC_KEY_LABEL'] = "Basic Key";
-				$this->langContent[$this->lang][$lang . '_BASIC_KEY_DESC'] = "Set the basic local key here.";
-				$this->langContent[$this->lang][$lang . '_BASIC_KEY_NOTE_LABEL'] = "Basic Encryption";
-				$this->langContent[$this->lang][$lang . '_BASIC_KEY_NOTE_DESC'] = "When using the basic encryption please use set a 32 character passphrase.<br />Never change this passphrase once it is set! <b>DATA WILL GET CORRUPTED IF YOU DO!</b>";
+				$this->setLangContent($this->lang, $lang . '_BASIC_KEY_LABEL', "Basic Key");
+				$this->setLangContent($this->lang, $lang . '_BASIC_KEY_DESC', "Set the basic local key here.");
+				$this->setLangContent($this->lang, $lang . '_BASIC_KEY_NOTE_LABEL', "Basic Encryption");
+				$this->setLangContent($this->lang, $lang . '_BASIC_KEY_NOTE_DESC', "When using the basic encryption please use set a 32 character passphrase.<br />Never change this passphrase once it is set! <b>DATA WILL GET CORRUPTED IF YOU DO!</b>");
 				// set the field
 				$this->configFieldSets[] = $this->_t(2) . '<field type="note" name="basic_key_note" class="alert alert-info" label="' . $lang . '_BASIC_KEY_NOTE_LABEL" description="' . $lang . '_BASIC_KEY_NOTE_DESC"  />';
 				$this->configFieldSets[] = $this->_t(2) . '<field name="basic_key"';
@@ -15185,10 +15905,10 @@ function vdm_dkim() {
 			if (isset($this->mediumEncryption) && $this->mediumEncryption)
 			{
 				// set field lang
-				$this->langContent[$this->lang][$lang . '_MEDIUM_KEY_LABEL'] = "Medium Key (Path)";
-				$this->langContent[$this->lang][$lang . '_MEDIUM_KEY_DESC'] = "Set the full path to where the key file must be stored. Make sure it is behind the root folder of your website, so that it is not public accessible.";
-				$this->langContent[$this->lang][$lang . '_MEDIUM_KEY_NOTE_LABEL'] = "Medium Encryption";
-				$this->langContent[$this->lang][$lang . '_MEDIUM_KEY_NOTE_DESC'] = "When using the medium encryption option, the system generates its own key and stores it in a file at the folder/path you set here.<br />Never change this key once it is set, or remove the key file! <b>DATA WILL GET CORRUPTED IF YOU DO!</b> Also make sure the full path to where the the key file should be stored, is behind the root folder of your website/system, so that it is not public accessible. Making a backup of this key file over a <b>secure connection</b> is recommended!";
+				$this->setLangContent($this->lang, $lang . '_MEDIUM_KEY_LABEL', "Medium Key (Path)");
+				$this->setLangContent($this->lang, $lang . '_MEDIUM_KEY_DESC', "Set the full path to where the key file must be stored. Make sure it is behind the root folder of your website, so that it is not public accessible.");
+				$this->setLangContent($this->lang, $lang . '_MEDIUM_KEY_NOTE_LABEL', "Medium Encryption");
+				$this->setLangContent($this->lang, $lang . '_MEDIUM_KEY_NOTE_DESC', "When using the medium encryption option, the system generates its own key and stores it in a file at the folder/path you set here.<br />Never change this key once it is set, or remove the key file! <b>DATA WILL GET CORRUPTED IF YOU DO!</b> Also make sure the full path to where the the key file should be stored, is behind the root folder of your website/system, so that it is not public accessible. Making a backup of this key file over a <b>secure connection</b> is recommended!");
 				// set the field
 				$this->configFieldSets[] = $this->_t(2) . '<field type="note" name="medium_key_note" class="alert alert-info" label="' . $lang . '_MEDIUM_KEY_NOTE_LABEL" description="' . $lang . '_MEDIUM_KEY_NOTE_DESC" />';
 				$this->configFieldSets[] = $this->_t(2) . '<field name="medium_key_path"';
@@ -15201,54 +15921,54 @@ function vdm_dkim() {
 				$this->configFieldSets[] = $this->_t(3) . 'default=""';
 				$this->configFieldSets[] = $this->_t(2) . "/>";
 				// set some error message if the path does not exist
-				$this->langContent[$this->lang][$lang . '_MEDIUM_KEY_PATH_ERROR'] = "Medium key path (for encryption of various fields) does not exist, or is not writable. Please check the path and update it in the global option of this component.";
+				$this->setLangContent($this->lang, $lang . '_MEDIUM_KEY_PATH_ERROR', "Medium key path (for encryption of various fields) does not exist, or is not writable. Please check the path and update it in the global option of this component.");
 			}
 			if (isset($this->whmcsEncryption) && $this->whmcsEncryption || $this->componentData->add_license)
 			{
 				// set field lang label and description
 				if ($this->componentData->add_license && $this->componentData->license_type == 3)
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_LABEL'] = $this->componentData->companyname . " License Key";
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_DESC'] = "Add the license key you recieved from " . $this->componentData->companyname . " here.";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_LABEL', $this->componentData->companyname . " License Key");
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_DESC', "Add the license key you recieved from " . $this->componentData->companyname . " here.");
 				}
 				elseif ($this->componentData->add_license && $this->componentData->license_type == 2)
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_LABEL'] = $this->componentData->companyname . " Update Key";
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_DESC'] = "Add the update key you recieved from " . $this->componentData->companyname . " here.";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_LABEL', $this->componentData->companyname . " Update Key");
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_DESC', "Add the update key you recieved from " . $this->componentData->companyname . " here.");
 				}
 				else
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_LABEL'] = $this->componentData->companyname . " Key";
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_DESC'] = "Add the key you recieved from " . $this->componentData->companyname . " here.";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_LABEL', $this->componentData->companyname . " Key");
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_DESC', "Add the key you recieved from " . $this->componentData->companyname . " here.");
 				}
 				// ajust the notice based on license
 				if ($this->componentData->license_type == 3)
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_NOTE_LABEL'] = "Your " . $this->componentData->companyname . " License Key";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_NOTE_LABEL', "Your " . $this->componentData->companyname . " License Key");
 				}
 				elseif ($this->componentData->license_type == 2)
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_NOTE_LABEL'] = "Your " . $this->componentData->companyname . " Update Key";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_NOTE_LABEL', "Your " . $this->componentData->companyname . " Update Key");
 				}
 				else
 				{
 					if (isset($this->whmcsEncryption) && $this->whmcsEncryption)
 					{
-						$this->langContent[$this->lang][$lang . '_WHMCS_KEY_NOTE_LABEL'] = "Your " . $this->componentData->companyname . " Field Encryption Key";
+						$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_NOTE_LABEL', "Your " . $this->componentData->companyname . " Field Encryption Key");
 					}
 					else
 					{
-						$this->langContent[$this->lang][$lang . '_WHMCS_KEY_NOTE_LABEL'] = "Your " . $this->componentData->companyname . " Key";
+						$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_NOTE_LABEL', "Your " . $this->componentData->companyname . " Key");
 					}
 				}
 				// add the description based on global settings
 				if (isset($this->whmcsEncryption) && $this->whmcsEncryption)
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_NOTE_DESC'] = "You need to get this key from <a href='".$this->componentData->whmcs_buy_link."' target='_blank'>" . $this->componentData->companyname . "</a>.<br />When using the " . $this->componentData->companyname . " field encryption you can never change this key once it is set! <b>DATA WILL GET CORRUPTED IF YOU DO!</b>";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_NOTE_DESC', "You need to get this key from <a href='".$this->componentData->whmcs_buy_link."' target='_blank'>" . $this->componentData->companyname . "</a>.<br />When using the " . $this->componentData->companyname . " field encryption you can never change this key once it is set! <b>DATA WILL GET CORRUPTED IF YOU DO!</b>");
 				}
 				else
 				{
-					$this->langContent[$this->lang][$lang . '_WHMCS_KEY_NOTE_DESC'] = "You need to get this key from <a href='".$this->componentData->whmcs_buy_link."' target='_blank'>" . $this->componentData->companyname . "</a>.";
+					$this->setLangContent($this->lang, $lang . '_WHMCS_KEY_NOTE_DESC', "You need to get this key from <a href='".$this->componentData->whmcs_buy_link."' target='_blank'>" . $this->componentData->companyname . "</a>.");
 				}
 				// set the fields
 				$this->configFieldSets[] = $this->_t(2) . '<field type="note" name="whmcs_key_note" class="alert alert-info" label="' . $lang . '_WHMCS_KEY_NOTE_LABEL" description="' . $lang . '_WHMCS_KEY_NOTE_DESC"  />';
@@ -15324,7 +16044,11 @@ function vdm_dkim() {
 		$this->componentGlobal = array();
 		$this->permissionViews = array();
 
+		// Trigger Event: jcb_ce_onBeforeBuildAccessSections
+		$this->triggerEvent('jcb_ce_onBeforeBuildAccessSections', array(&$this->componentContext, $this));
+
 		$this->componentHead[] = '<section name="component">';
+
 		$this->componentHead[] = $this->_t(2) . '<action name="core.admin" title="JACTION_ADMIN" description="JACTION_ADMIN_COMPONENT_DESC" />';
 		$this->componentHead[] = $this->_t(2) . '<action name="core.options" title="JACTION_OPTIONS" description="JACTION_OPTIONS_COMPONENT_DESC" />';
 		$this->componentHead[] = $this->_t(2) . '<action name="core.manage" title="JACTION_MANAGE" description="JACTION_MANAGE_COMPONENT_DESC" />';
@@ -15332,27 +16056,27 @@ function vdm_dkim() {
 		{
 			$exportTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Export Data', 'U');
 			$exportDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Export Data', 'U') . '_DESC';
-			$this->langContent['bothadmin'][$exportTitle] = 'Export Data';
-			$this->langContent['bothadmin'][$exportDesc] = ' Allows users in this group to export data.';
+			$this->setLangContent('bothadmin', $exportTitle, 'Export Data');
+			$this->setLangContent('bothadmin', $exportDesc, ' Allows users in this group to export data.');
 			$this->componentHead[] = $this->_t(2) . '<action name="core.export" title="' . $exportTitle . '" description="' . $exportDesc . '" />';
 
 			$importTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Import Data', 'U');
 			$importDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Import Data', 'U') . '_DESC';
-			$this->langContent['bothadmin'][$importTitle] = 'Import Data';
-			$this->langContent['bothadmin'][$importDesc] = ' Allows users in this group to import data.';
+			$this->setLangContent('bothadmin', $importTitle, 'Import Data');
+			$this->setLangContent('bothadmin', $importDesc, ' Allows users in this group to import data.');
 			$this->componentHead[] = $this->_t(2) . '<action name="core.import" title="' . $importTitle . '" description="' . $importDesc . '" />';
 		}
 		// version permission
 		$batchTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Use Batch', 'U');
 		$batchDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Use Batch', 'U') . '_DESC';
-		$this->langContent['bothadmin'][$batchTitle] = 'Use Batch';
-		$this->langContent['bothadmin'][$batchDesc] = ' Allows users in this group to use batch copy/update method.';
+		$this->setLangContent('bothadmin', $batchTitle, 'Use Batch');
+		$this->setLangContent('bothadmin', $batchDesc, ' Allows users in this group to use batch copy/update method.');
 		$this->componentHead[] = $this->_t(2) . '<action name="core.batch" title="' . $batchTitle . '" description="' . $batchDesc . '" />';
 		// version permission
 		$importTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Edit Versions', 'U');
 		$importDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Edit Versions', 'U') . '_DESC';
-		$this->langContent['bothadmin'][$importTitle] = 'Edit Version';
-		$this->langContent['bothadmin'][$importDesc] = ' Allows users in this group to edit versions.';
+		$this->setLangContent('bothadmin', $importTitle, 'Edit Version');
+		$this->setLangContent('bothadmin', $importDesc, ' Allows users in this group to edit versions.');
 		$this->componentHead[] = $this->_t(2) . '<action name="core.version" title="' . $importTitle . '" description="' . $importDesc . '" />';
 		// set the defaults
 		$this->componentHead[] = $this->_t(2) . '<action name="core.create" title="JACTION_CREATE" description="JACTION_CREATE_COMPONENT_DESC" />';
@@ -15368,14 +16092,14 @@ function vdm_dkim() {
 		// new custom created by permissions
 		$created_byTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Edit Created By', 'U');
 		$created_byDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Edit Created By', 'U') . '_DESC';
-		$this->langContent['bothadmin'][$created_byTitle] = 'Edit Created By';
-		$this->langContent['bothadmin'][$created_byDesc] = ' Allows users in this group to edit created by.';
+		$this->setLangContent('bothadmin', $created_byTitle, 'Edit Created By');
+		$this->setLangContent('bothadmin', $created_byDesc, ' Allows users in this group to edit created by.');
 		$this->componentHead[] = $this->_t(2) . '<action name="core.edit.created_by" title="' . $created_byTitle . '" description="' . $created_byDesc . '" />';
 		// new custom created date permissions
 		$createdTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Edit Created Date', 'U');
 		$createdDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString('Edit Created Date', 'U') . '_DESC';
-		$this->langContent['bothadmin'][$createdTitle] = 'Edit Created Date';
-		$this->langContent['bothadmin'][$createdDesc] = ' Allows users in this group to edit created date.';
+		$this->setLangContent('bothadmin', $createdTitle, 'Edit Created Date');
+		$this->setLangContent('bothadmin', $createdDesc, ' Allows users in this group to edit created date.');
 		$this->componentHead[] = $this->_t(2) . '<action name="core.edit.created" title="' . $createdTitle . '" description="' . $createdDesc . '" />';
 
 		// set the menu controller lookup
@@ -15391,8 +16115,8 @@ function vdm_dkim() {
 				$customAdminTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($customAdminName . ' Access', 'U');
 				$customAdminDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($customAdminName . ' Access', 'U') . '_DESC';
 				$sortKey = ComponentbuilderHelper::safeString($customAdminName . ' Access');
-				$this->langContent['bothadmin'][$customAdminTitle] = $customAdminName . ' Access';
-				$this->langContent['bothadmin'][$customAdminDesc] = ' Allows the users in this group to access ' . ComponentbuilderHelper::safeString($customAdminName, 'w') . '.';
+				$this->setLangContent('bothadmin', $customAdminTitle, $customAdminName . ' Access');
+				$this->setLangContent('bothadmin', $customAdminDesc,  ' Allows the users in this group to access ' . ComponentbuilderHelper::safeString($customAdminName, 'w') . '.');
 				$this->componentGlobal[$sortKey] = $this->_t(2) . '<action name="' . $customAdminCode . '.access" title="' . $customAdminTitle . '" description="' . $customAdminDesc . '" />';
 				// add the custom permissions to use the buttons of this view
 				$this->addCustomButtonPermissions($custom_admin_view['settings'], $customAdminName, $customAdminCode);
@@ -15438,8 +16162,8 @@ function vdm_dkim() {
 				$sortKey = ComponentbuilderHelper::safeString($siteName . ' Access Site');
 				if (isset($site_view['access']) && $site_view['access'] == 1)
 				{
-					$this->langContent['bothadmin'][$siteTitle] = $siteName . ' (Site) Access';
-					$this->langContent['bothadmin'][$siteDesc] = ' Allows the users in this group to access site ' . ComponentbuilderHelper::safeString($siteName, 'w') . '.';
+					$this->setLangContent('bothadmin', $siteTitle, $siteName . ' (Site) Access');
+					$this->setLangContent('bothadmin', $siteDesc, ' Allows the users in this group to access site ' . ComponentbuilderHelper::safeString($siteName, 'w') . '.');
 					$this->componentGlobal[$sortKey] = $this->_t(2) . '<action name="site.' . $siteCode . '.access" title="' . $siteTitle . '" description="' . $siteDesc . '" />';
 
 					// check if this site view requires access rule to default to public
@@ -15559,6 +16283,10 @@ function vdm_dkim() {
 					$this->buildPermissions($view, $nameView, $nameViews, $menuControllers);
 				}
 			}
+
+			// Trigger Event: jcb_ce_onAfterBuildAccessSections
+			$this->triggerEvent('jcb_ce_onAfterBuildAccessSections', array(&$this->componentContext, $this));
+
 			// set the views permissions now
 			if (ComponentbuilderHelper::checkArray($this->permissionViews))
 			{
@@ -15602,8 +16330,8 @@ function vdm_dkim() {
 				$customButtonTitle = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($nameView . ' ' . $customButtonName . ' Button Access', 'U');
 				$customButtonDesc = $this->langPrefix . '_' . ComponentbuilderHelper::safeString($nameView . ' ' . $customButtonName . ' Button Access', 'U') . '_DESC';
 				$sortButtonKey = ComponentbuilderHelper::safeString($nameView . ' ' . $customButtonName . ' Button Access');
-				$this->langContent['bothadmin'][$customButtonTitle] = $nameView . ' ' . $customButtonName . ' Button Access';
-				$this->langContent['bothadmin'][$customButtonDesc] = ' Allows the users in this group to access the ' . ComponentbuilderHelper::safeString($customButtonName, 'w') . ' button.';
+				$this->setLangContent('bothadmin', $customButtonTitle, $nameView . ' ' . $customButtonName . ' Button Access');
+				$this->setLangContent('bothadmin', $customButtonDesc, ' Allows the users in this group to access the ' . ComponentbuilderHelper::safeString($customButtonName, 'w') . ' button.');
 				$this->componentGlobal[$sortButtonKey] = $this->_t(2) . '<action name="' . $code . '.' . $customButtonCode . '" title="' . $customButtonTitle . '" description="' . $customButtonDesc . '" />';
 			}
 		}
@@ -15716,93 +16444,133 @@ function vdm_dkim() {
 					$w_NameList = $view['settings']->name;
 					$w_NameSingle = $view['settings']->name;
 				}
-				// set the title based on the name builder
-				switch ($nameBuilder)
+				// set title (only if not set already)
+				if (!isset($permission['title']) || !ComponentbuilderHelper::checkString($permission['title']))
 				{
-					case 'edit':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to edit the ' . $w_NameSingle;
-						break;
-					case 'edit___own':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit Own';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to edit ' . $w_NameList . ' created by them';
-						break;
-					case 'edit___access':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit Access';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to change the access of the ' . $w_NameList;
-						break;
-					case 'edit___state':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit State';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to update the state of the ' . $w_NameSingle;
-						break;
-					case 'edit___created_by':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit Created By';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to update the created by of the ' . $w_NameList;
-						break;
-					case 'edit___created':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit Created Date';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to update the created date of the ' . $w_NameList;
-						break;
-					case 'create':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Create';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to create ' . $w_NameList;
-						break;
-					case 'delete':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Delete';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to delete ' . $w_NameList;
-						break;
-					case 'access':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Access';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to access ' . $w_NameList;
-						break;
-					case 'export':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Export';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to export ' . $w_NameList;
-						break;
-					case 'import':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Import';
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to import ' . $w_NameList;
-						break;
-					case 'version':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Edit Version';
-						// set edit description
-						$permission['description'] = ' Allows users in this group to edit versions of ' . $w_NameList;
-						break;
-					case 'batch':
-						// set edit title
-						$permission['title'] = $W_NameList . ' Batch Use';
-						// set edit description
-						$permission['description'] = ' Allows users in this group to use batch copy/update method of ' . $w_NameList;
-						break;
-					default:
-						// set edit title
-						$permission['title'] = $W_NameList . ' ' . ComponentbuilderHelper::safeString($customName, 'W');
-						// set edit description
-						$permission['description'] = ' Allows the users in this group to ' . ComponentbuilderHelper::safeString($customName, 'w') . ' of ' . $w_NameSingle;
-						break;
+					// set the title based on the name builder
+					switch ($nameBuilder)
+					{
+						case 'edit':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit';
+							break;
+						case 'edit___own':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit Own';
+							break;
+						case 'edit___access':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit Access';
+							break;
+						case 'edit___state':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit State';
+							break;
+						case 'edit___created_by':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit Created By';
+							break;
+						case 'edit___created':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit Created Date';
+							break;
+						case 'create':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Create';
+							break;
+						case 'delete':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Delete';
+							break;
+						case 'access':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Access';
+							break;
+						case 'export':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Export';
+							break;
+						case 'import':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Import';
+							break;
+						case 'version':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Edit Version';
+							break;
+						case 'batch':
+							// set edit title
+							$permission['title'] = $W_NameList . ' Batch Use';
+							break;
+						default:
+							// set edit title
+							$permission['title'] = $W_NameList . ' ' . ComponentbuilderHelper::safeString($customName, 'W');
+							break;
+					}
+				}
+				// set description (only if not set already)
+				if (!isset($permission['description']) || !ComponentbuilderHelper::checkString($permission['description']))
+				{
+					// set the title based on the name builder
+					switch ($nameBuilder)
+					{
+						case 'edit':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to edit the ' . $w_NameSingle;
+							break;
+						case 'edit___own':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to edit ' . $w_NameList . ' created by them';
+							break;
+						case 'edit___access':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to change the access of the ' . $w_NameList;
+							break;
+						case 'edit___state':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to update the state of the ' . $w_NameSingle;
+							break;
+						case 'edit___created_by':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to update the created by of the ' . $w_NameList;
+							break;
+						case 'edit___created':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to update the created date of the ' . $w_NameList;
+							break;
+						case 'create':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to create ' . $w_NameList;
+							break;
+						case 'delete':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to delete ' . $w_NameList;
+							break;
+						case 'access':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to access ' . $w_NameList;
+							break;
+						case 'export':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to export ' . $w_NameList;
+							break;
+						case 'import':
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to import ' . $w_NameList;
+							break;
+						case 'version':
+							// set edit description
+							$permission['description'] = ' Allows users in this group to edit versions of ' . $w_NameList;
+							break;
+						case 'batch':
+							// set edit description
+							$permission['description'] = ' Allows users in this group to use batch copy/update method of ' . $w_NameList;
+							break;
+						default:
+							// set edit description
+							$permission['description'] = ' Allows the users in this group to ' . ComponentbuilderHelper::safeString($customName, 'w') . ' of ' . $w_NameSingle;
+							break;
+					}
 				}
 				// if core is not used update all core strings
 				$coreCheck = explode('.', $action);
@@ -15890,8 +16658,8 @@ function vdm_dkim() {
 					}
 				}
 				// set to language file
-				$this->langContent['bothadmin'][$title] = trim($permission['title']);
-				$this->langContent['bothadmin'][$title . '_DESC'] = trim($permission['description']);
+				$this->setLangContent('bothadmin', $title, $permission['title']);
+				$this->setLangContent('bothadmin', $title . '_DESC', $permission['description']);
 			}
 		}
 	}
@@ -15902,6 +16670,683 @@ function vdm_dkim() {
 		$regex = "/$start([a-zA-Z0-9_]*)$end/";
 		preg_match_all($regex, $str, $matches);
 		return $matches[1];
+	}
+
+	public function getModCode(&$module)
+	{
+		// get component helper string
+		$Helper = $this->fileContentStatic[$this->hhh . 'Component' . $this->hhh] . 'Helper';
+		$component = $this->fileContentStatic[$this->hhh . 'component' . $this->hhh];
+		$_helper = '';
+		// get libraries code
+		$libraries = array($this->bbb . 'MOD_LIBRARIES' . $this->ddd  => $this->getModLibCode($module));
+		$code = $this->setPlaceholders($module->mod_code, $libraries);
+		// check if component helper class should be added
+		if (strpos($code, $Helper . '::') !== false && strpos($code, "/components/com_" . $component . "/helpers/" . $component . ".php") === false)
+		{
+			$_helper = '//' . $this->setLine(__LINE__) . ' Include the component helper functions only once';
+			$_helper .= PHP_EOL . "JLoader::register('". $Helper . "', JPATH_ADMINISTRATOR . '/components/com_" . $component . "/helpers/" . $component . ".php');";
+		}
+		return $_helper . PHP_EOL . $code . PHP_EOL;
+	}
+
+	public function getModDefault(&$module)
+	{
+		return PHP_EOL . $module->default_header . PHP_EOL . '?>' . PHP_EOL . $module->default . PHP_EOL;
+	}
+
+	public function getModHelperCode(&$module)
+	{
+		return
+			$module->class_helper_header . PHP_EOL .
+			$module->class_helper_type . $module->class_helper_name . PHP_EOL . '{' . PHP_EOL .
+			$module->class_helper_code . PHP_EOL .
+			"}" . PHP_EOL;
+	}
+
+	public function getModLibCode(&$module)
+	{
+		$setter = '';
+		if (isset($this->libManager[$module->key][$module->code_name]) && ComponentbuilderHelper::checkArray($this->libManager[$module->key][$module->code_name]))
+		{
+			$setter .= '//' . $this->setLine(__LINE__) . 'get the document object';
+			$setter .= PHP_EOL . '$document = JFactory::getDocument();';
+			foreach ($this->libManager[$module->key][$module->code_name] as $id => $true)
+			{
+				if (isset($this->libraries[$id]) && ComponentbuilderHelper::checkObject($this->libraries[$id]) && isset($this->libraries[$id]->document) && ComponentbuilderHelper::checkString($this->libraries[$id]->document))
+				{
+					$setter .= PHP_EOL . $this->libraries[$id]->document;
+				}
+				elseif (isset($this->libraries[$id]) && ComponentbuilderHelper::checkObject($this->libraries[$id]) && isset($this->libraries[$id]->how))
+				{
+					$setter .= $this->setLibraryDocument($id);
+				}
+			}
+		}
+		// check if we have string
+		if (ComponentbuilderHelper::checkString($setter))
+		{
+			return $this->setPlaceholders(
+				str_replace('$this->document->', '$document->',
+					implode(PHP_EOL,
+						array_map(trim,
+							(array) explode(PHP_EOL, $setter)
+						)
+					)
+				),
+				$this->placeholders);
+		}
+		return '';
+	}
+
+	public function getModuleMainXML(&$module)
+	{
+		// set the custom table key
+		$dbkey = 'yyy';
+		// build the xml
+		$xml = '';
+		// search if we must add the component path
+		$add_component_path = false;
+		// build the config fields
+		$config_fields = array();
+		if (isset($module->config_fields) && ComponentbuilderHelper::checkArray($module->config_fields))
+		{
+			foreach ($module->config_fields as $field_name => $fieldsets)
+			{
+				foreach ($fieldsets as $fieldset => $fields)
+				{
+					// get the field set
+					$xmlFields = $this->getExtensionFieldsetXML($module, $fields, $dbkey);
+					// make sure the xml is set and a string
+					if (isset($xmlFields) && ComponentbuilderHelper::checkString($xmlFields))
+					{
+						$config_fields[$field_name . $fieldset] = $xmlFields;
+					}
+					$dbkey++;
+					// check if the fieldset path requiers component paths
+					if (!$add_component_path && isset($module->fieldsets_paths[$field_name . $fieldset]) && $module->fieldsets_paths[$field_name . $fieldset] == 1)
+					{
+						$add_component_path = true;
+					}
+				}
+			}
+		}
+		// switch to add the xml
+		$addLang = false;
+		// now build the language files
+		if (isset($this->langContent[$module->key]))
+		{
+			$lang = array_map(function ($langstring, $placeholder)
+			{
+				return $placeholder . '="' . $langstring . '"';
+			}, $this->langContent[$module->key], array_keys($this->langContent[$module->key]));
+			// add to language file
+			$this->writeFile($module->folder_path . '/language/' . $this->langTag . '/' . $this->langTag . '.' . $module->file_name . '.ini', implode(PHP_EOL, $lang));
+			$this->writeFile($module->folder_path . '/language/' . $this->langTag . '/' . $this->langTag . '.' . $module->file_name . '.sys.ini', implode(PHP_EOL, $lang));
+			// set the line counter
+			$this->lineCount = $this->lineCount + count((array) $lang);
+			unset($lang);
+			// trigger the xml
+			$addLang = true;
+		}
+		// get all files and folders in module folder
+		$files = JFolder::files($module->folder_path);
+		$folders = JFolder::folders($module->folder_path);
+		// the files/folders to ignore
+		$ignore = array('sql', 'language', 'script.php', $module->file_name . '.xml', $module->file_name . '.php');
+		// should the scriptfile be added
+		if ($module->add_install_script)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Scripts to run on installation -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<scriptfile>script.php</scriptfile>';
+		}
+		// should the sql install be added
+		if ($module->add_sql)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Runs on install; New in Joomla 1.5 -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<install>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(3) . '<file driver="mysql" charset="utf8">sql/mysql/install.sql</file>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(1) . '</install>';
+		}
+		// should the sql uninstall be added
+		if ($module->add_sql_uninstall)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Runs on uninstall; New in Joomla 1.5 -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<uninstall>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(3) . '<file driver="mysql" charset="utf8">sql/mysql/uninstall.sql</file>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(1) . '</uninstall>';
+		}
+		// should the language xml be added
+		if ($addLang)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Language files -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<languages folder="language">';
+			$xml .= PHP_EOL . $this->_t(2) . '<language tag="en-GB">' . $this->langTag . '/' . $this->langTag . '.' . $module->file_name . '.ini</language>';
+			$xml .= PHP_EOL . $this->_t(2) . '<language tag="en-GB">' . $this->langTag . '/' . $this->langTag . '.' . $module->file_name . '.sys.ini</language>';
+			$xml .= PHP_EOL . $this->_t(1) . '</languages>';
+		}
+		// add the module files
+		$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Model files -->';
+		$xml .= PHP_EOL . $this->_t(1) . '<files>';
+		$xml .= PHP_EOL . $this->_t(2) . '<filename module="' . $module->file_name . '">'  . $module->file_name . '.php</filename>';
+		// add other files found
+		if (ComponentbuilderHelper::checkArray($files))
+		{
+			foreach ($files as $file)
+			{
+				// only add what is not ignored
+				if (!in_array($file, $ignore))
+				{
+					$xml .= PHP_EOL . $this->_t(2) . '<filename>'  . $file . '</filename>';
+				}
+			}
+		}
+		// add language folder
+		if ($addLang)
+		{
+			$xml .= PHP_EOL . $this->_t(2) . '<folder>language</folder>';
+		}
+		// add sql folder
+		if ($module->add_sql || $module->add_sql_uninstall)
+		{
+			$xml .= PHP_EOL . $this->_t(2) . '<folder>sql</folder>';
+		}
+		// add other files found
+		if (ComponentbuilderHelper::checkArray($folders))
+		{
+			foreach ($folders as $folder)
+			{
+				// only add what is not ignored
+				if (!in_array($folder, $ignore))
+				{
+					$xml .= PHP_EOL . $this->_t(2) . '<folder>'  . $folder . '</folder>';
+				}
+			}
+		}
+		$xml .= PHP_EOL . $this->_t(1) . '</files>';
+		// now add the Config Params if needed
+		if (ComponentbuilderHelper::checkArray($config_fields))
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Config parameter -->';
+			// only add if part of the component field types path is required
+			if ($add_component_path)
+			{
+				// add path to module rules and custom fields
+				$xml .= PHP_EOL . $this->_t(1) . '<config';
+				$xml .= PHP_EOL . $this->_t(2) . 'addrulepath="/administrator/components/com_' . $this->componentCodeName . '/modules/rules"';
+				$xml .= PHP_EOL . $this->_t(2) . 'addfieldpath="/administrator/components/com_' . $this->componentCodeName . '/modules/fields"';
+				$xml .= PHP_EOL . $this->_t(1) . '>';
+			}
+			else
+			{
+				$xml .= PHP_EOL . $this->_t(1) . '<config>';
+			}
+			// add the fields
+			foreach ($module->config_fields as $field_name => $fieldsets)
+			{
+				$xml .= PHP_EOL . $this->_t(1) . '<fields name="' . $field_name . '">';
+				foreach ($fieldsets as $fieldset => $fields)
+				{
+					// default to the field set name
+					$label = $fieldset;
+					if (isset($module->fieldsets_label[$field_name.$fieldset]))
+					{
+						$label = $module->fieldsets_label[$field_name.$fieldset];
+					}
+					// add path to module rules and custom fields
+					if (isset($module->fieldsets_paths[$field_name . $fieldset]) && $module->fieldsets_paths[$field_name . $fieldset] == 2)
+					{
+						$xml .= PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' default paths of ' . $fieldset . ' fieldset points to the module -->';
+						$xml .= PHP_EOL . $this->_t(1) . '<fieldset name="' . $fieldset . '" label="' . $label . '"';
+						$xml .= PHP_EOL . $this->_t(2) . 'addrulepath="/modules/' . $module->file_name . '/rules"';
+						$xml .= PHP_EOL . $this->_t(2) . 'addfieldpath="/modules/' . $module->file_name . '/fields"';
+						$xml .= PHP_EOL . $this->_t(1) . '>';
+					}
+					else
+					{
+						$xml .= PHP_EOL . $this->_t(1) . '<fieldset name="' . $fieldset . '" label="' . $label . '">';
+					}
+					// load the fields
+					if (isset($config_fields[$field_name.$fieldset]))
+					{
+						$xml .= $config_fields[$field_name.$fieldset];
+						unset($config_fields[$field_name.$fieldset]);
+					}
+					$xml .= PHP_EOL . $this->_t(1) . '</fieldset>';
+				}
+				$xml .= PHP_EOL . $this->_t(1) . '</fields>';
+			}
+			$xml .= PHP_EOL . $this->_t(1) . '</config>';
+		}
+		// set update server if found
+		if ($module->add_update_server)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Update servers -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<updateservers>';
+			$xml .= PHP_EOL . $this->_t(2) . '<server type="extension" priority="1" name="' . $module->official_name . '">' . $module->update_server_url . '</server>';
+			$xml .= PHP_EOL . $this->_t(1) . '</updateservers>';
+		}
+
+		return $xml;
+	}
+
+	public function getPluginMainClass(&$plugin)
+	{
+		return
+			PHP_EOL . $plugin->head . PHP_EOL .
+			$plugin->comment . PHP_EOL . 'class ' .
+			$plugin->class_name . ' extends ' .
+			$plugin->extends . PHP_EOL . '{' . PHP_EOL .
+			$plugin->main_class_code . PHP_EOL .
+			"}" . PHP_EOL;
+	}
+
+	public function getPluginMainXML(&$plugin)
+	{
+		// set some defaults
+		$view = '';
+		$viewType = 0;
+		// set the custom table key
+		$dbkey = 'yy';
+		// build the xml
+		$xml = '';
+		// search if we must add the component path
+		$add_component_path = false;
+		// build the config fields
+		$config_fields = array();
+		if (isset($plugin->config_fields) && ComponentbuilderHelper::checkArray($plugin->config_fields))
+		{
+			foreach ($plugin->config_fields as $field_name => $fieldsets)
+			{
+				foreach ($fieldsets as $fieldset => $fields)
+				{
+					// get the field set
+					$xmlFields = $this->getExtensionFieldsetXML($plugin, $fields, $dbkey);
+					// make sure the xml is set and a string
+					if (isset($xmlFields) && ComponentbuilderHelper::checkString($xmlFields))
+					{
+						$config_fields[$field_name . $fieldset] = $xmlFields;
+					}
+					$dbkey++;
+					// check if the fieldset path requiers component paths
+					if (!$add_component_path && isset($plugin->fieldsets_paths[$field_name . $fieldset]) && $plugin->fieldsets_paths[$field_name . $fieldset] == 1)
+					{
+						$add_component_path = true;
+					}
+				}
+			}
+		}
+		// switch to add the xml
+		$addLang = false;
+		// now build the language files
+		if (isset($this->langContent[$plugin->key]))
+		{
+			$lang = array_map(function ($langstring, $placeholder)
+			{
+				return $placeholder . '="' . $langstring . '"';
+			}, $this->langContent[$plugin->key], array_keys($this->langContent[$plugin->key]));
+			// add to language file
+			$this->writeFile($plugin->folder_path . '/language/' . $this->langTag . '/' . $this->langTag . '.plg_' . strtolower($plugin->group) . '_' . strtolower($plugin->code_name) . '.ini', implode(PHP_EOL, $lang));
+			$this->writeFile($plugin->folder_path . '/language/' . $this->langTag . '/' . $this->langTag . '.plg_' . strtolower($plugin->group) . '_' . strtolower($plugin->code_name) . '.sys.ini', implode(PHP_EOL, $lang));
+			// set the line counter
+			$this->lineCount = $this->lineCount + count((array) $lang);
+			unset($lang);
+			// trigger the xml
+			$addLang = true;
+		}
+		// get all files and folders in plugin folder
+		$files = JFolder::files($plugin->folder_path);
+		$folders = JFolder::folders($plugin->folder_path);
+		// the files/folders to ignore
+		$ignore = array('sql', 'language', 'script.php', $plugin->file_name . '.xml', $plugin->file_name . '.php');
+		// should the scriptfile be added
+		if ($plugin->add_install_script)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Scripts to run on installation -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<scriptfile>script.php</scriptfile>';
+		}
+		// should the sql install be added
+		if ($plugin->add_sql)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Runs on install; New in Joomla 1.5 -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<install>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(3) . '<file driver="mysql" charset="utf8">sql/mysql/install.sql</file>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(1) . '</install>';
+		}
+		// should the sql uninstall be added
+		if ($plugin->add_sql_uninstall)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Runs on uninstall; New in Joomla 1.5 -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<uninstall>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(3) . '<file driver="mysql" charset="utf8">sql/mysql/uninstall.sql</file>';
+			$xml .= PHP_EOL . $this->_t(2) . '<sql>';
+			$xml .= PHP_EOL . $this->_t(1) . '</uninstall>';
+		}
+		// should the language xml be added
+		if ($addLang)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Language files -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<languages folder="language">';
+			$xml .= PHP_EOL . $this->_t(2) . '<language tag="en-GB">' . $this->langTag . '/' . $this->langTag . '.plg_' . strtolower($plugin->group) . '_' . strtolower($plugin->code_name) . '.ini</language>';
+			$xml .= PHP_EOL . $this->_t(2) . '<language tag="en-GB">' . $this->langTag . '/' . $this->langTag . '.plg_' . strtolower($plugin->group) . '_' . strtolower($plugin->code_name) . '.sys.ini</language>';
+			$xml .= PHP_EOL . $this->_t(1) . '</languages>';
+		}
+		// add the plugin files
+		$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Plugin files -->';
+		$xml .= PHP_EOL . $this->_t(1) . '<files>';
+		$xml .= PHP_EOL . $this->_t(2) . '<filename plugin="' . $plugin->file_name . '">'  . $plugin->file_name . '.php</filename>';
+		// add other files found
+		if (ComponentbuilderHelper::checkArray($files))
+		{
+			foreach ($files as $file)
+			{
+				// only add what is not ignored
+				if (!in_array($file, $ignore))
+				{
+					$xml .= PHP_EOL . $this->_t(2) . '<filename>'  . $file . '</filename>';
+				}
+			}
+		}
+		// add language folder
+		if ($addLang)
+		{
+			$xml .= PHP_EOL . $this->_t(2) . '<folder>language</folder>';
+		}
+		// add sql folder
+		if ($plugin->add_sql || $plugin->add_sql_uninstall)
+		{
+			$xml .= PHP_EOL . $this->_t(2) . '<folder>sql</folder>';
+		}
+		// add other files found
+		if (ComponentbuilderHelper::checkArray($folders))
+		{
+			foreach ($folders as $folder)
+			{
+				// only add what is not ignored
+				if (!in_array($folder, $ignore))
+				{
+					$xml .= PHP_EOL . $this->_t(2) . '<folder>'  . $folder . '</folder>';
+				}
+			}
+		}
+		$xml .= PHP_EOL . $this->_t(1) . '</files>';
+		// now add the Config Params if needed
+		if (ComponentbuilderHelper::checkArray($config_fields))
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Config parameter -->';
+			// only add if part of the component field types path is required
+			if ($add_component_path)
+			{
+				// add path to plugin rules and custom fields
+				$xml .= PHP_EOL . $this->_t(1) . '<config';
+				$xml .= PHP_EOL . $this->_t(2) . 'addrulepath="/administrator/components/com_' . $this->componentCodeName . '/models/rules"';
+				$xml .= PHP_EOL . $this->_t(2) . 'addfieldpath="/administrator/components/com_' . $this->componentCodeName . '/models/fields"';
+				$xml .= PHP_EOL . $this->_t(1) . '>';
+			}
+			else
+			{
+				$xml .= PHP_EOL . $this->_t(1) . '<config>';
+			}
+			// add the fields
+			foreach ($plugin->config_fields as $field_name => $fieldsets)
+			{
+				$xml .= PHP_EOL . $this->_t(1) . '<fields name="' . $field_name . '">';
+				foreach ($fieldsets as $fieldset => $fields)
+				{
+					// default to the field set name
+					$label = $fieldset;
+					if (isset($plugin->fieldsets_label[$field_name.$fieldset]))
+					{
+						$label = $plugin->fieldsets_label[$field_name.$fieldset];
+					}
+					// add path to plugin rules and custom fields
+					if (isset($plugin->fieldsets_paths[$field_name . $fieldset]) && $plugin->fieldsets_paths[$field_name . $fieldset] == 2)
+					{
+						$xml .= PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' default paths of ' . $fieldset . ' fieldset points to the plugin -->';
+						$xml .= PHP_EOL . $this->_t(1) . '<fieldset name="' . $fieldset . '" label="' . $label . '"';
+						$xml .= PHP_EOL . $this->_t(2) . 'addrulepath="/plugins/' . strtolower($plugin->group) . '/' . strtolower($plugin->code_name) . '/rules"';
+						$xml .= PHP_EOL . $this->_t(2) . 'addfieldpath="/plugins/' . strtolower($plugin->group) . '/' . strtolower($plugin->code_name) . '/fields"';
+						$xml .= PHP_EOL . $this->_t(1) . '>';
+					}
+					else
+					{
+						$xml .= PHP_EOL . $this->_t(1) . '<fieldset name="' . $fieldset . '" label="' . $label . '">';
+					}
+					// load the fields
+					if (isset($config_fields[$field_name.$fieldset]))
+					{
+						$xml .= $config_fields[$field_name.$fieldset];
+						unset($config_fields[$field_name.$fieldset]);
+					}
+					$xml .= PHP_EOL . $this->_t(1) . '</fieldset>';
+				}
+				$xml .= PHP_EOL . $this->_t(1) . '</fields>';
+			}
+			$xml .= PHP_EOL . $this->_t(1) . '</config>';
+		}
+		// set update server if found
+		if ($plugin->add_update_server)
+		{
+			$xml .= PHP_EOL . PHP_EOL . $this->_t(1) . '<!--' . $this->setLine(__LINE__) . ' Update servers -->';
+			$xml .= PHP_EOL . $this->_t(1) . '<updateservers>';
+			$xml .= PHP_EOL . $this->_t(2) . '<server type="extension" priority="1" name="' . $plugin->official_name . '">' . $plugin->update_server_url . '</server>';
+			$xml .= PHP_EOL . $this->_t(1) . '</updateservers>';
+		}
+
+		return $xml;
+	}
+
+	public function getExtensionFieldsetXML(&$extension, &$fields, $dbkey = 'zz')
+	{
+		// set some defaults
+		$view = '';
+		$viewType = 0;
+		// build the fieldset
+		$fieldset = '';
+
+		if (ComponentbuilderHelper::checkArray($fields))
+		{
+			foreach ($fields as $field)
+			{
+				// check the field builder type
+				if ($this->fieldBuilderType == 1)
+				{
+					// string manipulation
+					$xmlField = $this->setDynamicField($field, $view, $viewType, $extension->lang_prefix, $extension->key, $extension->key, $this->globalPlaceholders, $dbkey, false);
+				}
+				else
+				{
+					// simpleXMLElement class
+					$newxmlField = $this->setDynamicField($field, $view, $viewType, $extension->lang_prefix, $extension->key, $extension->key, $this->globalPlaceholders, $dbkey, false);
+					if (isset($newxmlField->fieldXML))
+					{
+						$xmlField = dom_import_simplexml($newxmlField->fieldXML);
+						$xmlField = PHP_EOL . $this->_t(2) . "<!--" . $this->setLine(__LINE__) . " " . $newxmlField->comment . ' -->' . PHP_EOL . $this->_t(1) . $this->xmlPrettyPrint($xmlField, 'field');
+					}
+				}
+				// make sure the xml is set and a string
+				if (isset($xmlField) && ComponentbuilderHelper::checkString($xmlField))
+				{
+					$fieldset .= $xmlField;
+				}
+			}
+		}
+		return $fieldset;
+	}
+
+	public function getExtensionInstallClass(&$extension)
+	{
+		// yes we are adding it
+		$script = PHP_EOL . '/**';
+		$script .= PHP_EOL . ' * ' . $extension->official_name . ' script file.';
+		$script .= PHP_EOL . ' *';
+		$script .= PHP_EOL . ' * @package ' . $extension->class_name;
+		$script .= PHP_EOL . ' */';
+		$script .= PHP_EOL . 'class ' . $extension->installer_class_name;
+		$script .= PHP_EOL . '{';
+		// set constructor
+		if (isset($extension->add_php_script_construct)
+			&& $extension->add_php_script_construct == 1
+			&& ComponentbuilderHelper::checkString($extension->php_script_construct))
+		{
+			$script .= $this->setInstallMethodScript('construct', $extension->php_script_construct);
+		}
+		// add PHP in extension install
+		$addScriptMethods = array('php_preflight', 'php_postflight', 'php_method');
+		$addScriptTypes = array('install', 'update', 'uninstall', 'discover_install');
+		// set some buckets for sorting
+		$function_install = array();
+		$function_update = array();
+		$function_uninstall = array();
+		$has_php_preflight = false;
+		$function_php_preflight = array('install' => array(), 'uninstall' => array(), 'discover_install' => array(), 'update' => array());
+		$has_php_postflight = false;
+		$function_php_postflight = array('install' => array(), 'uninstall' => array(), 'discover_install' => array(), 'update' => array());
+		// the function sorter
+		foreach ($addScriptMethods as $scriptMethod)
+		{
+			foreach ($addScriptTypes as $scriptType)
+			{
+				if (isset($extension->{'add_' . $scriptMethod . '_' . $scriptType})
+					&& $extension->{'add_' . $scriptMethod . '_' . $scriptType} == 1
+					&& ComponentbuilderHelper::checkString($extension->{$scriptMethod . '_' . $scriptType}))
+				{
+					// add to the main methods
+					if ('php_method' === $scriptMethod)
+					{
+						${'function_' . $scriptType}[] = $extension->{$scriptMethod . '_' . $scriptType};
+					}
+					else
+					{
+						${'function_' . $scriptMethod}[$scriptType][] = $extension->{$scriptMethod . '_' . $scriptType};
+						${'has_' . $scriptMethod} = true;
+					}
+				}
+			}
+		}
+		// now add the install script.
+		if (ComponentbuilderHelper::checkArray($function_install))
+		{
+			$script .= $this->setInstallMethodScript('install', $function_install);
+		}
+		// now add the update script.
+		if (ComponentbuilderHelper::checkArray($function_update))
+		{
+			$script .= $this->setInstallMethodScript('update', $function_update);
+		}
+		// now add the uninstall script.
+		if (ComponentbuilderHelper::checkArray($function_uninstall))
+		{
+			$script .= $this->setInstallMethodScript('uninstall', $function_uninstall);
+		}
+		// now add the preflight script.
+		if ($has_php_preflight)
+		{
+			$script .= $this->setInstallMethodScript('preflight', $function_php_preflight);
+		}
+		// now add the postflight script.
+		if ($has_php_postflight)
+		{
+			$script .= $this->setInstallMethodScript('postflight', $function_php_postflight);
+		}
+		$script .= PHP_EOL . '}' . PHP_EOL;
+
+		return $script;
+	}
+
+	protected function setInstallMethodScript($function_name, &$scripts)
+	{
+		$script = '';
+		// build function
+		switch($function_name)
+		{
+			case 'install':
+			case 'update':
+			case 'uninstall':
+				// the main function types
+				$script = PHP_EOL . PHP_EOL . $this->_t(1) .'/**';
+				$script .= PHP_EOL . $this->_t(1) .' * Called on ' . $function_name;
+				$script .= PHP_EOL . $this->_t(1) .' *';
+				$script .= PHP_EOL . $this->_t(1) .' * @param   JAdapterInstance  $adapter  The object responsible for running this script';
+				$script .= PHP_EOL . $this->_t(1) .' *';
+				$script .= PHP_EOL . $this->_t(1) .' * @return  boolean  True on success';
+				$script .= PHP_EOL . $this->_t(1) .' */';
+				$script .= PHP_EOL . $this->_t(1) .'public function ' . $function_name . '(JAdapterInstance $adapter)';
+				$script .= PHP_EOL . $this->_t(1) .'{';
+				$script .= PHP_EOL . implode(PHP_EOL . PHP_EOL, $scripts);
+				// return true
+				if ('uninstall' !== $function_name)
+				{
+					$script .= PHP_EOL . $this->_t(2) . 'return true;';
+				}
+				break;
+			case 'preflight':
+			case 'postflight':
+				// the pre/post function types
+				$script = PHP_EOL . PHP_EOL . $this->_t(1) .'/**';
+				$script .= PHP_EOL . $this->_t(1) .' * Called before any type of action';
+				$script .= PHP_EOL . $this->_t(1) .' *';
+				$script .= PHP_EOL . $this->_t(1) .' * @param   string  $route  Which action is happening (install|uninstall|discover_install|update)';
+				$script .= PHP_EOL . $this->_t(1) .' * @param   JAdapterInstance  $adapter  The object responsible for running this script';
+				$script .= PHP_EOL . $this->_t(1) .' *';
+				$script .= PHP_EOL . $this->_t(1) .' * @return  boolean  True on success';
+				$script .= PHP_EOL . $this->_t(1) .' */';
+				$script .= PHP_EOL . $this->_t(1) .'public function ' . $function_name . '($route, JAdapterInstance $adapter)';
+				$script .= PHP_EOL . $this->_t(1) .'{';
+				$script .= PHP_EOL . $this->_t(2) . '//' . $this->setLine(__LINE__) . ' get application';
+				$script .= PHP_EOL . $this->_t(2) . '$app = JFactory::getApplication();' . PHP_EOL;
+				// add the default version check (TODO) must make this dynamic
+				if ('preflight' === $function_name)
+				{
+					$script .= PHP_EOL . $this->_t(2) . '//' . $this->setLine(__LINE__) . ' the default for both install and update';
+					$script .= PHP_EOL . $this->_t(2) . '$jversion = new JVersion();';
+					$script .= PHP_EOL . $this->_t(2) . "if (!\$jversion->isCompatible('3.8.0'))";
+					$script .= PHP_EOL . $this->_t(2) . '{';
+					$script .= PHP_EOL . $this->_t(3) . "\$app->enqueueMessage('Please upgrade to at least Joomla! 3.8.0 before continuing!', 'error');";
+					$script .= PHP_EOL . $this->_t(3) . 'return false;';
+					$script .= PHP_EOL . $this->_t(2) . '}' . PHP_EOL;
+				}
+				// now add the scripts
+				foreach ($scripts as $route => $_script)
+				{
+					if (ComponentbuilderHelper::checkArray($_script))
+					{
+						// set the if and script
+						$script .= PHP_EOL . $this->_t(2) . "if ('" . $route . "' === \$route)";
+						$script .= PHP_EOL . $this->_t(2) . '{';
+						$script .= PHP_EOL . implode(PHP_EOL . PHP_EOL, $_script);
+						$script .= PHP_EOL . $this->_t(2) . '}' . PHP_EOL;
+					}
+				}
+				// return true
+				$script .= PHP_EOL . $this->_t(2) . 'return true;';
+				break;
+			case 'construct':
+				// the __construct script
+				$script = PHP_EOL . PHP_EOL . $this->_t(1) .'/**';
+				$script .= PHP_EOL . $this->_t(1) .' * Constructor';
+				$script .= PHP_EOL . $this->_t(1) .' *';
+				$script .= PHP_EOL . $this->_t(1) .' * @param   JAdapterInstance  $adapter  The object responsible for running this script';
+				$script .= PHP_EOL . $this->_t(1) .' */';
+				$script .= PHP_EOL . $this->_t(1) .'public function __construct(JAdapterInstance $adapter)';
+				$script .= PHP_EOL . $this->_t(1) .'{';
+				$script .= PHP_EOL . $scripts;
+				break;
+			default:
+				// oops error
+				return '';
+		}
+		// close the function
+		$script .= PHP_EOL . $this->_t(1) . '}';
+
+		return $script;
 	}
 
 }

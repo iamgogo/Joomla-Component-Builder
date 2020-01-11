@@ -5,7 +5,7 @@
  * @created    30th April, 2015
  * @author     Llewellyn van der Merwe <http://www.joomlacomponentbuilder.com>
  * @github     Joomla Component Builder <https://github.com/vdm-io/Joomla-Component-Builder>
- * @copyright  Copyright (C) 2015 - 2018 Vast Development Method. All rights reserved.
+ * @copyright  Copyright (C) 2015 - 2019 Vast Development Method. All rights reserved.
  * @license    GNU General Public License version 2 or later; see LICENSE.txt
  */
 
@@ -18,13 +18,79 @@ use Joomla\Registry\Registry;
  * Componentbuilder Field Model
  */
 class ComponentbuilderModelField extends JModelAdmin
-{    
+{
+	/**
+	 * The tab layout fields array.
+	 *
+	 * @var      array
+	 */
+	protected $tabLayoutFields = array(
+		'set_properties' => array(
+			'fullwidth' => array(
+				'note_select_field_type',
+				'note_filter_information'
+			),
+			'above' => array(
+				'fieldtype',
+				'name',
+				'catid'
+			),
+			'under' => array(
+				'not_required'
+			)
+		),
+		'database' => array(
+			'left' => array(
+				'datatype',
+				'datalenght',
+				'datalenght_other',
+				'datadefault',
+				'datadefault_other'
+			),
+			'right' => array(
+				'indexes',
+				'null_switch',
+				'store',
+				'note_whmcs_encryption',
+				'note_expert_field_save_mode',
+				'initiator_on_save_model',
+				'initiator_on_get_model',
+				'on_save_model_field',
+				'on_get_model_field'
+			),
+			'fullwidth' => array(
+				'note_no_database_settings_needed',
+				'note_database_settings_needed'
+			)
+		),
+		'scripts' => array(
+			'left' => array(
+				'add_css_view',
+				'css_view',
+				'add_css_views',
+				'css_views'
+			),
+			'right' => array(
+				'add_javascript_view_footer',
+				'javascript_view_footer',
+				'add_javascript_views_footer',
+				'javascript_views_footer'
+			)
+		),
+		'type_info' => array(
+			'fullwidth' => array(
+				'helpnote',
+				'xml'
+			)
+		)
+	);
+
 	/**
 	 * @var        string    The prefix to use with controller messages.
 	 * @since   1.6
 	 */
 	protected $text_prefix = 'COM_COMPONENTBUILDER';
-    
+
 	/**
 	 * The type alias for this content type.
 	 *
@@ -52,10 +118,54 @@ class ComponentbuilderModelField extends JModelAdmin
 		return JTable::getInstance($type, $prefix, $config);
 	}
 
+
+	/**
+	 * get VDM internal session key
+	 *
+	 * @return  string  the session key
+	 *
+	 */
 	public function getVDM()
 	{
+		if (!isset($this->vastDevMod))
+		{
+			$_id = 0; // new item probably (since it was not set in the getItem method)
+
+			if (empty($_id))
+			{
+				$id = 0;
+			}
+			else
+			{
+				$id = $_id;
+			}
+			// set the id and view name to session
+			if ($vdm = ComponentbuilderHelper::get('field__'.$id))
+			{
+				$this->vastDevMod = $vdm;
+			}
+			else
+			{
+				// set the vast development method key
+				$this->vastDevMod = ComponentbuilderHelper::randomkey(50);
+				ComponentbuilderHelper::set($this->vastDevMod, 'field__'.$id);
+				ComponentbuilderHelper::set('field__'.$id, $this->vastDevMod);
+				// set a return value if found
+				$jinput = JFactory::getApplication()->input;
+				$return = $jinput->get('return', null, 'base64');
+				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
+			}
+		}
 		return $this->vastDevMod;
 	}
+
     
 	/**
 	 * Method to get a single record.
@@ -86,10 +196,22 @@ class ComponentbuilderModelField extends JModelAdmin
 				$item->metadata = $registry->toArray();
 			}
 
-			if (!empty($item->css_views))
+			if (!empty($item->on_get_model_field))
 			{
-				// base64 Decode css_views.
-				$item->css_views = base64_decode($item->css_views);
+				// base64 Decode on_get_model_field.
+				$item->on_get_model_field = base64_decode($item->on_get_model_field);
+			}
+
+			if (!empty($item->on_save_model_field))
+			{
+				// base64 Decode on_save_model_field.
+				$item->on_save_model_field = base64_decode($item->on_save_model_field);
+			}
+
+			if (!empty($item->initiator_on_get_model))
+			{
+				// base64 Decode initiator_on_get_model.
+				$item->initiator_on_get_model = base64_decode($item->initiator_on_get_model);
 			}
 
 			if (!empty($item->css_view))
@@ -104,10 +226,22 @@ class ComponentbuilderModelField extends JModelAdmin
 				$item->javascript_view_footer = base64_decode($item->javascript_view_footer);
 			}
 
+			if (!empty($item->css_views))
+			{
+				// base64 Decode css_views.
+				$item->css_views = base64_decode($item->css_views);
+			}
+
 			if (!empty($item->javascript_views_footer))
 			{
 				// base64 Decode javascript_views_footer.
 				$item->javascript_views_footer = base64_decode($item->javascript_views_footer);
+			}
+
+			if (!empty($item->initiator_on_save_model))
+			{
+				// base64 Decode initiator_on_save_model.
+				$item->initiator_on_save_model = base64_decode($item->initiator_on_save_model);
 			}
 
 			if (!empty($item->xml))
@@ -124,7 +258,7 @@ class ComponentbuilderModelField extends JModelAdmin
 			else
 			{
 				$id = $item->id;
-			}			
+			}
 			// set the id and view name to session
 			if ($vdm = ComponentbuilderHelper::get('field__'.$id))
 			{
@@ -140,6 +274,13 @@ class ComponentbuilderModelField extends JModelAdmin
 				$jinput = JFactory::getApplication()->input;
 				$return = $jinput->get('return', null, 'base64');
 				ComponentbuilderHelper::set($this->vastDevMod . '__return', $return);
+				// set a GUID value if found
+				if (isset($item) && ComponentbuilderHelper::checkObject($item) && isset($item->guid)
+					&& method_exists('ComponentbuilderHelper', 'validGUID')
+					&& ComponentbuilderHelper::validGUID($item->guid))
+				{
+					ComponentbuilderHelper::set($this->vastDevMod . '__guid', $item->guid);
+				}
 			}
 			
 			if (!empty($item->id))
@@ -167,8 +308,23 @@ class ComponentbuilderModelField extends JModelAdmin
 	{
 		// set load data option
 		$options['load_data'] = $loadData;
+		// check if xpath was set in options
+		$xpath = false;
+		if (isset($options['xpath']))
+		{
+			$xpath = $options['xpath'];
+			unset($options['xpath']);
+		}
+		// check if clear form was set in options
+		$clear = false;
+		if (isset($options['clear']))
+		{
+			$clear = $options['clear'];
+			unset($options['clear']);
+		}
+
 		// Get the form.
-		$form = $this->loadForm('com_componentbuilder.field', 'field', $options);
+		$form = $this->loadForm('com_componentbuilder.field', 'field', $options, $clear, $xpath);
 
 		if (empty($form))
 		{
@@ -258,6 +414,13 @@ class ComponentbuilderModelField extends JModelAdmin
 				// set the field editor value (with none as fallback)
 				$form->setFieldAttribute($name, 'editor', $global_editor . '|none');
 			}
+		}
+
+
+		// Only load the GUID if new item
+		if (0 == $id)
+		{
+			$form->setValue('guid', null, ComponentbuilderHelper::GUID());
 		}
 
 		return $form;
@@ -415,6 +578,8 @@ class ComponentbuilderModelField extends JModelAdmin
 		if (empty($data))
 		{
 			$data = $this->getItem();
+			// run the perprocess of the data
+			$this->preprocessData('com_componentbuilder.field', $data);
 		}
 
 		return $data;
@@ -923,15 +1088,23 @@ class ComponentbuilderModelField extends JModelAdmin
 				// make sure we have the correct values
 				if (ComponentbuilderHelper::checkArray($property) && isset($property['name']) && ComponentbuilderHelper::checkString($property['name']) && (isset($property['value']) || 'default' === $property['name']))
 				{
-					// fix the name (TODO)
-					// $property['name'] = ComponentbuilderHelper::safeString($property['name']);
 					// some fixes, just in case (more can be added)
 					switch ($property['name'])
 					{
 						// fix the values
 						case 'name':
+							// check if we have placeholder in name
+							if (strpos($property['value'], '[[[') !== false || strpos($property['value'], '###') !== false)
+							{
+								$property['value'] = trim($property['value']);
+							}
+							else
+							{
+								$property['value'] = ComponentbuilderHelper::safeFieldName($property['value']);
+							}
+						break;
 						case 'type':
-							$property['value'] = ComponentbuilderHelper::safeString($property['value']);
+							$property['value'] = ComponentbuilderHelper::safeTypeName($property['value']);
 						break;
 					}
 					// load the property
@@ -968,16 +1141,35 @@ class ComponentbuilderModelField extends JModelAdmin
 			}
 		}
 
+		// Set the GUID if empty or not valid
+		if (isset($data['guid']) && !ComponentbuilderHelper::validGUID($data['guid']))
+		{
+			$data['guid'] = (string) ComponentbuilderHelper::GUID();
+		}
+
+
 		// Set the xml string to JSON string.
 		if (isset($data['xml']))
 		{
 			$data['xml'] = (string) json_encode($data['xml']);
 		}
 
-		// Set the css_views string to base64 string.
-		if (isset($data['css_views']))
+		// Set the on_get_model_field string to base64 string.
+		if (isset($data['on_get_model_field']))
 		{
-			$data['css_views'] = base64_encode($data['css_views']);
+			$data['on_get_model_field'] = base64_encode($data['on_get_model_field']);
+		}
+
+		// Set the on_save_model_field string to base64 string.
+		if (isset($data['on_save_model_field']))
+		{
+			$data['on_save_model_field'] = base64_encode($data['on_save_model_field']);
+		}
+
+		// Set the initiator_on_get_model string to base64 string.
+		if (isset($data['initiator_on_get_model']))
+		{
+			$data['initiator_on_get_model'] = base64_encode($data['initiator_on_get_model']);
 		}
 
 		// Set the css_view string to base64 string.
@@ -992,10 +1184,22 @@ class ComponentbuilderModelField extends JModelAdmin
 			$data['javascript_view_footer'] = base64_encode($data['javascript_view_footer']);
 		}
 
+		// Set the css_views string to base64 string.
+		if (isset($data['css_views']))
+		{
+			$data['css_views'] = base64_encode($data['css_views']);
+		}
+
 		// Set the javascript_views_footer string to base64 string.
 		if (isset($data['javascript_views_footer']))
 		{
 			$data['javascript_views_footer'] = base64_encode($data['javascript_views_footer']);
+		}
+
+		// Set the initiator_on_save_model string to base64 string.
+		if (isset($data['initiator_on_save_model']))
+		{
+			$data['initiator_on_save_model'] = base64_encode($data['initiator_on_save_model']);
 		}
         
 		// Set the Params Items to data
